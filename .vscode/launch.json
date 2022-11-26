@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Docker",
+        "type": "go",
+        "request": "attach",
+        "mode": "remote",
+        "port": 8001
+      }
+    ]
+  }
+  

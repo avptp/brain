@@ -1,0 +1,37 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        uses: shimataro/ssh-key-action@v2
+        with:
+          name: id_ed25519
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Deploy
+        run: |
+          COMMANDS=$(cat << EOF
+          set -euo pipefail
+
+          cd /srv/avptp/brain/repo
+
+          git fetch
+          git reset --hard @{u}
+
+          go mod download
+          go build -ldflags="-s -w" -o ../bin cmd/main.go
+
+          sudo systemctl restart avptp-brain
+          EOF
+          )
+
+          ssh caddy@${{ secrets.WEB_HOST }} -p 22001 "${COMMANDS}"

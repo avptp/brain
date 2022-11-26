@@ -1,0 +1,83 @@
+{{/* gotype: entgo.io/ent/entc/gen.Graph */}}
+
+{{ define "factories/factories" }}
+
+{{ with extend $ "Package" "factories" -}}
+	{{ template "header" . }}
+{{ end }}
+
+import (
+	"{{ $.Config.Package }}"
+	"{{ $.Config.Package }}/privacy"
+
+    "github.com/brianvoe/gofakeit/v6"
+)
+
+// Base factory
+type Factory struct {
+    data *data.Client
+}
+
+func New(data *data.Client) *Factory {
+    return &Factory{
+        data: data,
+    }
+}
+
+{{ range $n := $.Nodes }}
+    // {{ $n.Name }} factory
+    type {{ $n.Name }}Factory struct {
+        *Factory
+
+        Fields {{ $n.Name }}Fields
+        builder *data.{{ $n.Name }}Create
+    }
+
+    type {{ $n.Name }}Fields struct {
+        {{- range $f := $n.Fields }}
+		{{- $tag := $f.StructTag }}{{ with $tags := $n.Annotations.Fields.StructTag }}{{ with index $tags $f.Name }}{{ $tag = . }}{{ end }}{{ end }}
+		{{ $f.StructField }} {{ if $f.NillableValue }}*{{ end }}{{ $f.Type }} `{{ $tag }}`
+	    {{- end }}
+    }
+
+    func (bf *Factory) {{ $n.Name }}() *{{ $n.Name }}Factory {
+        f := &{{ $n.Name }}Factory{
+            Factory: bf,
+        }
+
+        gofakeit.Struct(&f.Fields)
+
+        f.builder = f.data.{{ $n.Name }}.
+            Create()
+            {{- range $f := $n.Fields -}}
+            {{- if and (not $f.IsEdgeField) (not $f.Default) -}}.
+            Set{{ if $f.NillableValue }}Nillable{{ end }}{{ $f.StructField }}(f.Fields.{{ $f.MutationGet }})
+            {{- end -}}
+            {{- end }}
+
+        return f
+    }
+
+    func (f *{{ $n.Name }}Factory) With(cb func(*data.{{ $n.Name }}Create)) *{{ $n.Name }}Factory {
+        cb(f.builder)
+
+        return f
+    }
+
+    func (f *{{ $n.Name }}Factory) Create(ctx context.Context) *data.{{ $n.Name }} {
+        {{- range $f := $n.Fields }}
+        {{- if $f.IsEdgeField -}}
+        {{- $e := $f.Edge -}}
+        if _, exists := f.builder.Mutation().{{ $f.StructField }}(); !exists {
+            f.builder.Set{{ $e.StructField }}(
+                f.{{ $e.StructField }}().Create(ctx),
+            )
+        }
+
+        {{ end -}}
+        {{ end -}}
+
+        return f.builder.SaveX(ctx)
+    }
+    {{ end }}
+{{ end }}

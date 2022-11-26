@@ -1,0 +1,46 @@
+type Authentication {
+    id: ID!
+    createdIp: IP!
+    lastUsedIp: IP!
+    createdAt: Time!
+    lastUsedAt: Time!
+
+    personId: ID!
+    person: Person!
+}
+
+type AuthenticationConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [AuthenticationEdge]
+}
+
+type AuthenticationEdge {
+    node: Authentication
+    cursor: Cursor!
+}
+
+extend type Mutation {
+    createAuthentication(input: CreateAuthenticationInput!): CreateAuthenticationPayload
+}
+
+input CreateAuthenticationInput {
+    email: String!
+    password: String!
+}
+
+type CreateAuthenticationPayload {
+    token: String!
+}
+
+extend type Mutation {
+    deleteAuthentication(input: DeleteAuthenticationInput!): DeleteAuthenticationPayload
+}
+
+input DeleteAuthenticationInput {
+    id: ID!
+}
+
+type DeleteAuthenticationPayload {
+    authenticationId: ID!
+}

@@ -1,0 +1,17 @@
+type Query
+
+type Mutation
+
+# Scalars
+scalar Time
+scalar IP
+
+# Pagination
+scalar Cursor
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: Cursor
+    endCursor: Cursor
+}

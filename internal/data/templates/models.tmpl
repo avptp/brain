@@ -1,0 +1,14 @@
+{{/* gotype: entgo.io/ent/entc/gen.Type */}}
+
+{{ define "model/additional/authentication" }}
+{{- if eq $.Name "Authentication" -}}
+{{- range $f := $.Fields -}}
+{{- if eq $f.Name "token" -}}
+{{- $receiver := $.Receiver -}}
+func ({{ $receiver }} *{{ $.Name }}) TokenEncoded() string {
+    return base64.URLEncoding.EncodeToString({{ $receiver }}.Token)
+}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{ end }}

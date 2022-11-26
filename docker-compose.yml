@@ -1,0 +1,31 @@
+services:
+
+  go:
+    build:
+      context: .
+      target: development
+      args:
+        USER_ID: ${USER_ID:-1000}
+    volumes:
+      - .:/go/src/app
+      - ~/go/pkg:/go/pkg
+    env_file: .env
+    ports:
+      - ${HTTP_PORT:-8000}:${HTTP_PORT:-8000}
+      - ${DELVE_PORT:-8001}:${DELVE_PORT:-8001}
+    depends_on:
+      - cockroachdb
+    hostname: go
+    tty: true
+
+  cockroachdb:
+    image: cockroachdb/cockroach:v22.2.7
+    command: start-single-node --insecure
+    ports:
+      - ${COCKROACHDB_PORT:-26257}:26257
+      - ${COCKROACHDB_CONSOLE_PORT:-8080}:8080
+    volumes:
+      - cockroachdb:/cockroach/cockroach-data
+
+volumes:
+  cockroachdb:

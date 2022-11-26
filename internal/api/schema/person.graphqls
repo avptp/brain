@@ -1,0 +1,111 @@
+type Person {
+    id: ID!
+
+    email: String!
+    emailVerifiedAt: Time
+    phone: String
+
+    taxId: String!
+    firstName: String!
+    lastName: String
+
+    language: String!
+    birthdate: Time
+    gender: Gender
+
+    address: String
+    postalCode: String
+    city: String
+    country: String
+
+    createdAt: Time!
+    updatedAt: Time!
+
+    authentications(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+    ): AuthenticationConnection
+}
+
+enum Gender {
+  WOMAN
+  MAN
+  NONBINARY
+}
+
+extend type Query {
+    viewer: Person!
+}
+
+extend type Mutation {
+    createPerson(input: CreatePersonInput!): CreatePersonPayload
+}
+
+input CreatePersonInput {
+    email: String!
+    password: String!
+    taxId: String!
+    firstName: String!
+    lastName: String
+    language: String!
+    captcha: String!
+}
+
+type CreatePersonPayload {
+    person: Person!
+}
+
+extend type Mutation {
+    updatePerson(input: UpdatePersonInput!): UpdatePersonPayload
+}
+
+input UpdatePersonInput {
+    id: ID!
+    email: String
+    phone: String
+    taxId: String
+    firstName: String
+    lastName: String
+    language: String
+    birthdate: Time
+    gender: Gender
+    address: String
+    postalCode: String
+    city: String
+    country: String
+}
+
+type UpdatePersonPayload {
+    person: Person!
+}
+
+extend type Mutation {
+    updatePersonPassword(input: UpdatePersonPasswordInput!): UpdatePersonPasswordPayload
+}
+
+input UpdatePersonPasswordInput {
+    id: ID!
+    currentPassword: String!
+    newPassword: String!
+    captcha: String!
+}
+
+type UpdatePersonPasswordPayload {
+    person: Person!
+}
+
+extend type Mutation {
+    deletePerson(input: DeletePersonInput!): DeletePersonPayload
+}
+
+input DeletePersonInput {
+    id: ID!
+    currentPassword: String!
+    captcha: String!
+}
+
+type DeletePersonPayload {
+    personId: ID!
+}
