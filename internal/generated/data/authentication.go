@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/person"
@@ -33,7 +34,8 @@ type Authentication struct {
 	LastUsedAt time.Time `json:"last_used_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AuthenticationQuery when eager-loading is set.
-	Edges AuthenticationEdges `json:"edges"`
+	Edges        AuthenticationEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AuthenticationEdges holds the relations/edges for other nodes in the graph.
@@ -74,7 +76,7 @@ func (*Authentication) scanValues(columns []string) ([]any, error) {
 		case authentication.FieldID, authentication.FieldPersonID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Authentication", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -130,9 +132,17 @@ func (a *Authentication) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.LastUsedAt = value.Time
 			}
+		default:
+			a.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Authentication.
+// This includes values selected through modifiers, order, etc.
+func (a *Authentication) Value(name string) (ent.Value, error) {
+	return a.selectValues.Get(name)
 }
 
 // QueryPerson queries the "person" edge of the Authentication entity.

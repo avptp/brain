@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -74,3 +76,50 @@ var (
 	// UpdateDefaultLastUsedAt holds the default value on update for the "last_used_at" field.
 	UpdateDefaultLastUsedAt func() time.Time
 )
+
+// OrderOption defines the ordering options for the Authentication queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByPersonID orders the results by the person_id field.
+func ByPersonID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPersonID, opts...).ToFunc()
+}
+
+// ByCreatedIP orders the results by the created_ip field.
+func ByCreatedIP(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedIP, opts...).ToFunc()
+}
+
+// ByLastUsedIP orders the results by the last_used_ip field.
+func ByLastUsedIP(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUsedIP, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByLastUsedAt orders the results by the last_used_at field.
+func ByLastUsedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUsedAt, opts...).ToFunc()
+}
+
+// ByPersonField orders the results by person field.
+func ByPersonField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPersonStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPersonStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PersonInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, PersonTable, PersonColumn),
+	)
+}

@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/avptp/brain/internal/config"
-	"github.com/caarlos0/env/v7"
+	"github.com/caarlos0/env/v9"
 	"github.com/sarulabs/dingo/v4"
 )
 

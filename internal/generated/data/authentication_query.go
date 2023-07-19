@@ -21,7 +21,7 @@ import (
 type AuthenticationQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []authentication.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Authentication
 	withPerson *PersonQuery
@@ -58,7 +58,7 @@ func (aq *AuthenticationQuery) Unique(unique bool) *AuthenticationQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (aq *AuthenticationQuery) Order(o ...OrderFunc) *AuthenticationQuery {
+func (aq *AuthenticationQuery) Order(o ...authentication.OrderOption) *AuthenticationQuery {
 	aq.order = append(aq.order, o...)
 	return aq
 }
@@ -274,7 +274,7 @@ func (aq *AuthenticationQuery) Clone() *AuthenticationQuery {
 	return &AuthenticationQuery{
 		config:     aq.config,
 		ctx:        aq.ctx.Clone(),
-		order:      append([]OrderFunc{}, aq.order...),
+		order:      append([]authentication.OrderOption{}, aq.order...),
 		inters:     append([]Interceptor{}, aq.inters...),
 		predicates: append([]predicate.Authentication{}, aq.predicates...),
 		withPerson: aq.withPerson.Clone(),
@@ -475,6 +475,9 @@ func (aq *AuthenticationQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != authentication.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if aq.withPerson != nil {
+			_spec.Node.AddColumnOnce(authentication.FieldPersonID)
 		}
 	}
 	if ps := aq.predicates; len(ps) > 0 {

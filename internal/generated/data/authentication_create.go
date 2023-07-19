@@ -95,7 +95,7 @@ func (ac *AuthenticationCreate) Save(ctx context.Context) (*Authentication, erro
 	if err := ac.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks[*Authentication, AuthenticationMutation](ctx, ac.sqlSave, ac.mutation, ac.hooks)
+	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -261,8 +261,8 @@ func (acb *AuthenticationCreateBulk) Save(ctx context.Context) ([]*Authenticatio
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
 				} else {

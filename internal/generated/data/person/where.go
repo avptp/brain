@@ -1130,11 +1130,7 @@ func HasAuthentications() predicate.Person {
 // HasAuthenticationsWith applies the HasEdge predicate on the "authentications" edge with a given conditions (other predicates).
 func HasAuthenticationsWith(preds ...predicate.Authentication) predicate.Person {
 	return predicate.Person(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AuthenticationsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AuthenticationsTable, AuthenticationsColumn),
-		)
+		step := newAuthenticationsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -56,7 +56,7 @@ func (au *AuthenticationUpdate) Save(ctx context.Context) (int, error) {
 	if err := au.defaults(); err != nil {
 		return 0, err
 	}
-	return withHooks[int, AuthenticationMutation](ctx, au.sqlSave, au.mutation, au.hooks)
+	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -183,7 +183,7 @@ func (auo *AuthenticationUpdateOne) Save(ctx context.Context) (*Authentication, 
 	if err := auo.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks[*Authentication, AuthenticationMutation](ctx, auo.sqlSave, auo.mutation, auo.hooks)
+	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

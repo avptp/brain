@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
@@ -51,7 +52,8 @@ type Person struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PersonQuery when eager-loading is set.
-	Edges PersonEdges `json:"edges"`
+	Edges        PersonEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // PersonEdges holds the relations/edges for other nodes in the graph.
@@ -88,7 +90,7 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 		case person.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Person", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -213,9 +215,17 @@ func (pe *Person) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pe.UpdatedAt = value.Time
 			}
+		default:
+			pe.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Person.
+// This includes values selected through modifiers, order, etc.
+func (pe *Person) Value(name string) (ent.Value, error) {
+	return pe.selectValues.Get(name)
 }
 
 // QueryAuthentications queries the "authentications" edge of the Person entity.
