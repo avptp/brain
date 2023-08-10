@@ -5,6 +5,7 @@ package api
 import (
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
@@ -20,13 +21,13 @@ type CreateAuthenticationPayload struct {
 }
 
 type CreatePersonInput struct {
-	Email     string  `json:"email"`
-	Password  string  `json:"password"`
-	TaxID     string  `json:"taxId"`
-	FirstName string  `json:"firstName"`
-	LastName  *string `json:"lastName,omitempty"`
-	Language  string  `json:"language"`
-	Captcha   string  `json:"captcha"`
+	Email     string                     `json:"email"`
+	Password  string                     `json:"password"`
+	TaxID     string                     `json:"taxId"`
+	FirstName string                     `json:"firstName"`
+	LastName  graphql.Omittable[*string] `json:"lastName,omitempty"`
+	Language  string                     `json:"language"`
+	Captcha   string                     `json:"captcha"`
 }
 
 type CreatePersonPayload struct {
@@ -52,19 +53,19 @@ type DeletePersonPayload struct {
 }
 
 type UpdatePersonInput struct {
-	ID         uuid.UUID      `json:"id"`
-	Email      *string        `json:"email,omitempty"`
-	Phone      *string        `json:"phone,omitempty"`
-	TaxID      *string        `json:"taxId,omitempty"`
-	FirstName  *string        `json:"firstName,omitempty"`
-	LastName   *string        `json:"lastName,omitempty"`
-	Language   *string        `json:"language,omitempty"`
-	Birthdate  *time.Time     `json:"birthdate,omitempty"`
-	Gender     *person.Gender `json:"gender,omitempty"`
-	Address    *string        `json:"address,omitempty"`
-	PostalCode *string        `json:"postalCode,omitempty"`
-	City       *string        `json:"city,omitempty"`
-	Country    *string        `json:"country,omitempty"`
+	ID         uuid.UUID                         `json:"id"`
+	Email      graphql.Omittable[*string]        `json:"email,omitempty"`
+	Phone      graphql.Omittable[*string]        `json:"phone,omitempty"`
+	TaxID      graphql.Omittable[*string]        `json:"taxId,omitempty"`
+	FirstName  graphql.Omittable[*string]        `json:"firstName,omitempty"`
+	LastName   graphql.Omittable[*string]        `json:"lastName,omitempty"`
+	Language   graphql.Omittable[*string]        `json:"language,omitempty"`
+	Birthdate  graphql.Omittable[*time.Time]     `json:"birthdate,omitempty"`
+	Gender     graphql.Omittable[*person.Gender] `json:"gender,omitempty"`
+	Address    graphql.Omittable[*string]        `json:"address,omitempty"`
+	PostalCode graphql.Omittable[*string]        `json:"postalCode,omitempty"`
+	City       graphql.Omittable[*string]        `json:"city,omitempty"`
+	Country    graphql.Omittable[*string]        `json:"country,omitempty"`
 }
 
 type UpdatePersonPasswordInput struct {

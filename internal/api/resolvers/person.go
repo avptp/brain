@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"github.com/alexedwards/argon2id"
-	"github.com/avptp/brain/internal/api/arguments"
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/auth"
 	"github.com/avptp/brain/internal/generated/api"
@@ -29,15 +28,19 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 	d := data.FromContext(ctx) // transactional data client for mutations
 	allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
-	p, err := d.Person.
+	create := d.Person.
 		Create().
 		SetEmail(input.Email).
 		SetPassword(input.Password).
 		SetTaxID(input.TaxID).
 		SetFirstName(input.FirstName).
-		SetNillableLastName(input.LastName).
-		SetLanguage(input.Language).
-		Save(allowCtx)
+		SetLanguage(input.Language)
+
+	if input.LastName.IsSet() {
+		create.SetNillableLastName(input.LastName.Value())
+	}
+
+	p, err := create.Save(allowCtx)
 
 	if err != nil {
 		return nil, err
@@ -53,77 +56,91 @@ func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePer
 	d := data.FromContext(ctx) // transactional data client for mutations
 	update := d.Person.UpdateOneID(input.ID)
 
-	// This is not clean, but it is an option until "gqlgen" makes it
-	// possible to distinguish between undefined and null fields.
-	// See: https://github.com/99designs/gqlgen/issues/1416
-	fields := arguments.GetFields(ctx, "input")
+	if input.Email.IsSet() {
+		if v := input.Email.Value(); v != nil {
+			update.SetEmail(*v)
+		}
+	}
 
-	for _, key := range fields {
-		switch key {
-		case "email":
-			if v := input.Email; v != nil {
-				update.SetEmail(*v)
-			}
-		case "phone":
-			if v := input.Phone; v != nil {
-				update.SetPhone(*v)
-			} else {
-				update.ClearPhone()
-			}
-		case "taxId":
-			if v := input.TaxID; v != nil {
-				update.SetTaxID(*v)
-			}
-		case "firstName":
-			if v := input.FirstName; v != nil {
-				update.SetFirstName(*v)
-			}
-		case "lastName":
-			if v := input.LastName; v != nil {
-				update.SetLastName(*v)
-			} else {
-				update.ClearLastName()
-			}
-		case "language":
-			if v := input.Language; v != nil {
-				update.SetLanguage(*v)
-			}
-		case "birthdate":
-			if v := input.Birthdate; v != nil {
-				update.SetBirthdate(*v)
-			} else {
-				update.ClearBirthdate()
-			}
-		case "gender":
-			if v := input.Gender; v != nil {
-				update.SetGender(*v)
-			} else {
-				update.ClearGender()
-			}
-		case "address":
-			if v := input.Address; v != nil {
-				update.SetAddress(*v)
-			} else {
-				update.ClearAddress()
-			}
-		case "postalCode":
-			if v := input.PostalCode; v != nil {
-				update.SetPostalCode(*v)
-			} else {
-				update.ClearPostalCode()
-			}
-		case "city":
-			if v := input.City; v != nil {
-				update.SetCity(*v)
-			} else {
-				update.ClearCity()
-			}
-		case "country":
-			if v := input.Country; v != nil {
-				update.SetCountry(*v)
-			} else {
-				update.ClearCountry()
-			}
+	if input.Phone.IsSet() {
+		if v := input.Phone.Value(); v != nil {
+			update.SetPhone(*v)
+		} else {
+			update.ClearPhone()
+		}
+	}
+
+	if input.TaxID.IsSet() {
+		if v := input.TaxID.Value(); v != nil {
+			update.SetTaxID(*v)
+		}
+	}
+
+	if input.FirstName.IsSet() {
+		if v := input.FirstName.Value(); v != nil {
+			update.SetFirstName(*v)
+		}
+	}
+
+	if input.LastName.IsSet() {
+		if v := input.LastName.Value(); v != nil {
+			update.SetLastName(*v)
+		} else {
+			update.ClearLastName()
+		}
+	}
+
+	if input.Language.IsSet() {
+		if v := input.Language.Value(); v != nil {
+			update.SetLanguage(*v)
+		}
+	}
+
+	if input.Birthdate.IsSet() {
+		if v := input.Birthdate.Value(); v != nil {
+			update.SetBirthdate(*v)
+		} else {
+			update.ClearBirthdate()
+		}
+	}
+
+	if input.Gender.IsSet() {
+		if v := input.Gender.Value(); v != nil {
+			update.SetGender(*v)
+		} else {
+			update.ClearGender()
+		}
+	}
+
+	if input.Address.IsSet() {
+		if v := input.Address.Value(); v != nil {
+			update.SetAddress(*v)
+		} else {
+			update.ClearAddress()
+		}
+	}
+
+	if input.PostalCode.IsSet() {
+		if v := input.PostalCode.Value(); v != nil {
+			update.SetPostalCode(*v)
+		} else {
+			update.ClearPostalCode()
+		}
+	}
+
+	if input.City.IsSet() {
+		if v := input.City.Value(); v != nil {
+			update.SetCity(*v)
+		} else {
+			update.ClearCity()
+		}
+	}
+
+	if input.Country.IsSet() {
+		if v := input.Country.Value(); v != nil {
+			update.SetCountry(*v)
+		} else {
+			update.ClearCountry()
 		}
 	}
 

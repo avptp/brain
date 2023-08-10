@@ -5286,7 +5286,7 @@ func (ec *executionContext) unmarshalInputCreatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.LastName = data
+			it.LastName = graphql.OmittableOf(data)
 		case "language":
 			var err error
 
@@ -5418,7 +5418,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Email = data
+			it.Email = graphql.OmittableOf(data)
 		case "phone":
 			var err error
 
@@ -5427,7 +5427,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Phone = data
+			it.Phone = graphql.OmittableOf(data)
 		case "taxId":
 			var err error
 
@@ -5436,7 +5436,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.TaxID = data
+			it.TaxID = graphql.OmittableOf(data)
 		case "firstName":
 			var err error
 
@@ -5445,7 +5445,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.FirstName = data
+			it.FirstName = graphql.OmittableOf(data)
 		case "lastName":
 			var err error
 
@@ -5454,7 +5454,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.LastName = data
+			it.LastName = graphql.OmittableOf(data)
 		case "language":
 			var err error
 
@@ -5463,7 +5463,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Language = data
+			it.Language = graphql.OmittableOf(data)
 		case "birthdate":
 			var err error
 
@@ -5472,7 +5472,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Birthdate = data
+			it.Birthdate = graphql.OmittableOf(data)
 		case "gender":
 			var err error
 
@@ -5481,7 +5481,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Gender = data
+			it.Gender = graphql.OmittableOf(data)
 		case "address":
 			var err error
 
@@ -5490,7 +5490,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Address = data
+			it.Address = graphql.OmittableOf(data)
 		case "postalCode":
 			var err error
 
@@ -5499,7 +5499,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.PostalCode = data
+			it.PostalCode = graphql.OmittableOf(data)
 		case "city":
 			var err error
 
@@ -5508,7 +5508,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.City = data
+			it.City = graphql.OmittableOf(data)
 		case "country":
 			var err error
 
@@ -5517,7 +5517,7 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 			if err != nil {
 				return it, err
 			}
-			it.Country = data
+			it.Country = graphql.OmittableOf(data)
 		}
 	}
 
