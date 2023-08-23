@@ -6,19 +6,15 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/avptp/brain/internal/data/mutators"
+	"github.com/avptp/brain/internal/data/rules"
 	"github.com/google/uuid"
 )
 
 type Authentication struct {
 	ent.Schema
-}
-
-func (Authentication) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		PersonOwnedMixin{},
-	}
 }
 
 func (Authentication) Fields() []ent.Field {
@@ -30,6 +26,8 @@ func (Authentication) Fields() []ent.Field {
 					Default: "gen_random_ulid()",
 				},
 			),
+		field.UUID("person_id", uuid.UUID{}).
+			Immutable(),
 		field.Bytes("token").
 			SchemaType(map[string]string{
 				dialect.Postgres: "bytes",
@@ -61,8 +59,23 @@ func (Authentication) Fields() []ent.Field {
 	}
 }
 
+func (Authentication) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("person", Person.Type).
+			Ref("authentications").
+			Field("person_id").
+			Unique().
+			Required().
+			Immutable(),
+	}
+}
+
 func (Authentication) Hooks() []ent.Hook {
 	return []ent.Hook{
 		mutators.AuthenticationToken,
 	}
+}
+
+func (Authentication) Policy() ent.Policy {
+	return rules.FilterPersonOwnedRule()
 }

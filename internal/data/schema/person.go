@@ -158,7 +158,10 @@ func (Person) Fields() []ent.Field {
 
 func (Person) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("authentications", Authentication.Type),
+		edge.To("authentications", Authentication.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }
 

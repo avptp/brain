@@ -28,7 +28,7 @@ var (
 				Symbol:     "authentications_persons_authentications",
 				Columns:    []*schema.Column{AuthenticationsColumns[6]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}

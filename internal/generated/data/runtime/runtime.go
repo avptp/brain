@@ -18,8 +18,7 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	authenticationMixin := schema.Authentication{}.Mixin()
-	authentication.Policy = privacy.NewPolicies(authenticationMixin[0], schema.Authentication{})
+	authentication.Policy = privacy.NewPolicies(schema.Authentication{})
 	authentication.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := authentication.Policy.EvalMutation(ctx, m); err != nil {
@@ -34,11 +33,11 @@ func init() {
 	authenticationFields := schema.Authentication{}.Fields()
 	_ = authenticationFields
 	// authenticationDescCreatedAt is the schema descriptor for created_at field.
-	authenticationDescCreatedAt := authenticationFields[4].Descriptor()
+	authenticationDescCreatedAt := authenticationFields[5].Descriptor()
 	// authentication.DefaultCreatedAt holds the default value on creation for the created_at field.
 	authentication.DefaultCreatedAt = authenticationDescCreatedAt.Default.(func() time.Time)
 	// authenticationDescLastUsedAt is the schema descriptor for last_used_at field.
-	authenticationDescLastUsedAt := authenticationFields[5].Descriptor()
+	authenticationDescLastUsedAt := authenticationFields[6].Descriptor()
 	// authentication.DefaultLastUsedAt holds the default value on creation for the last_used_at field.
 	authentication.DefaultLastUsedAt = authenticationDescLastUsedAt.Default.(func() time.Time)
 	// authentication.UpdateDefaultLastUsedAt holds the default value on update for the last_used_at field.
