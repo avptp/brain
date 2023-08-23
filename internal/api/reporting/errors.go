@@ -7,14 +7,31 @@ var ErrCaptcha = &gqlerror.Error{
 	Extensions: map[string]any{"code": "CAPTCHA"},
 }
 
+var ErrConstraint = &gqlerror.Error{
+	Message:    "Input violates data constraints.",
+	Extensions: map[string]any{"code": "CONSTRAINT"},
+}
+
 var ErrInternal = &gqlerror.Error{
 	Message:    "Internal system error.",
 	Extensions: map[string]any{"code": "INTERNAL"},
 }
 
+var ErrNotFound = &gqlerror.Error{
+	Message:    "The specified resource does not exist.",
+	Extensions: map[string]any{"code": "NOT_FOUND"},
+}
+
 var ErrUnauthenticated = &gqlerror.Error{
 	Message:    "This action requires authentication.",
 	Extensions: map[string]any{"code": "UNAUTHENTICATED"},
+}
+
+var ErrUnauthorized = ErrNotFound // not to expose whether a resource exists
+
+var ErrValidation = &gqlerror.Error{
+	Message:    "Input does not meet data validation rules.",
+	Extensions: map[string]any{"code": "VALIDATION"},
 }
 
 var ErrWrongPassword = &gqlerror.Error{
