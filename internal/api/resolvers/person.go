@@ -169,7 +169,7 @@ func (r *mutationResolver) UpdatePersonPassword(ctx context.Context, input api.U
 		First(ctx)
 
 	if err != nil {
-		return nil, reporting.ErrWrongPassword
+		return nil, reporting.ErrWrongPassword // not to expose whether a user exists
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(input.CurrentPassword, person.Password)
