@@ -1,9 +1,9 @@
 services:
 
-  go:
+  main:
     build:
       context: .
-      target: development
+      target: base
       args:
         USER_ID: ${USER_ID:-1000}
     volumes:
@@ -15,7 +15,6 @@ services:
       - ${DELVE_PORT:-8001}:${DELVE_PORT:-8001}
     depends_on:
       - cockroachdb
-    hostname: go
     tty: true
 
   cockroachdb:
@@ -26,6 +25,11 @@ services:
       - ${COCKROACHDB_CONSOLE_PORT:-8080}:8080
     volumes:
       - cockroachdb:/cockroach/cockroach-data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
+      interval: 3s
+      timeout: 3s
+      retries: 3
 
 volumes:
   cockroachdb:

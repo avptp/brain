@@ -9,11 +9,6 @@ FROM golang:${GO_VERSION} AS base
 WORKDIR /go/src/app
 
 ENV CGO_ENABLED=0
-
-
-## Development image
-FROM base AS development
-
 ENV PROMPT="%B%F{cyan}%n%f@%m:%F{yellow}%~%f %F{%(?.green.red[%?] )}>%f %b"
 
 ARG DELVE_VERSION
@@ -27,6 +22,8 @@ ARG USER_ID=1000
 ENV USER_NAME=default
 
 RUN adduser -D -u ${USER_ID} ${USER_NAME}
+
+RUN chown -R ${USER_NAME}: /go
 
 USER ${USER_NAME}
 

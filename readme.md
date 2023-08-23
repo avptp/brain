@@ -1,6 +1,15 @@
-<p align="center"><a href="https://avptp.org"><img src="https://raw.githubusercontent.com/avptp/face/develop/src/images/imagotype.svg" height="70px"></a></p>
+<p align="center">
+    <a href="https://avptp.org">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/avptp/face/develop/src/images/imagotype_white.svg">
+            <img alt="AVPTP logo" src="https://raw.githubusercontent.com/avptp/face/develop/src/images/imagotype.svg" height="70px">
+        </picture>
+    </a>
+</p>
 
 # 🧠 Brain
+
+![Pipeline status](https://github.com/avptp/brain/actions/workflows/main.yml/badge.svg)
 
 ## About
 
@@ -73,7 +82,7 @@ go run cmd/main.go
 To run all automated tests, use the following command.
 
 ```Shell
-go test ./...
+go test -v ./...
 ```
 
 ## Deployment
@@ -90,7 +99,7 @@ The Docker environment should work properly. Otherwise, it is possible to rebuil
 
 ```Shell
 docker compose down
-docker compose build --no-cache go
+docker compose build --no-cache main
 ```
 
 To start from scratch, you can remove all containers, images and volumes of your computer by running the following commands.

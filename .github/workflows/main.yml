@@ -6,12 +6,102 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  #PLATFORMS: linux/amd64,linux/arm64
+
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure SSH
-        uses: shimataro/ssh-key-action@v2
+      - name: Checkout
+        uses: actions/checkout@v3.5.3
+
+      - name: Start containerized environment
+        run: make
+
+      - name: Set up dependencies
+        run: make deps
+
+      - name: Run linter
+        run: make lint
+
+      - name: Run tests
+        run: make test
+
+      - name: Stop containerized environment
+        continue-on-error: true
+        run: make down
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      TAG: ${{ steps.metadata.outputs.TAG }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.5.3
+
+      - name: Set up metadata
+        id: metadata
+        run: |
+          TAG="${GITHUB_SHA::8}"
+
+          if [[ "${GITHUB_REF}" == "refs/tags/*" ]]; then
+            TAG="${GITHUB_REF#refs/tags/v}"
+          fi
+
+          echo "TAG=${TAG}" >> "${GITHUB_OUTPUT}"
+
+      #- name: Set up QEMU
+      #  uses: docker/setup-qemu-action@v2.2.0
+      #  with:
+      #    platforms: ${{ env.PLATFORMS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.9.1
+
+      - name: Log into image registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        uses: docker/build-push-action@v4.1.1
+        with:
+          context: .
+          target: runtime
+          #platforms: ${{ env.PLATFORMS }}
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.metadata.outputs.TAG }},${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - build
+    steps:
+      - name: Log into image registry
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract binary
+        run: |
+          ID=$(docker create ${{ env.IMAGE }}:${{needs.build.outputs.TAG}} --entrypoint 'sleep infinity')
+          docker cp "${ID}:/usr/local/bin/bin" ./app
+          docker rm --volumes "${ID}"
+
+      - name: Set up SSH
+        uses: shimataro/ssh-key-action@v2.5.1
         with:
           name: id_ed25519
           key: ${{ secrets.SSH_KEY }}
@@ -19,19 +109,5 @@ jobs:
 
       - name: Deploy
         run: |
-          COMMANDS=$(cat << EOF
-          set -euo pipefail
-
-          cd /srv/avptp/brain/repo
-
-          git fetch
-          git reset --hard @{u}
-
-          go mod download
-          go build -ldflags="-s -w" -o ../bin cmd/main.go
-
-          sudo systemctl restart avptp-brain
-          EOF
-          )
-
-          ssh caddy@${{ secrets.WEB_HOST }} -p 22001 "${COMMANDS}"
+          scp -P 22001 ./app caddy@${{ secrets.WEB_HOST }}:/srv/avptp/brain
+          ssh caddy@${{ secrets.WEB_HOST }} -p 22001 sudo systemctl restart avptp-brain
