@@ -19,7 +19,7 @@ services:
     tty: true
 
   cockroachdb:
-    image: cockroachdb/cockroach:v23.1.5
+    image: cockroachdb/cockroach:v23.1.8
     command: start-single-node --insecure
     ports:
       - ${COCKROACHDB_PORT:-26257}:26257
