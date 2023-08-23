@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 )
 
+const zeroID = "00000000000000000000000000"
 const captchaResponseToken = "10000000-aaaa-bbbb-cccc-000000000001"
 const spanishTaxIdLetters = "TRWAGMYFPDXBNJZSQVHLCKE"
 
@@ -87,28 +88,38 @@ func (t *TestSuite) TearDownSuite() {
 	}
 }
 
-func (t *TestSuite) authenticate() (opt client.Option, p *data.Person, a *data.Authentication) {
-	p = t.factory.Person().Create(t.ctx)
+func (t *TestSuite) authenticate() (client.Option, *data.Person, factories.PersonFields, *data.Authentication, factories.AuthenticationFields) {
+	personFactory := t.factory.Person()
+	person := personFactory.Create(t.ctx)
+	personFields := personFactory.Fields
 
-	a = t.factory.Authentication().With(func(a *data.AuthenticationCreate) {
-		a.SetPerson(p)
-	}).Create(t.ctx)
+	authFactory := t.factory.Authentication().With(func(a *data.AuthenticationCreate) {
+		a.SetPerson(person)
+	})
+	auth := authFactory.Create(t.ctx)
+	authFields := authFactory.Fields
 
-	opt = func(bd *client.Request) {
+	option := func(bd *client.Request) {
 		bd.HTTP.Header.Add(
 			"Authorization",
-			fmt.Sprintf("Bearer %s", a.TokenEncoded()),
+			fmt.Sprintf("Bearer %s", auth.TokenEncoded()),
 		)
 	}
 
-	return
+	return option, person, personFields, auth, authFields
 }
 
-func (t *TestSuite) parseID(id string) uuid.UUID {
+func (t *TestSuite) toUUID(id string) uuid.UUID {
 	ulid := ulid.ULID{}
 
 	err := ulid.Scan(id)
 	t.Nil(err)
 
 	return uuid.UUID(ulid)
+}
+
+func (t *TestSuite) toULID(id uuid.UUID) string {
+	ulid := ulid.ULID(id)
+
+	return ulid.String()
 }
