@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/privacy"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/oklog/ulid/v2"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -27,6 +28,15 @@ func ErrorPresenter(ctx context.Context, e error) *gqlerror.Error {
 	switch {
 	case data.IsConstraintError(err):
 		err = ErrConstraint
+	case
+		errors.Is(err, ulid.ErrDataSize),
+		errors.Is(err, ulid.ErrInvalidCharacters),
+		errors.Is(err, ulid.ErrBufferSize),
+		errors.Is(err, ulid.ErrBigTime),
+		errors.Is(err, ulid.ErrOverflow),
+		errors.Is(err, ulid.ErrMonotonicOverflow),
+		errors.Is(err, ulid.ErrScanValue):
+		err = ErrInput
 	case data.IsNotFound(err):
 		err = ErrNotFound
 	case errors.Is(err, privacy.Deny):

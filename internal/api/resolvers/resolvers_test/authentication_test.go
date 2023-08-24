@@ -211,4 +211,17 @@ func (t *TestSuite) TestAuthentication() {
 		t.NotNil(err)
 		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
+
+	// Performing this test on a single action of a model is enough.
+	t.Run("delete_with_invalid_id", func() {
+		var response delete
+		err := t.api.Post(
+			deleteMutation,
+			&response,
+			client.Var("id", "aeiou"),
+		)
+
+		t.NotNil(err)
+		t.ErrorContains(err, reporting.ErrInput.Message)
+	})
 }

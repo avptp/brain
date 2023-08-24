@@ -12,6 +12,11 @@ var ErrConstraint = &gqlerror.Error{
 	Extensions: map[string]any{"code": "CONSTRAINT"},
 }
 
+var ErrInput = &gqlerror.Error{
+	Message:    "The input data is not in a valid format.",
+	Extensions: map[string]any{"code": "INPUT"},
+}
+
 var ErrInternal = &gqlerror.Error{
 	Message:    "Internal system error.",
 	Extensions: map[string]any{"code": "INTERNAL"},
