@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/privacy"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/avptp/brain/internal/transport/request"
 	"github.com/oklog/ulid/v2"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -46,7 +47,9 @@ func ErrorPresenter(ctx context.Context, e error) *gqlerror.Error {
 	}
 
 	if _, ok := err.Extensions["code"]; !ok {
-		return ErrInternal
+		if cfg := request.ContainerFromCtx(ctx).GetConfig(); !cfg.Debug {
+			return ErrInternal
+		}
 	}
 
 	return err

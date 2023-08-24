@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	Environment string `env:"APP_ENV" envDefault:"production"`
+	Debug       bool   `env:"APP_DEBUG" envDefault:"false"`
 
 	HttpPort           string   `env:"HTTP_PORT" envDefault:"8000"`
 	HttpTrustedProxies []string `env:"HTTP_TRUSTED_PROXIES"`
