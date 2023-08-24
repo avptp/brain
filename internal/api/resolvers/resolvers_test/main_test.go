@@ -3,6 +3,7 @@ package resolvers_test
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"testing"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
 )
 
 const zeroID = "00000000000000000000000000"
@@ -52,7 +52,7 @@ type TestSuite struct {
 	suite.Suite
 
 	ctn      *container.Container
-	log      *zap.SugaredLogger
+	log      *slog.Logger
 	data     *data.Client
 	factory  *factories.Factory
 	api      *client.Client
@@ -82,11 +82,7 @@ func (t *TestSuite) TearDownSuite() {
 	err := t.ctn.Delete()
 
 	if err != nil {
-		t.log.Fatal(err)
-
-		// flush buffers again, since container has just been deleted
-		// intentionally ignoring error here, see https://github.com/uber-go/zap/issues/328
-		_ = t.log.Sync()
+		panic(err) // unrecoverable situation
 	}
 }
 

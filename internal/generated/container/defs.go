@@ -6,11 +6,12 @@ import (
 	"github.com/sarulabs/di/v2"
 	"github.com/sarulabs/dingo/v4"
 
+	slog "log/slog"
+
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	hcaptcha "github.com/kataras/hcaptcha"
 	realclientipgo "github.com/realclientip/realclientip-go"
-	zap "go.uber.org/zap"
 )
 
 func getDiDefs(provider dingo.Provider) []di.Def {
@@ -138,30 +139,25 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 			Build: func(ctn di.Container) (interface{}, error) {
 				d, err := provider.Get("logger")
 				if err != nil {
-					var eo *zap.SugaredLogger
+					var eo *slog.Logger
 					return eo, err
 				}
-				b, ok := d.Build.(func() (*zap.SugaredLogger, error))
-				if !ok {
-					var eo *zap.SugaredLogger
-					return eo, errors.New("could not cast build function to func() (*zap.SugaredLogger, error)")
-				}
-				return b()
-			},
-			Close: func(obj interface{}) error {
-				d, err := provider.Get("logger")
+				pi0, err := ctn.SafeGet("config")
 				if err != nil {
-					return err
+					var eo *slog.Logger
+					return eo, err
 				}
-				c, ok := d.Close.(func(*zap.SugaredLogger) error)
+				p0, ok := pi0.(*config.Config)
 				if !ok {
-					return errors.New("could not cast close function to 'func(*zap.SugaredLogger) error'")
+					var eo *slog.Logger
+					return eo, errors.New("could not cast parameter 0 to *config.Config")
 				}
-				o, ok := obj.(*zap.SugaredLogger)
+				b, ok := d.Build.(func(*config.Config) (*slog.Logger, error))
 				if !ok {
-					return errors.New("could not cast object to '*zap.SugaredLogger'")
+					var eo *slog.Logger
+					return eo, errors.New("could not cast build function to func(*config.Config) (*slog.Logger, error)")
 				}
-				return c(o)
+				return b(p0)
 			},
 			Unshared: false,
 		},

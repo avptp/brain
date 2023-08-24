@@ -4,8 +4,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/avptp/brain/internal/services/provider"
 	"github.com/sarulabs/dingo/v4"
 )
@@ -18,6 +16,6 @@ func main() {
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		panic(err) // unrecoverable situation
 	}
 }

@@ -21,7 +21,9 @@ func NewSetContainer(ctn *container.Container) func(http.Handler) http.Handler {
 				err := subCtn.Delete()
 
 				if err != nil {
-					ctn.GetLogger().Error(err)
+					ctn.GetLogger().Error(
+						err.Error(),
+					)
 				}
 			}()
 

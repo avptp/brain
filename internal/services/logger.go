@@ -1,27 +1,30 @@
 package services
 
 import (
+	"log/slog"
+	"os"
+
+	"github.com/avptp/brain/internal/config"
 	"github.com/sarulabs/dingo/v4"
-	"go.uber.org/zap"
 )
 
 const Logger = "logger"
 
 var LoggerDef = dingo.Def{
 	Name: Logger,
-	Build: func() (*zap.SugaredLogger, error) {
-		log, err := zap.NewProduction()
+	Build: func(cfg *config.Config) (*slog.Logger, error) {
+		level := slog.LevelInfo
 
-		if err != nil {
-			return nil, err
+		if cfg.Debug {
+			level = slog.LevelDebug
 		}
 
-		return log.Sugar(), nil
-	},
-	Close: func(log *zap.SugaredLogger) error {
-		// intentionally ignoring error here, see https://github.com/uber-go/zap/issues/328
-		_ = log.Sync()
+		log := slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+				Level: level,
+			}),
+		)
 
-		return nil
+		return log, nil
 	},
 }

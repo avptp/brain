@@ -17,20 +17,14 @@ func main() {
 	ctn, err := container.NewContainer()
 
 	if err != nil {
-		panic(err) // logger is not yet available
+		panic(err) // unrecoverable situation
 	}
-
-	log := ctn.GetLogger()
 
 	defer func() {
 		err := ctn.Delete()
 
 		if err != nil {
-			log.Fatal(err)
-
-			// flush buffers again, since container has just been deleted
-			// intentionally ignoring error here, see https://github.com/uber-go/zap/issues/328
-			_ = log.Sync()
+			panic(err) // unrecoverable situation
 		}
 	}()
 
@@ -50,6 +44,6 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		panic(err) // unrecoverable situation
 	}
 }

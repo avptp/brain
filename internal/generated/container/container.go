@@ -10,11 +10,12 @@ import (
 
 	providerPkg "github.com/avptp/brain/internal/services/provider"
 
+	slog "log/slog"
+
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	hcaptcha "github.com/kataras/hcaptcha"
 	realclientipgo "github.com/realclientip/realclientip-go"
-	zap "go.uber.org/zap"
 )
 
 // C retrieves a Container from an interface.
@@ -739,25 +740,26 @@ func IpStrategy(i interface{}) realclientipgo.Strategy {
 // ---------------------------------------------
 //
 //	name: "logger"
-//	type: *zap.SugaredLogger
+//	type: *slog.Logger
 //	scope: "main"
 //	build: func
-//	params: nil
+//	params:
+//		- "0": Service(*config.Config) ["config"]
 //	unshared: false
-//	close: true
+//	close: false
 //
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetLogger() (*zap.SugaredLogger, error) {
+func (c *Container) SafeGetLogger() (*slog.Logger, error) {
 	i, err := c.ctn.SafeGet("logger")
 	if err != nil {
-		var eo *zap.SugaredLogger
+		var eo *slog.Logger
 		return eo, err
 	}
-	o, ok := i.(*zap.SugaredLogger)
+	o, ok := i.(*slog.Logger)
 	if !ok {
-		return o, errors.New("could get 'logger' because the object could not be cast to *zap.SugaredLogger")
+		return o, errors.New("could get 'logger' because the object could not be cast to *slog.Logger")
 	}
 	return o, nil
 }
@@ -767,17 +769,18 @@ func (c *Container) SafeGetLogger() (*zap.SugaredLogger, error) {
 // ---------------------------------------------
 //
 //	name: "logger"
-//	type: *zap.SugaredLogger
+//	type: *slog.Logger
 //	scope: "main"
 //	build: func
-//	params: nil
+//	params:
+//		- "0": Service(*config.Config) ["config"]
 //	unshared: false
-//	close: true
+//	close: false
 //
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it panics.
-func (c *Container) GetLogger() *zap.SugaredLogger {
+func (c *Container) GetLogger() *slog.Logger {
 	o, err := c.SafeGetLogger()
 	if err != nil {
 		panic(err)
@@ -790,26 +793,27 @@ func (c *Container) GetLogger() *zap.SugaredLogger {
 // ---------------------------------------------
 //
 //	name: "logger"
-//	type: *zap.SugaredLogger
+//	type: *slog.Logger
 //	scope: "main"
 //	build: func
-//	params: nil
+//	params:
+//		- "0": Service(*config.Config) ["config"]
 //	unshared: false
-//	close: true
+//	close: false
 //
 // ---------------------------------------------
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetLogger() (*zap.SugaredLogger, error) {
+func (c *Container) UnscopedSafeGetLogger() (*slog.Logger, error) {
 	i, err := c.ctn.UnscopedSafeGet("logger")
 	if err != nil {
-		var eo *zap.SugaredLogger
+		var eo *slog.Logger
 		return eo, err
 	}
-	o, ok := i.(*zap.SugaredLogger)
+	o, ok := i.(*slog.Logger)
 	if !ok {
-		return o, errors.New("could get 'logger' because the object could not be cast to *zap.SugaredLogger")
+		return o, errors.New("could get 'logger' because the object could not be cast to *slog.Logger")
 	}
 	return o, nil
 }
@@ -819,18 +823,19 @@ func (c *Container) UnscopedSafeGetLogger() (*zap.SugaredLogger, error) {
 // ---------------------------------------------
 //
 //	name: "logger"
-//	type: *zap.SugaredLogger
+//	type: *slog.Logger
 //	scope: "main"
 //	build: func
-//	params: nil
+//	params:
+//		- "0": Service(*config.Config) ["config"]
 //	unshared: false
-//	close: true
+//	close: false
 //
 // ---------------------------------------------
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetLogger() *zap.SugaredLogger {
+func (c *Container) UnscopedGetLogger() *slog.Logger {
 	o, err := c.UnscopedSafeGetLogger()
 	if err != nil {
 		panic(err)
@@ -843,18 +848,19 @@ func (c *Container) UnscopedGetLogger() *zap.SugaredLogger {
 // ---------------------------------------------
 //
 //	name: "logger"
-//	type: *zap.SugaredLogger
+//	type: *slog.Logger
 //	scope: "main"
 //	build: func
-//	params: nil
+//	params:
+//		- "0": Service(*config.Config) ["config"]
 //	unshared: false
-//	close: true
+//	close: false
 //
 // ---------------------------------------------
 //
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it calls the GetLogger method.
 // If the container can not be retrieved, it panics.
-func Logger(i interface{}) *zap.SugaredLogger {
+func Logger(i interface{}) *slog.Logger {
 	return C(i).GetLogger()
 }

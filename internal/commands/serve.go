@@ -44,7 +44,10 @@ func Serve(ctn *container.Container) error {
 		}
 	}()
 
-	log.Infof("started listening HTTP requests on %s", srv.Addr)
+	log.Info(
+		"started listening HTTP requests",
+		"address", srv.Addr,
+	)
 
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

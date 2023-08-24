@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"log/slog"
 	"net/http"
 
 	"entgo.io/contrib/entgql"
@@ -11,7 +12,6 @@ import (
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/container"
 	"github.com/avptp/brain/internal/transport/middleware"
-	"go.uber.org/zap"
 )
 
 func Mux(ctn *container.Container) http.Handler {
@@ -23,7 +23,7 @@ func Mux(ctn *container.Container) http.Handler {
 	return mux
 }
 
-func healthHandler(log *zap.SugaredLogger) http.Handler {
+func healthHandler(log *slog.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "text/plain")
@@ -31,7 +31,10 @@ func healthHandler(log *zap.SugaredLogger) http.Handler {
 		_, err := w.Write([]byte("pong"))
 
 		if err != nil {
-			log.Error(err)
+			log.Error(
+				err.Error(),
+			)
+
 			http.Error(w, reporting.ErrInternal.Message, http.StatusInternalServerError)
 		}
 	})
