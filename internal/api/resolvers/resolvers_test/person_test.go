@@ -63,7 +63,7 @@ func (t *TestSuite) TestPerson() {
 		p, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(id)).
-			First(t.ctx)
+			First(t.allowCtx)
 
 		t.Nil(err)
 
@@ -81,7 +81,7 @@ func (t *TestSuite) TestPerson() {
 	t.Run("create_with_already_used_email", func() {
 		factory := t.factory.Person()
 		input := factory.Fields
-		factory.Create(t.ctx)
+		factory.Create(t.allowCtx)
 
 		var response create
 		err := t.api.Post(
@@ -208,7 +208,7 @@ func (t *TestSuite) TestPerson() {
 		p, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
-			First(t.ctx)
+			First(t.allowCtx)
 
 		t.Nil(err)
 		t.Equal(input.Email, p.Email)
@@ -250,7 +250,7 @@ func (t *TestSuite) TestPerson() {
 
 	t.Run("update_without_authorization", func() {
 		authenticated, _, _, _, _ := t.authenticate()
-		p := t.factory.Person().Create(t.ctx)
+		p := t.factory.Person().Create(t.allowCtx)
 
 		var response update
 		err := t.api.Post(
@@ -306,7 +306,7 @@ func (t *TestSuite) TestPerson() {
 	}
 
 	t.Run("update_password", func() {
-		authenticated, p, current, _, _ := t.authenticate()
+		authenticated, p, pf, _, _ := t.authenticate()
 
 		new := t.factory.Person().Fields
 
@@ -316,7 +316,7 @@ func (t *TestSuite) TestPerson() {
 			&response,
 			authenticated,
 			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", current.Password),
+			client.Var("currentPassword", pf.Password),
 			client.Var("newPassword", new.Password),
 			client.Var("captcha", captchaResponseToken),
 		)
@@ -326,7 +326,7 @@ func (t *TestSuite) TestPerson() {
 		p, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
-			First(t.ctx)
+			First(t.allowCtx)
 
 		t.Nil(err)
 
@@ -336,7 +336,7 @@ func (t *TestSuite) TestPerson() {
 	})
 
 	t.Run("update_password_with_wrong_password", func() {
-		authenticated, p, current, _, _ := t.authenticate()
+		authenticated, p, pf, _, _ := t.authenticate()
 
 		new := t.factory.Person().Fields
 
@@ -346,7 +346,7 @@ func (t *TestSuite) TestPerson() {
 			&response,
 			authenticated,
 			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", current.Password+"wrong"),
+			client.Var("currentPassword", pf.Password+"wrong"),
 			client.Var("newPassword", new.Password),
 			client.Var("captcha", captchaResponseToken),
 		)
@@ -356,11 +356,11 @@ func (t *TestSuite) TestPerson() {
 		p, err = t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
-			First(t.ctx)
+			First(t.allowCtx)
 
 		t.Nil(err)
 
-		match, err := argon2id.ComparePasswordAndHash(current.Password, p.Password)
+		match, err := argon2id.ComparePasswordAndHash(pf.Password, p.Password)
 		t.Nil(err)
 		t.True(match)
 	})
@@ -385,7 +385,7 @@ func (t *TestSuite) TestPerson() {
 
 	t.Run("update_password_without_authorization", func() {
 		authenticated, _, _, _, _ := t.authenticate()
-		p := t.factory.Person().Create(t.ctx)
+		p := t.factory.Person().Create(t.allowCtx)
 
 		var response updatePassword
 		err := t.api.Post(
@@ -440,7 +440,7 @@ func (t *TestSuite) TestPerson() {
 	}
 
 	t.Run("delete", func() {
-		authenticated, p, current, _, _ := t.authenticate()
+		authenticated, p, pf, _, _ := t.authenticate()
 
 		var response delete
 		t.api.MustPost(
@@ -448,7 +448,7 @@ func (t *TestSuite) TestPerson() {
 			&response,
 			authenticated,
 			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", current.Password),
+			client.Var("currentPassword", pf.Password),
 			client.Var("captcha", captchaResponseToken),
 		)
 
@@ -457,14 +457,14 @@ func (t *TestSuite) TestPerson() {
 		exists, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
-			Exist(t.ctx)
+			Exist(t.allowCtx)
 
 		t.Nil(err)
 		t.False(exists)
 	})
 
 	t.Run("delete_with_wrong_password", func() {
-		authenticated, p, current, _, _ := t.authenticate()
+		authenticated, p, pf, _, _ := t.authenticate()
 
 		var response delete
 		err := t.api.Post(
@@ -472,7 +472,7 @@ func (t *TestSuite) TestPerson() {
 			&response,
 			authenticated,
 			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", current.Password+"wrong"),
+			client.Var("currentPassword", pf.Password+"wrong"),
 			client.Var("captcha", captchaResponseToken),
 		)
 
@@ -481,7 +481,7 @@ func (t *TestSuite) TestPerson() {
 		exists, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
-			Exist(t.ctx)
+			Exist(t.allowCtx)
 
 		t.Nil(err)
 		t.True(exists)
@@ -506,7 +506,7 @@ func (t *TestSuite) TestPerson() {
 
 	t.Run("delete_without_authorization", func() {
 		authenticated, _, _, _, _ := t.authenticate()
-		p := t.factory.Person().Create(t.ctx)
+		p := t.factory.Person().Create(t.allowCtx)
 
 		var response delete
 		err := t.api.Post(

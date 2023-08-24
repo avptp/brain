@@ -30,14 +30,14 @@ func (t *TestSuite) TestAuthentication() {
 	}
 
 	t.Run("create", func() {
-		_, p, input, _, _ := t.authenticate()
+		_, p, pf, _, _ := t.authenticate()
 
 		var response create
 		t.api.MustPost(
 			createMutation,
 			&response,
-			client.Var("email", input.Email),
-			client.Var("password", input.Password),
+			client.Var("email", pf.Email),
+			client.Var("password", pf.Password),
 		)
 
 		token, err := base64.URLEncoding.DecodeString(response.CreateAuthentication.Token)
@@ -47,7 +47,7 @@ func (t *TestSuite) TestAuthentication() {
 			Query().
 			WithPerson().
 			Where(authentication.TokenEQ(token)).
-			First(t.ctx)
+			First(t.allowCtx)
 
 		t.Nil(err)
 		t.Equal(p.ID, atc.Edges.Person.ID)
@@ -69,14 +69,14 @@ func (t *TestSuite) TestAuthentication() {
 	})
 
 	t.Run("create_with_wrong_password", func() {
-		_, p, current, _, _ := t.authenticate()
+		_, p, pf, _, _ := t.authenticate()
 
 		var response create
 		err := t.api.Post(
 			createMutation,
 			&response,
 			client.Var("email", p.Email),
-			client.Var("password", current.Password+"wrong"),
+			client.Var("password", pf.Password+"wrong"),
 		)
 
 		t.NotNil(err)
@@ -163,7 +163,7 @@ func (t *TestSuite) TestAuthentication() {
 		exists, err := t.data.Authentication.
 			Query().
 			Where(authentication.IDEQ(a.ID)).
-			Exist(t.ctx)
+			Exist(t.allowCtx)
 
 		t.Nil(err)
 		t.False(exists)
@@ -186,7 +186,7 @@ func (t *TestSuite) TestAuthentication() {
 
 	t.Run("delete_without_authorization", func() {
 		authenticated, _, _, _, _ := t.authenticate()
-		a := t.factory.Authentication().Create(t.ctx)
+		a := t.factory.Authentication().Create(t.allowCtx)
 
 		var response delete
 		err := t.api.Post(

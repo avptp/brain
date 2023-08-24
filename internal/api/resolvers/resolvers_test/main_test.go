@@ -25,31 +25,7 @@ const zeroID = "00000000000000000000000000"
 const captchaResponseToken = "10000000-aaaa-bbbb-cccc-000000000001"
 const spanishTaxIdLetters = "TRWAGMYFPDXBNJZSQVHLCKE"
 
-type TestSuite struct {
-	suite.Suite
-
-	ctn     *container.Container
-	log     *zap.SugaredLogger
-	data    *data.Client
-	factory *factories.Factory
-	api     *client.Client
-	ctx     context.Context
-}
-
-func (t *TestSuite) SetupSuite() {
-	ctn, err := container.NewContainer()
-
-	if err != nil {
-		panic(err) // unrecoverable situation
-	}
-
-	t.ctn = ctn
-	t.log = ctn.GetLogger()
-	t.data = ctn.GetData()
-	t.factory = factories.New(t.data)
-	t.api = client.New(transport.Mux(ctn))
-	t.ctx = privacy.DecisionContext(context.Background(), privacy.Allow)
-
+func init() {
 	gofakeit.AddFuncLookup("tax_id", gofakeit.Info{
 		Category: "custom",
 		Output:   "string",
@@ -72,6 +48,32 @@ func (t *TestSuite) SetupSuite() {
 	})
 }
 
+type TestSuite struct {
+	suite.Suite
+
+	ctn      *container.Container
+	log      *zap.SugaredLogger
+	data     *data.Client
+	factory  *factories.Factory
+	api      *client.Client
+	allowCtx context.Context
+}
+
+func (t *TestSuite) SetupSuite() {
+	ctn, err := container.NewContainer()
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
+
+	t.ctn = ctn
+	t.log = ctn.GetLogger()
+	t.data = ctn.GetData()
+	t.factory = factories.New(t.data)
+	t.api = client.New(transport.Mux(ctn))
+	t.allowCtx = privacy.DecisionContext(context.Background(), privacy.Allow)
+}
+
 func TestResolvers(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
@@ -90,13 +92,13 @@ func (t *TestSuite) TearDownSuite() {
 
 func (t *TestSuite) authenticate() (client.Option, *data.Person, factories.PersonFields, *data.Authentication, factories.AuthenticationFields) {
 	personFactory := t.factory.Person()
-	person := personFactory.Create(t.ctx)
+	person := personFactory.Create(t.allowCtx)
 	personFields := personFactory.Fields
 
 	authFactory := t.factory.Authentication().With(func(a *data.AuthenticationCreate) {
 		a.SetPerson(person)
 	})
-	auth := authFactory.Create(t.ctx)
+	auth := authFactory.Create(t.allowCtx)
 	authFields := authFactory.Fields
 
 	option := func(bd *client.Request) {
