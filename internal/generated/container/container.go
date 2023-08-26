@@ -15,6 +15,7 @@ import (
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	hcaptcha "github.com/kataras/hcaptcha"
+	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
 )
 
@@ -603,6 +604,131 @@ func (c *Container) UnscopedGetData() *data.Client {
 // If the container can not be retrieved, it panics.
 func Data(i interface{}) *data.Client {
 	return C(i).GetData()
+}
+
+// SafeGetI18n retrieves the "i18n" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "i18n"
+//	type: *in.Bundle
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetI18n() (*in.Bundle, error) {
+	i, err := c.ctn.SafeGet("i18n")
+	if err != nil {
+		var eo *in.Bundle
+		return eo, err
+	}
+	o, ok := i.(*in.Bundle)
+	if !ok {
+		return o, errors.New("could get 'i18n' because the object could not be cast to *in.Bundle")
+	}
+	return o, nil
+}
+
+// GetI18n retrieves the "i18n" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "i18n"
+//	type: *in.Bundle
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetI18n() *in.Bundle {
+	o, err := c.SafeGetI18n()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetI18n retrieves the "i18n" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "i18n"
+//	type: *in.Bundle
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetI18n() (*in.Bundle, error) {
+	i, err := c.ctn.UnscopedSafeGet("i18n")
+	if err != nil {
+		var eo *in.Bundle
+		return eo, err
+	}
+	o, ok := i.(*in.Bundle)
+	if !ok {
+		return o, errors.New("could get 'i18n' because the object could not be cast to *in.Bundle")
+	}
+	return o, nil
+}
+
+// UnscopedGetI18n retrieves the "i18n" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "i18n"
+//	type: *in.Bundle
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetI18n() *in.Bundle {
+	o, err := c.UnscopedSafeGetI18n()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// I18n retrieves the "i18n" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "i18n"
+//	type: *in.Bundle
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetI18n method.
+// If the container can not be retrieved, it panics.
+func I18n(i interface{}) *in.Bundle {
+	return C(i).GetI18n()
 }
 
 // SafeGetIpStrategy retrieves the "ipStrategy" object from the main scope.

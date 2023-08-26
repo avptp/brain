@@ -7,6 +7,7 @@ require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.3
 	github.com/99designs/gqlgen v0.17.36
+	github.com/BurntSushi/toml v1.3.2
 	github.com/alexedwards/argon2id v0.0.0-20230305115115-4b3c3280a736
 	github.com/brianvoe/gofakeit/v6 v6.23.1
 	github.com/caarlos0/env/v9 v9.0.0
@@ -15,6 +16,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/kataras/hcaptcha v0.0.2
 	github.com/lib/pq v1.10.9
+	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/nyaruka/phonenumbers v1.1.8
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/pariz/gountries v0.1.6

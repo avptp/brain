@@ -1,0 +1,40 @@
+[org.name]
+other = "Associació Valenciana pel Transport Públic"
+
+[greetings.anonymous]
+other = "Hola!"
+[greetings.personal]
+other = "Hola, {{.Name}}!"
+[acknowledgment]
+other = "Moltes gràcies!"
+[salutation]
+other = "Salutacions"
+[trouble]
+other = "Si tens problemes en polsar el botó «{ACTION}», copia i enganxa el següent enllaç al navegador web."
+[sent_by]
+other = "Enviat per"
+
+[welcome.subject]
+other = "Et donem la benvinguda"
+[welcome.intro]
+other = "Et donem la benvinguda a {{.Name}}. Per completar el registre, necessitem comprovar que la teua adreça de correu és correcta."
+
+[verification.intro]
+other = "Com que has afegit una adreça de correu al teu compte, necessitem comprovar que és correcta."
+[verification.action.instructions]
+other = "Per favor, polsa el botó que hi ha a continuació per verificar-la:"
+[verification.action.text]
+other = "Verifica la teua adreça de correu"
+[verification.code.instructions]
+other = "O introduïx el següent codi a {{.Name}}:"
+[verification.outro]
+other = "Tingues en compte que este codi és vàlid durant {{.Validity}} minuts."
+
+[recovery.intro]
+other = "Fa un moment ens has indicat que no recordes la contrasenya del teu compte de {{.Name}}. No patisques!"
+[recovery.action.instructions]
+other = "Pots polsar el següent botó per restablir-la."
+[recovery.action.text]
+other = "Restablix la contrasenya"
+[recovery.outro]
+other = "Si no has sigut tu, pots ignorar este missatge."

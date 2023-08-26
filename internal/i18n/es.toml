@@ -1,0 +1,37 @@
+[greetings.anonymous]
+other = "¡Hola!"
+[greetings.personal]
+other = "¡Hola, {{.Name}}!"
+[acknowledgment]
+other = "¡Muchas gracias!"
+[salutation]
+other = "Saludos"
+[trouble]
+other = "Si tienes problemas al pulsar el botón «{ACTION}», copia y pega el siguiente enlace en el navegador web."
+[sent_by]
+other = "Enviado por"
+
+[welcome.subject]
+other = "Te damos la bienvenida"
+[welcome.intro]
+other = "Te damos la bienvenida a {{.Name}}. Para completar el registro, necesitamos comprobar que tu dirección de correo es correcta."
+
+[verification.intro]
+other = "Como has añadido una dirección de correo a tu cuenta, necesitamos comprobar que es correcta."
+[verification.action.instructions]
+other = "Por favor, pulsa el botón que hay a continuación para verificarla:"
+[verification.action.text]
+other = "Verifica tu dirección de correo"
+[verification.code.instructions]
+other = "O introduce el siguiente código en {{.Name}}:"
+[verification.outro]
+other = "Ten en cuenta que este código es válido durante {{.Validity}} minutos."
+
+[recovery.intro]
+other = "Hace un momento nos has indicado que no recuerdas la contraseña de tu cuenta de {{.Name}}. ¡Que no cunda el pánico!"
+[recovery.action.instructions]
+other = "Puedes pulsar el siguiente botón para restablecerla."
+[recovery.action.text]
+other = "Restablece tu contraseña"
+[recovery.outro]
+other = "Si no has sido tú, puedes ignorar este mensaje."

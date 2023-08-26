@@ -14,6 +14,7 @@ func (p *Provider) Load() error {
 		services.CaptchaDef,
 		services.ConfigDef,
 		services.DataDef,
+		services.I18nDef,
 		services.IPStrategyDef,
 		services.LoggerDef,
 	})

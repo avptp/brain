@@ -11,6 +11,7 @@ import (
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	hcaptcha "github.com/kataras/hcaptcha"
+	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
 )
 
@@ -102,6 +103,24 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					return errors.New("could not cast object to '*data.Client'")
 				}
 				return c(o)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "i18n",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("i18n")
+				if err != nil {
+					var eo *in.Bundle
+					return eo, err
+				}
+				b, ok := d.Build.(func() (*in.Bundle, error))
+				if !ok {
+					var eo *in.Bundle
+					return eo, errors.New("could not cast build function to func() (*in.Bundle, error)")
+				}
+				return b()
 			},
 			Unshared: false,
 		},
