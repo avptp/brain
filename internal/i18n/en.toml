@@ -1,6 +1,4 @@
-[greetings.anonymous]
-other = "Hello!"
-[greetings.personal]
+[greetings]
 other = "Hello, {{.Name}}!"
 [acknowledgment]
 other = "Thank you very much!"
@@ -9,12 +7,12 @@ other = "Regards"
 [trouble]
 other = "If you are having trouble pressing the «{ACTION}» button, copy and paste the link below into the web browser."
 [sent_by]
-other = "Sent by"
+other = "Sent by "
 
 [welcome.subject]
 other = "Welcome"
 [welcome.intro]
-other = "Welcome to {{.Name}}. To complete the sign up process, we need to verify that your email address is correct."
+other = "Welcome to Associació Valenciana pel Transport Públic (Valencian Association for Public Transport). To complete the sign up process, we need to verify that your email address is correct."
 
 [verification.intro]
 other = "Since you have added an email address to your account, we need to verify that it is correct."
@@ -22,13 +20,11 @@ other = "Since you have added an email address to your account, we need to verif
 other = "Please, press the button below to verify it:"
 [verification.action.text]
 other = "Verify your email address"
-[verification.code.instructions]
-other = "Or enter the following code at {{.Name}}:"
 [verification.outro]
-other = "Note that this code is valid for {{.Validity}} minutes."
+other = "Note that this link is valid for {{.Validity}} minutes."
 
 [recovery.intro]
-other = "A moment ago you stated that you do not remember the password of your {{.Name}} account."
+other = "A moment ago you stated that you do not remember the password of your account."
 [recovery.action.instructions]
 other = "Do not panic! You can press the button below to reset it."
 [recovery.action.text]

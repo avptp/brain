@@ -15,6 +15,7 @@ import (
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
+	"github.com/avptp/brain/internal/messaging/templates"
 	"github.com/avptp/brain/internal/transport/request"
 	"github.com/google/uuid"
 )
@@ -41,6 +42,16 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 	}
 
 	p, err := create.Save(allowCtx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: implement email verifications
+	err = r.messenger.Send(&templates.Welcome{
+		Link:     "",
+		Validity: "",
+	}, p)
 
 	if err != nil {
 		return nil, err

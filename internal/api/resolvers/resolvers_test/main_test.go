@@ -12,6 +12,8 @@ import (
 	"github.com/avptp/brain/internal/generated/data/factories"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	_ "github.com/avptp/brain/internal/generated/data/runtime"
+	"github.com/avptp/brain/internal/messaging/messaging_test"
+	"github.com/avptp/brain/internal/services"
 	"github.com/avptp/brain/internal/transport"
 
 	"github.com/99designs/gqlgen/client"
@@ -51,20 +53,30 @@ func init() {
 type TestSuite struct {
 	suite.Suite
 
-	ctn      *container.Container
-	log      *slog.Logger
-	data     *data.Client
-	factory  *factories.Factory
-	api      *client.Client
-	allowCtx context.Context
+	ctn       *container.Container
+	log       *slog.Logger
+	data      *data.Client
+	messenger *messaging_test.MockedMessenger
+	factory   *factories.Factory
+	api       *client.Client
+	allowCtx  context.Context
 }
 
 func (t *TestSuite) SetupSuite() {
-	ctn, err := container.NewContainer()
+	builder, err := container.NewBuilder()
 
 	if err != nil {
 		panic(err) // unrecoverable situation
 	}
+
+	t.messenger = &messaging_test.MockedMessenger{}
+	builder.Set(services.Messenger, t.messenger)
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
+
+	ctn := builder.Build()
 
 	t.ctn = ctn
 	t.log = ctn.GetLogger()

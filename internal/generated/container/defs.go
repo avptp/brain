@@ -10,6 +10,8 @@ import (
 
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
+	messaging "github.com/avptp/brain/internal/messaging"
+	ses "github.com/aws/aws-sdk-go/service/ses"
 	hcaptcha "github.com/kataras/hcaptcha"
 	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
@@ -175,6 +177,82 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 				if !ok {
 					var eo *slog.Logger
 					return eo, errors.New("could not cast build function to func(*config.Config) (*slog.Logger, error)")
+				}
+				return b(p0)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "messenger",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("messenger")
+				if err != nil {
+					var eo messaging.Messenger
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("config")
+				if err != nil {
+					var eo messaging.Messenger
+					return eo, err
+				}
+				p0, ok := pi0.(*config.Config)
+				if !ok {
+					var eo messaging.Messenger
+					return eo, errors.New("could not cast parameter 0 to *config.Config")
+				}
+				pi1, err := ctn.SafeGet("ses")
+				if err != nil {
+					var eo messaging.Messenger
+					return eo, err
+				}
+				p1, ok := pi1.(*ses.SES)
+				if !ok {
+					var eo messaging.Messenger
+					return eo, errors.New("could not cast parameter 1 to *ses.SES")
+				}
+				pi2, err := ctn.SafeGet("i18n")
+				if err != nil {
+					var eo messaging.Messenger
+					return eo, err
+				}
+				p2, ok := pi2.(*in.Bundle)
+				if !ok {
+					var eo messaging.Messenger
+					return eo, errors.New("could not cast parameter 2 to *in.Bundle")
+				}
+				b, ok := d.Build.(func(*config.Config, *ses.SES, *in.Bundle) (messaging.Messenger, error))
+				if !ok {
+					var eo messaging.Messenger
+					return eo, errors.New("could not cast build function to func(*config.Config, *ses.SES, *in.Bundle) (messaging.Messenger, error)")
+				}
+				return b(p0, p1, p2)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "ses",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("ses")
+				if err != nil {
+					var eo *ses.SES
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("config")
+				if err != nil {
+					var eo *ses.SES
+					return eo, err
+				}
+				p0, ok := pi0.(*config.Config)
+				if !ok {
+					var eo *ses.SES
+					return eo, errors.New("could not cast parameter 0 to *config.Config")
+				}
+				b, ok := d.Build.(func(*config.Config) (*ses.SES, error))
+				if !ok {
+					var eo *ses.SES
+					return eo, errors.New("could not cast build function to func(*config.Config) (*ses.SES, error)")
 				}
 				return b(p0)
 			},

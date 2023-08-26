@@ -14,6 +14,8 @@ import (
 
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
+	messaging "github.com/avptp/brain/internal/messaging"
+	ses "github.com/aws/aws-sdk-go/service/ses"
 	hcaptcha "github.com/kataras/hcaptcha"
 	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
@@ -989,4 +991,274 @@ func (c *Container) UnscopedGetLogger() *slog.Logger {
 // If the container can not be retrieved, it panics.
 func Logger(i interface{}) *slog.Logger {
 	return C(i).GetLogger()
+}
+
+// SafeGetMessenger retrieves the "messenger" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "messenger"
+//	type: messaging.Messenger
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*ses.SES) ["ses"]
+//		- "2": Service(*in.Bundle) ["i18n"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetMessenger() (messaging.Messenger, error) {
+	i, err := c.ctn.SafeGet("messenger")
+	if err != nil {
+		var eo messaging.Messenger
+		return eo, err
+	}
+	o, ok := i.(messaging.Messenger)
+	if !ok {
+		return o, errors.New("could get 'messenger' because the object could not be cast to messaging.Messenger")
+	}
+	return o, nil
+}
+
+// GetMessenger retrieves the "messenger" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "messenger"
+//	type: messaging.Messenger
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*ses.SES) ["ses"]
+//		- "2": Service(*in.Bundle) ["i18n"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetMessenger() messaging.Messenger {
+	o, err := c.SafeGetMessenger()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetMessenger retrieves the "messenger" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "messenger"
+//	type: messaging.Messenger
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*ses.SES) ["ses"]
+//		- "2": Service(*in.Bundle) ["i18n"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetMessenger() (messaging.Messenger, error) {
+	i, err := c.ctn.UnscopedSafeGet("messenger")
+	if err != nil {
+		var eo messaging.Messenger
+		return eo, err
+	}
+	o, ok := i.(messaging.Messenger)
+	if !ok {
+		return o, errors.New("could get 'messenger' because the object could not be cast to messaging.Messenger")
+	}
+	return o, nil
+}
+
+// UnscopedGetMessenger retrieves the "messenger" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "messenger"
+//	type: messaging.Messenger
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*ses.SES) ["ses"]
+//		- "2": Service(*in.Bundle) ["i18n"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetMessenger() messaging.Messenger {
+	o, err := c.UnscopedSafeGetMessenger()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Messenger retrieves the "messenger" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "messenger"
+//	type: messaging.Messenger
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*ses.SES) ["ses"]
+//		- "2": Service(*in.Bundle) ["i18n"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetMessenger method.
+// If the container can not be retrieved, it panics.
+func Messenger(i interface{}) messaging.Messenger {
+	return C(i).GetMessenger()
+}
+
+// SafeGetSes retrieves the "ses" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "ses"
+//	type: *ses.SES
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetSes() (*ses.SES, error) {
+	i, err := c.ctn.SafeGet("ses")
+	if err != nil {
+		var eo *ses.SES
+		return eo, err
+	}
+	o, ok := i.(*ses.SES)
+	if !ok {
+		return o, errors.New("could get 'ses' because the object could not be cast to *ses.SES")
+	}
+	return o, nil
+}
+
+// GetSes retrieves the "ses" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "ses"
+//	type: *ses.SES
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetSes() *ses.SES {
+	o, err := c.SafeGetSes()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetSes retrieves the "ses" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "ses"
+//	type: *ses.SES
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetSes() (*ses.SES, error) {
+	i, err := c.ctn.UnscopedSafeGet("ses")
+	if err != nil {
+		var eo *ses.SES
+		return eo, err
+	}
+	o, ok := i.(*ses.SES)
+	if !ok {
+		return o, errors.New("could get 'ses' because the object could not be cast to *ses.SES")
+	}
+	return o, nil
+}
+
+// UnscopedGetSes retrieves the "ses" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "ses"
+//	type: *ses.SES
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetSes() *ses.SES {
+	o, err := c.UnscopedSafeGetSes()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Ses retrieves the "ses" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "ses"
+//	type: *ses.SES
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetSes method.
+// If the container can not be retrieved, it panics.
+func Ses(i interface{}) *ses.SES {
+	return C(i).GetSes()
 }

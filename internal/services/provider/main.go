@@ -17,5 +17,7 @@ func (p *Provider) Load() error {
 		services.I18nDef,
 		services.IPStrategyDef,
 		services.LoggerDef,
+		services.MessengerDef,
+		services.SesDef,
 	})
 }

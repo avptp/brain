@@ -4,7 +4,10 @@ import (
 	"github.com/99designs/gqlgen/client"
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
+	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/person"
+	"github.com/avptp/brain/internal/messaging/templates"
+	"github.com/stretchr/testify/mock"
 )
 
 func (t *TestSuite) TestPerson() {
@@ -45,6 +48,12 @@ func (t *TestSuite) TestPerson() {
 	t.Run("create", func() {
 		input := t.factory.Person().Fields
 
+		t.messenger.On(
+			"Send",
+			mock.IsType(&templates.Welcome{}),
+			mock.IsType(&data.Person{}),
+		).Return(nil).Once()
+
 		var response create
 		t.api.MustPost(
 			createMutation,
@@ -76,6 +85,7 @@ func (t *TestSuite) TestPerson() {
 		t.Equal(input.FirstName, p.FirstName)
 		t.Equal(input.LastName, p.LastName)
 		t.Equal(input.Language, p.Language)
+		t.messenger.AssertExpectations(t.T())
 	})
 
 	t.Run("create_with_already_used_email", func() {

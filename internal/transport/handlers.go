@@ -41,13 +41,15 @@ func healthHandler(log *slog.Logger) http.Handler {
 }
 
 func graphHandler(ctn *container.Container) http.Handler {
-	d := ctn.GetData()
+	data := ctn.GetData()
+	messenger := ctn.GetMessenger()
 
 	// Initialize GraphQL handler
 	handler := gqlgen.NewDefaultServer(
 		api.NewExecutableSchema(api.Config{
 			Resolvers: resolvers.NewResolver(
-				d,
+				data,
+				messenger,
 			),
 		}),
 	)
@@ -56,12 +58,12 @@ func graphHandler(ctn *container.Container) http.Handler {
 	handler.SetRecoverFunc(reporting.PanicHandler)
 	handler.SetErrorPresenter(reporting.ErrorPresenter)
 	handler.Use(extension.FixedComplexityLimit(100))
-	handler.Use(entgql.Transactioner{TxOpener: d})
+	handler.Use(entgql.Transactioner{TxOpener: data})
 
 	// Chain middlewares
 	return middleware.Chain(handler,
 		middleware.NewSetContainer(ctn),
 		middleware.NewSetIP(ctn.GetIpStrategy()),
-		middleware.NewSetViewer(d),
+		middleware.NewSetViewer(data),
 	)
 }

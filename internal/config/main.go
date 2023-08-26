@@ -16,4 +16,15 @@ type Config struct {
 	CockroachDBTLSCA    string `env:"COCKROACHDB_TLS_CA"`
 
 	HcaptchaSecret string `env:"HCAPTCHA_SECRET"`
+
+	MailSource  string `env:"MAIL_SOURCE"`
+	MailReplyTo string `env:"MAIL_REPLY_TO"`
+
+	AwsRegion    string `env:"AWS_REGION"`
+	AwsKeyId     string `env:"AWS_KEY_ID"`
+	AwsKeySecret string `env:"AWS_KEY_SECRET"`
+
+	OrgName string `env:"ORG_NAME"`
+	OrgLink string `env:"ORG_LINK"`
+	OrgLogo string `env:"ORG_LOGO"`
 }

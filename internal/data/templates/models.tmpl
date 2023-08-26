@@ -1,5 +1,22 @@
 {{/* gotype: entgo.io/ent/entc/gen.Type */}}
 
+{{ define "model/additional/person" }}
+{{- if eq $.Name "Person" -}}
+{{- $receiver := $.Receiver -}}
+func ({{ $receiver }} *{{ $.Name }}) FullName() string {
+    parts := []string{
+        {{ $receiver }}.FirstName,
+    }
+
+    if v := {{ $receiver }}.LastName; v != nil {
+        parts = append(parts, *v)
+    }
+
+    return strings.Join(parts, " ")
+}
+{{- end -}}
+{{ end }}
+
 {{ define "model/additional/authentication" }}
 {{- if eq $.Name "Authentication" -}}
 {{- range $f := $.Fields -}}

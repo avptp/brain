@@ -324,6 +324,18 @@ func (pe *Person) String() string {
 	return builder.String()
 }
 
+func (pe *Person) FullName() string {
+	parts := []string{
+		pe.FirstName,
+	}
+
+	if v := pe.LastName; v != nil {
+		parts = append(parts, *v)
+	}
+
+	return strings.Join(parts, " ")
+}
+
 // NamedAuthentications returns the Authentications named value or an error if the edge was not
 // loaded in eager-loading with this name.
 func (pe *Person) NamedAuthentications(name string) ([]*Authentication, error) {
