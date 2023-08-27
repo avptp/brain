@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
 	"github.com/google/uuid"
@@ -353,6 +354,222 @@ func (i *AuthenticationWhereInput) P() (predicate.Authentication, error) {
 	}
 }
 
+// AuthorizationWhereInput represents a where input for filtering Authorization queries.
+type AuthorizationWhereInput struct {
+	Predicates []predicate.Authorization  `json:"-"`
+	Not        *AuthorizationWhereInput   `json:"not,omitempty"`
+	Or         []*AuthorizationWhereInput `json:"or,omitempty"`
+	And        []*AuthorizationWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "person_id" field predicates.
+	PersonID      *uuid.UUID  `json:"personID,omitempty"`
+	PersonIDNEQ   *uuid.UUID  `json:"personIDNEQ,omitempty"`
+	PersonIDIn    []uuid.UUID `json:"personIDIn,omitempty"`
+	PersonIDNotIn []uuid.UUID `json:"personIDNotIn,omitempty"`
+
+	// "kind" field predicates.
+	Kind      *authorization.Kind  `json:"kind,omitempty"`
+	KindNEQ   *authorization.Kind  `json:"kindNEQ,omitempty"`
+	KindIn    []authorization.Kind `json:"kindIn,omitempty"`
+	KindNotIn []authorization.Kind `json:"kindNotIn,omitempty"`
+
+	// "created_at" field predicates.
+	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
+	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
+	CreatedAtIn    []time.Time `json:"createdAtIn,omitempty"`
+	CreatedAtNotIn []time.Time `json:"createdAtNotIn,omitempty"`
+	CreatedAtGT    *time.Time  `json:"createdAtGT,omitempty"`
+	CreatedAtGTE   *time.Time  `json:"createdAtGTE,omitempty"`
+	CreatedAtLT    *time.Time  `json:"createdAtLT,omitempty"`
+	CreatedAtLTE   *time.Time  `json:"createdAtLTE,omitempty"`
+
+	// "person" edge predicates.
+	HasPerson     *bool               `json:"hasPerson,omitempty"`
+	HasPersonWith []*PersonWhereInput `json:"hasPersonWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *AuthorizationWhereInput) AddPredicates(predicates ...predicate.Authorization) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the AuthorizationWhereInput filter on the AuthorizationQuery builder.
+func (i *AuthorizationWhereInput) Filter(q *AuthorizationQuery) (*AuthorizationQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyAuthorizationWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyAuthorizationWhereInput is returned in case the AuthorizationWhereInput is empty.
+var ErrEmptyAuthorizationWhereInput = errors.New("data: empty predicate AuthorizationWhereInput")
+
+// P returns a predicate for filtering authorizations.
+// An error is returned if the input is empty or invalid.
+func (i *AuthorizationWhereInput) P() (predicate.Authorization, error) {
+	var predicates []predicate.Authorization
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, authorization.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Authorization, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, authorization.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Authorization, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, authorization.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, authorization.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, authorization.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, authorization.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, authorization.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, authorization.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, authorization.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, authorization.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, authorization.IDLTE(*i.IDLTE))
+	}
+	if i.PersonID != nil {
+		predicates = append(predicates, authorization.PersonIDEQ(*i.PersonID))
+	}
+	if i.PersonIDNEQ != nil {
+		predicates = append(predicates, authorization.PersonIDNEQ(*i.PersonIDNEQ))
+	}
+	if len(i.PersonIDIn) > 0 {
+		predicates = append(predicates, authorization.PersonIDIn(i.PersonIDIn...))
+	}
+	if len(i.PersonIDNotIn) > 0 {
+		predicates = append(predicates, authorization.PersonIDNotIn(i.PersonIDNotIn...))
+	}
+	if i.Kind != nil {
+		predicates = append(predicates, authorization.KindEQ(*i.Kind))
+	}
+	if i.KindNEQ != nil {
+		predicates = append(predicates, authorization.KindNEQ(*i.KindNEQ))
+	}
+	if len(i.KindIn) > 0 {
+		predicates = append(predicates, authorization.KindIn(i.KindIn...))
+	}
+	if len(i.KindNotIn) > 0 {
+		predicates = append(predicates, authorization.KindNotIn(i.KindNotIn...))
+	}
+	if i.CreatedAt != nil {
+		predicates = append(predicates, authorization.CreatedAtEQ(*i.CreatedAt))
+	}
+	if i.CreatedAtNEQ != nil {
+		predicates = append(predicates, authorization.CreatedAtNEQ(*i.CreatedAtNEQ))
+	}
+	if len(i.CreatedAtIn) > 0 {
+		predicates = append(predicates, authorization.CreatedAtIn(i.CreatedAtIn...))
+	}
+	if len(i.CreatedAtNotIn) > 0 {
+		predicates = append(predicates, authorization.CreatedAtNotIn(i.CreatedAtNotIn...))
+	}
+	if i.CreatedAtGT != nil {
+		predicates = append(predicates, authorization.CreatedAtGT(*i.CreatedAtGT))
+	}
+	if i.CreatedAtGTE != nil {
+		predicates = append(predicates, authorization.CreatedAtGTE(*i.CreatedAtGTE))
+	}
+	if i.CreatedAtLT != nil {
+		predicates = append(predicates, authorization.CreatedAtLT(*i.CreatedAtLT))
+	}
+	if i.CreatedAtLTE != nil {
+		predicates = append(predicates, authorization.CreatedAtLTE(*i.CreatedAtLTE))
+	}
+
+	if i.HasPerson != nil {
+		p := authorization.HasPerson()
+		if !*i.HasPerson {
+			p = authorization.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPersonWith) > 0 {
+		with := make([]predicate.Person, 0, len(i.HasPersonWith))
+		for _, w := range i.HasPersonWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPersonWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, authorization.HasPersonWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyAuthorizationWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return authorization.And(predicates...), nil
+	}
+}
+
 // PersonWhereInput represents a where input for filtering Person queries.
 type PersonWhereInput struct {
 	Predicates []predicate.Person  `json:"-"`
@@ -602,6 +819,10 @@ type PersonWhereInput struct {
 	// "authentications" edge predicates.
 	HasAuthentications     *bool                       `json:"hasAuthentications,omitempty"`
 	HasAuthenticationsWith []*AuthenticationWhereInput `json:"hasAuthenticationsWith,omitempty"`
+
+	// "authorizations" edge predicates.
+	HasAuthorizations     *bool                      `json:"hasAuthorizations,omitempty"`
+	HasAuthorizationsWith []*AuthorizationWhereInput `json:"hasAuthorizationsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1308,6 +1529,24 @@ func (i *PersonWhereInput) P() (predicate.Person, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, person.HasAuthenticationsWith(with...))
+	}
+	if i.HasAuthorizations != nil {
+		p := person.HasAuthorizations()
+		if !*i.HasAuthorizations {
+			p = person.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasAuthorizationsWith) > 0 {
+		with := make([]predicate.Authorization, 0, len(i.HasAuthorizationsWith))
+		for _, w := range i.HasAuthorizationsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasAuthorizationsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, person.HasAuthorizationsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ const (
 
 	// Node types.
 	TypeAuthentication = "Authentication"
+	TypeAuthorization  = "Authorization"
 	TypePerson         = "Person"
 )
 
@@ -685,6 +687,553 @@ func (m *AuthenticationMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Authentication edge %s", name)
 }
 
+// AuthorizationMutation represents an operation that mutates the Authorization nodes in the graph.
+type AuthorizationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	token         *[]byte
+	kind          *authorization.Kind
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	person        *uuid.UUID
+	clearedperson bool
+	done          bool
+	oldValue      func(context.Context) (*Authorization, error)
+	predicates    []predicate.Authorization
+}
+
+var _ ent.Mutation = (*AuthorizationMutation)(nil)
+
+// authorizationOption allows management of the mutation configuration using functional options.
+type authorizationOption func(*AuthorizationMutation)
+
+// newAuthorizationMutation creates new mutation for the Authorization entity.
+func newAuthorizationMutation(c config, op Op, opts ...authorizationOption) *AuthorizationMutation {
+	m := &AuthorizationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAuthorization,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAuthorizationID sets the ID field of the mutation.
+func withAuthorizationID(id uuid.UUID) authorizationOption {
+	return func(m *AuthorizationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Authorization
+		)
+		m.oldValue = func(ctx context.Context) (*Authorization, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Authorization.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAuthorization sets the old Authorization of the mutation.
+func withAuthorization(node *Authorization) authorizationOption {
+	return func(m *AuthorizationMutation) {
+		m.oldValue = func(context.Context) (*Authorization, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AuthorizationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AuthorizationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("data: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Authorization entities.
+func (m *AuthorizationMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AuthorizationMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AuthorizationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Authorization.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPersonID sets the "person_id" field.
+func (m *AuthorizationMutation) SetPersonID(u uuid.UUID) {
+	m.person = &u
+}
+
+// PersonID returns the value of the "person_id" field in the mutation.
+func (m *AuthorizationMutation) PersonID() (r uuid.UUID, exists bool) {
+	v := m.person
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPersonID returns the old "person_id" field's value of the Authorization entity.
+// If the Authorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthorizationMutation) OldPersonID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPersonID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPersonID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPersonID: %w", err)
+	}
+	return oldValue.PersonID, nil
+}
+
+// ResetPersonID resets all changes to the "person_id" field.
+func (m *AuthorizationMutation) ResetPersonID() {
+	m.person = nil
+}
+
+// SetToken sets the "token" field.
+func (m *AuthorizationMutation) SetToken(b []byte) {
+	m.token = &b
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *AuthorizationMutation) Token() (r []byte, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the Authorization entity.
+// If the Authorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthorizationMutation) OldToken(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *AuthorizationMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *AuthorizationMutation) SetKind(a authorization.Kind) {
+	m.kind = &a
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *AuthorizationMutation) Kind() (r authorization.Kind, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the Authorization entity.
+// If the Authorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthorizationMutation) OldKind(ctx context.Context) (v authorization.Kind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *AuthorizationMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AuthorizationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AuthorizationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Authorization entity.
+// If the Authorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthorizationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AuthorizationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearPerson clears the "person" edge to the Person entity.
+func (m *AuthorizationMutation) ClearPerson() {
+	m.clearedperson = true
+}
+
+// PersonCleared reports if the "person" edge to the Person entity was cleared.
+func (m *AuthorizationMutation) PersonCleared() bool {
+	return m.clearedperson
+}
+
+// PersonIDs returns the "person" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PersonID instead. It exists only for internal usage by the builders.
+func (m *AuthorizationMutation) PersonIDs() (ids []uuid.UUID) {
+	if id := m.person; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPerson resets all changes to the "person" edge.
+func (m *AuthorizationMutation) ResetPerson() {
+	m.person = nil
+	m.clearedperson = false
+}
+
+// Where appends a list predicates to the AuthorizationMutation builder.
+func (m *AuthorizationMutation) Where(ps ...predicate.Authorization) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AuthorizationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AuthorizationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Authorization, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AuthorizationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AuthorizationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Authorization).
+func (m *AuthorizationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AuthorizationMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.person != nil {
+		fields = append(fields, authorization.FieldPersonID)
+	}
+	if m.token != nil {
+		fields = append(fields, authorization.FieldToken)
+	}
+	if m.kind != nil {
+		fields = append(fields, authorization.FieldKind)
+	}
+	if m.created_at != nil {
+		fields = append(fields, authorization.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AuthorizationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case authorization.FieldPersonID:
+		return m.PersonID()
+	case authorization.FieldToken:
+		return m.Token()
+	case authorization.FieldKind:
+		return m.Kind()
+	case authorization.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AuthorizationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case authorization.FieldPersonID:
+		return m.OldPersonID(ctx)
+	case authorization.FieldToken:
+		return m.OldToken(ctx)
+	case authorization.FieldKind:
+		return m.OldKind(ctx)
+	case authorization.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Authorization field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AuthorizationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case authorization.FieldPersonID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPersonID(v)
+		return nil
+	case authorization.FieldToken:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case authorization.FieldKind:
+		v, ok := value.(authorization.Kind)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case authorization.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Authorization field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AuthorizationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AuthorizationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AuthorizationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Authorization numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AuthorizationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AuthorizationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AuthorizationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Authorization nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AuthorizationMutation) ResetField(name string) error {
+	switch name {
+	case authorization.FieldPersonID:
+		m.ResetPersonID()
+		return nil
+	case authorization.FieldToken:
+		m.ResetToken()
+		return nil
+	case authorization.FieldKind:
+		m.ResetKind()
+		return nil
+	case authorization.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Authorization field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AuthorizationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.person != nil {
+		edges = append(edges, authorization.EdgePerson)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AuthorizationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case authorization.EdgePerson:
+		if id := m.person; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AuthorizationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AuthorizationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AuthorizationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedperson {
+		edges = append(edges, authorization.EdgePerson)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AuthorizationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case authorization.EdgePerson:
+		return m.clearedperson
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AuthorizationMutation) ClearEdge(name string) error {
+	switch name {
+	case authorization.EdgePerson:
+		m.ClearPerson()
+		return nil
+	}
+	return fmt.Errorf("unknown Authorization unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AuthorizationMutation) ResetEdge(name string) error {
+	switch name {
+	case authorization.EdgePerson:
+		m.ResetPerson()
+		return nil
+	}
+	return fmt.Errorf("unknown Authorization edge %s", name)
+}
+
 // PersonMutation represents an operation that mutates the Person nodes in the graph.
 type PersonMutation struct {
 	config
@@ -711,6 +1260,9 @@ type PersonMutation struct {
 	authentications        map[uuid.UUID]struct{}
 	removedauthentications map[uuid.UUID]struct{}
 	clearedauthentications bool
+	authorizations         map[uuid.UUID]struct{}
+	removedauthorizations  map[uuid.UUID]struct{}
+	clearedauthorizations  bool
 	done                   bool
 	oldValue               func(context.Context) (*Person, error)
 	predicates             []predicate.Person
@@ -1567,6 +2119,60 @@ func (m *PersonMutation) ResetAuthentications() {
 	m.removedauthentications = nil
 }
 
+// AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by ids.
+func (m *PersonMutation) AddAuthorizationIDs(ids ...uuid.UUID) {
+	if m.authorizations == nil {
+		m.authorizations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.authorizations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAuthorizations clears the "authorizations" edge to the Authorization entity.
+func (m *PersonMutation) ClearAuthorizations() {
+	m.clearedauthorizations = true
+}
+
+// AuthorizationsCleared reports if the "authorizations" edge to the Authorization entity was cleared.
+func (m *PersonMutation) AuthorizationsCleared() bool {
+	return m.clearedauthorizations
+}
+
+// RemoveAuthorizationIDs removes the "authorizations" edge to the Authorization entity by IDs.
+func (m *PersonMutation) RemoveAuthorizationIDs(ids ...uuid.UUID) {
+	if m.removedauthorizations == nil {
+		m.removedauthorizations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.authorizations, ids[i])
+		m.removedauthorizations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAuthorizations returns the removed IDs of the "authorizations" edge to the Authorization entity.
+func (m *PersonMutation) RemovedAuthorizationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedauthorizations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AuthorizationsIDs returns the "authorizations" edge IDs in the mutation.
+func (m *PersonMutation) AuthorizationsIDs() (ids []uuid.UUID) {
+	for id := range m.authorizations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAuthorizations resets all changes to the "authorizations" edge.
+func (m *PersonMutation) ResetAuthorizations() {
+	m.authorizations = nil
+	m.clearedauthorizations = false
+	m.removedauthorizations = nil
+}
+
 // Where appends a list predicates to the PersonMutation builder.
 func (m *PersonMutation) Where(ps ...predicate.Person) {
 	m.predicates = append(m.predicates, ps...)
@@ -2012,9 +2618,12 @@ func (m *PersonMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PersonMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.authentications != nil {
 		edges = append(edges, person.EdgeAuthentications)
+	}
+	if m.authorizations != nil {
+		edges = append(edges, person.EdgeAuthorizations)
 	}
 	return edges
 }
@@ -2029,15 +2638,24 @@ func (m *PersonMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case person.EdgeAuthorizations:
+		ids := make([]ent.Value, 0, len(m.authorizations))
+		for id := range m.authorizations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PersonMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedauthentications != nil {
 		edges = append(edges, person.EdgeAuthentications)
+	}
+	if m.removedauthorizations != nil {
+		edges = append(edges, person.EdgeAuthorizations)
 	}
 	return edges
 }
@@ -2052,15 +2670,24 @@ func (m *PersonMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case person.EdgeAuthorizations:
+		ids := make([]ent.Value, 0, len(m.removedauthorizations))
+		for id := range m.removedauthorizations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PersonMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedauthentications {
 		edges = append(edges, person.EdgeAuthentications)
+	}
+	if m.clearedauthorizations {
+		edges = append(edges, person.EdgeAuthorizations)
 	}
 	return edges
 }
@@ -2071,6 +2698,8 @@ func (m *PersonMutation) EdgeCleared(name string) bool {
 	switch name {
 	case person.EdgeAuthentications:
 		return m.clearedauthentications
+	case person.EdgeAuthorizations:
+		return m.clearedauthorizations
 	}
 	return false
 }
@@ -2089,6 +2718,9 @@ func (m *PersonMutation) ResetEdge(name string) error {
 	switch name {
 	case person.EdgeAuthentications:
 		m.ResetAuthentications()
+		return nil
+	case person.EdgeAuthorizations:
+		m.ResetAuthorizations()
 		return nil
 	}
 	return fmt.Errorf("unknown Person edge %s", name)

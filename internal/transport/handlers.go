@@ -41,6 +41,7 @@ func healthHandler(log *slog.Logger) http.Handler {
 }
 
 func graphHandler(ctn *container.Container) http.Handler {
+	cfg := ctn.GetConfig()
 	data := ctn.GetData()
 	messenger := ctn.GetMessenger()
 
@@ -48,6 +49,7 @@ func graphHandler(ctn *container.Container) http.Handler {
 	handler := gqlgen.NewDefaultServer(
 		api.NewExecutableSchema(api.Config{
 			Resolvers: resolvers.NewResolver(
+				cfg,
 				data,
 				messenger,
 			),

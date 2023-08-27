@@ -21,6 +21,18 @@ func (f AuthenticationFunc) Mutate(ctx context.Context, m data.Mutation) (data.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *data.AuthenticationMutation", m)
 }
 
+// The AuthorizationFunc type is an adapter to allow the use of ordinary
+// function as Authorization mutator.
+type AuthorizationFunc func(context.Context, *data.AuthorizationMutation) (data.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AuthorizationFunc) Mutate(ctx context.Context, m data.Mutation) (data.Value, error) {
+	if mv, ok := m.(*data.AuthorizationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *data.AuthorizationMutation", m)
+}
+
 // The PersonFunc type is an adapter to allow the use of ordinary
 // function as Person mutator.
 type PersonFunc func(context.Context, *data.PersonMutation) (data.Value, error)

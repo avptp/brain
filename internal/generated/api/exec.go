@@ -17,6 +17,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 	gqlparser "github.com/vektah/gqlparser/v2"
@@ -50,6 +51,14 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	ApplyEmailAuthorizationPayload struct {
+		AuthorizationID func(childComplexity int) int
+	}
+
+	ApplyPasswordAuthorizationPayload struct {
+		AuthorizationID func(childComplexity int) int
+	}
+
 	Authentication struct {
 		CreatedAt  func(childComplexity int) int
 		CreatedIP  func(childComplexity int) int
@@ -71,8 +80,24 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	Authorization struct {
+		CreatedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Kind      func(childComplexity int) int
+		Person    func(childComplexity int) int
+		PersonID  func(childComplexity int) int
+	}
+
 	CreateAuthenticationPayload struct {
 		Token func(childComplexity int) int
+	}
+
+	CreateEmailAuthorizationPayload struct {
+		Authorization func(childComplexity int) int
+	}
+
+	CreatePasswordAuthorizationPayload struct {
+		Success func(childComplexity int) int
 	}
 
 	CreatePersonPayload struct {
@@ -88,12 +113,16 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateAuthentication func(childComplexity int, input CreateAuthenticationInput) int
-		CreatePerson         func(childComplexity int, input CreatePersonInput) int
-		DeleteAuthentication func(childComplexity int, input DeleteAuthenticationInput) int
-		DeletePerson         func(childComplexity int, input DeletePersonInput) int
-		UpdatePerson         func(childComplexity int, input UpdatePersonInput) int
-		UpdatePersonPassword func(childComplexity int, input UpdatePersonPasswordInput) int
+		ApplyEmailAuthorization     func(childComplexity int, input ApplyEmailAuthorizationInput) int
+		ApplyPasswordAuthorization  func(childComplexity int, input ApplyPasswordAuthorizationInput) int
+		CreateAuthentication        func(childComplexity int, input CreateAuthenticationInput) int
+		CreateEmailAuthorization    func(childComplexity int, input CreateEmailAuthorizationInput) int
+		CreatePasswordAuthorization func(childComplexity int, input CreatePasswordAuthorizationInput) int
+		CreatePerson                func(childComplexity int, input CreatePersonInput) int
+		DeleteAuthentication        func(childComplexity int, input DeleteAuthenticationInput) int
+		DeletePerson                func(childComplexity int, input DeletePersonInput) int
+		UpdatePerson                func(childComplexity int, input UpdatePersonInput) int
+		UpdatePersonPassword        func(childComplexity int, input UpdatePersonPasswordInput) int
 	}
 
 	PageInfo struct {
@@ -139,6 +168,10 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateAuthentication(ctx context.Context, input CreateAuthenticationInput) (*CreateAuthenticationPayload, error)
 	DeleteAuthentication(ctx context.Context, input DeleteAuthenticationInput) (*DeleteAuthenticationPayload, error)
+	CreateEmailAuthorization(ctx context.Context, input CreateEmailAuthorizationInput) (*CreateEmailAuthorizationPayload, error)
+	ApplyEmailAuthorization(ctx context.Context, input ApplyEmailAuthorizationInput) (*ApplyEmailAuthorizationPayload, error)
+	CreatePasswordAuthorization(ctx context.Context, input CreatePasswordAuthorizationInput) (*CreatePasswordAuthorizationPayload, error)
+	ApplyPasswordAuthorization(ctx context.Context, input ApplyPasswordAuthorizationInput) (*ApplyPasswordAuthorizationPayload, error)
 	CreatePerson(ctx context.Context, input CreatePersonInput) (*CreatePersonPayload, error)
 	UpdatePerson(ctx context.Context, input UpdatePersonInput) (*UpdatePersonPayload, error)
 	UpdatePersonPassword(ctx context.Context, input UpdatePersonPasswordInput) (*UpdatePersonPasswordPayload, error)
@@ -165,6 +198,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "ApplyEmailAuthorizationPayload.authorizationId":
+		if e.complexity.ApplyEmailAuthorizationPayload.AuthorizationID == nil {
+			break
+		}
+
+		return e.complexity.ApplyEmailAuthorizationPayload.AuthorizationID(childComplexity), true
+
+	case "ApplyPasswordAuthorizationPayload.authorizationId":
+		if e.complexity.ApplyPasswordAuthorizationPayload.AuthorizationID == nil {
+			break
+		}
+
+		return e.complexity.ApplyPasswordAuthorizationPayload.AuthorizationID(childComplexity), true
 
 	case "Authentication.createdAt":
 		if e.complexity.Authentication.CreatedAt == nil {
@@ -250,12 +297,61 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthenticationEdge.Node(childComplexity), true
 
+	case "Authorization.createdAt":
+		if e.complexity.Authorization.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Authorization.CreatedAt(childComplexity), true
+
+	case "Authorization.id":
+		if e.complexity.Authorization.ID == nil {
+			break
+		}
+
+		return e.complexity.Authorization.ID(childComplexity), true
+
+	case "Authorization.kind":
+		if e.complexity.Authorization.Kind == nil {
+			break
+		}
+
+		return e.complexity.Authorization.Kind(childComplexity), true
+
+	case "Authorization.person":
+		if e.complexity.Authorization.Person == nil {
+			break
+		}
+
+		return e.complexity.Authorization.Person(childComplexity), true
+
+	case "Authorization.personId":
+		if e.complexity.Authorization.PersonID == nil {
+			break
+		}
+
+		return e.complexity.Authorization.PersonID(childComplexity), true
+
 	case "CreateAuthenticationPayload.token":
 		if e.complexity.CreateAuthenticationPayload.Token == nil {
 			break
 		}
 
 		return e.complexity.CreateAuthenticationPayload.Token(childComplexity), true
+
+	case "CreateEmailAuthorizationPayload.authorization":
+		if e.complexity.CreateEmailAuthorizationPayload.Authorization == nil {
+			break
+		}
+
+		return e.complexity.CreateEmailAuthorizationPayload.Authorization(childComplexity), true
+
+	case "CreatePasswordAuthorizationPayload.success":
+		if e.complexity.CreatePasswordAuthorizationPayload.Success == nil {
+			break
+		}
+
+		return e.complexity.CreatePasswordAuthorizationPayload.Success(childComplexity), true
 
 	case "CreatePersonPayload.person":
 		if e.complexity.CreatePersonPayload.Person == nil {
@@ -278,6 +374,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DeletePersonPayload.PersonID(childComplexity), true
 
+	case "Mutation.applyEmailAuthorization":
+		if e.complexity.Mutation.ApplyEmailAuthorization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_applyEmailAuthorization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ApplyEmailAuthorization(childComplexity, args["input"].(ApplyEmailAuthorizationInput)), true
+
+	case "Mutation.applyPasswordAuthorization":
+		if e.complexity.Mutation.ApplyPasswordAuthorization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_applyPasswordAuthorization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ApplyPasswordAuthorization(childComplexity, args["input"].(ApplyPasswordAuthorizationInput)), true
+
 	case "Mutation.createAuthentication":
 		if e.complexity.Mutation.CreateAuthentication == nil {
 			break
@@ -289,6 +409,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateAuthentication(childComplexity, args["input"].(CreateAuthenticationInput)), true
+
+	case "Mutation.createEmailAuthorization":
+		if e.complexity.Mutation.CreateEmailAuthorization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createEmailAuthorization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateEmailAuthorization(childComplexity, args["input"].(CreateEmailAuthorizationInput)), true
+
+	case "Mutation.createPasswordAuthorization":
+		if e.complexity.Mutation.CreatePasswordAuthorization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPasswordAuthorization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePasswordAuthorization(childComplexity, args["input"].(CreatePasswordAuthorizationInput)), true
 
 	case "Mutation.createPerson":
 		if e.complexity.Mutation.CreatePerson == nil {
@@ -531,7 +675,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputApplyEmailAuthorizationInput,
+		ec.unmarshalInputApplyPasswordAuthorizationInput,
 		ec.unmarshalInputCreateAuthenticationInput,
+		ec.unmarshalInputCreateEmailAuthorizationInput,
+		ec.unmarshalInputCreatePasswordAuthorizationInput,
 		ec.unmarshalInputCreatePersonInput,
 		ec.unmarshalInputDeleteAuthenticationInput,
 		ec.unmarshalInputDeletePersonInput,
@@ -681,6 +829,72 @@ type DeleteAuthenticationPayload {
     authenticationId: ID!
 }
 `, BuiltIn: false},
+	{Name: "../../api/schema/authorization.graphqls", Input: `type Authorization {
+    id: ID!
+
+    kind: AuthorizationKind!
+    createdAt: Time!
+
+    personId: ID!
+    person: Person!
+}
+
+enum AuthorizationKind {
+  EMAIL
+  PASSWORD
+}
+
+extend type Mutation {
+    createEmailAuthorization(input: CreateEmailAuthorizationInput!): CreateEmailAuthorizationPayload
+}
+
+input CreateEmailAuthorizationInput {
+    personId: ID!
+    captcha: String!
+}
+
+type CreateEmailAuthorizationPayload {
+    authorization: Authorization!
+}
+
+extend type Mutation {
+    applyEmailAuthorization(input: ApplyEmailAuthorizationInput!): ApplyEmailAuthorizationPayload
+}
+
+input ApplyEmailAuthorizationInput {
+    token: String!
+}
+
+type ApplyEmailAuthorizationPayload {
+    authorizationId: ID!
+}
+
+extend type Mutation {
+    createPasswordAuthorization(input: CreatePasswordAuthorizationInput!): CreatePasswordAuthorizationPayload
+}
+
+input CreatePasswordAuthorizationInput {
+    email: String!
+    captcha: String!
+}
+
+type CreatePasswordAuthorizationPayload {
+    success: Boolean!
+}
+
+extend type Mutation {
+    applyPasswordAuthorization(input: ApplyPasswordAuthorizationInput!): ApplyPasswordAuthorizationPayload
+}
+
+input ApplyPasswordAuthorizationInput {
+    token: String!
+    newPassword: String!
+}
+
+type ApplyPasswordAuthorizationPayload {
+    authorizationId: ID!
+}
+`, BuiltIn: false},
 	{Name: "../../api/schema/main.graphqls", Input: `type Query
 
 type Mutation
@@ -818,6 +1032,36 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_applyEmailAuthorization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ApplyEmailAuthorizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNApplyEmailAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyEmailAuthorizationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_applyPasswordAuthorization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ApplyPasswordAuthorizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNApplyPasswordAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyPasswordAuthorizationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createAuthentication_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -825,6 +1069,36 @@ func (ec *executionContext) field_Mutation_createAuthentication_args(ctx context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateAuthenticationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateAuthenticationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createEmailAuthorization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreateEmailAuthorizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateEmailAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateEmailAuthorizationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createPasswordAuthorization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreatePasswordAuthorizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreatePasswordAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreatePasswordAuthorizationInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1002,6 +1276,94 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _ApplyEmailAuthorizationPayload_authorizationId(ctx context.Context, field graphql.CollectedField, obj *ApplyEmailAuthorizationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ApplyEmailAuthorizationPayload_authorizationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthorizationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ApplyEmailAuthorizationPayload_authorizationId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApplyEmailAuthorizationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ApplyPasswordAuthorizationPayload_authorizationId(ctx context.Context, field graphql.CollectedField, obj *ApplyPasswordAuthorizationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ApplyPasswordAuthorizationPayload_authorizationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthorizationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ApplyPasswordAuthorizationPayload_authorizationId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ApplyPasswordAuthorizationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Authentication_id(ctx context.Context, field graphql.CollectedField, obj *data.Authentication) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Authentication_id(ctx, field)
@@ -1593,6 +1955,262 @@ func (ec *executionContext) fieldContext_AuthenticationEdge_cursor(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Authorization_id(ctx context.Context, field graphql.CollectedField, obj *data.Authorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Authorization_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Authorization_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Authorization",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Authorization_kind(ctx context.Context, field graphql.CollectedField, obj *data.Authorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Authorization_kind(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Kind, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(authorization.Kind)
+	fc.Result = res
+	return ec.marshalNAuthorizationKind2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚋauthorizationᚐKind(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Authorization_kind(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Authorization",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AuthorizationKind does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Authorization_createdAt(ctx context.Context, field graphql.CollectedField, obj *data.Authorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Authorization_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Authorization_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Authorization",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Authorization_personId(ctx context.Context, field graphql.CollectedField, obj *data.Authorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Authorization_personId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PersonID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Authorization_personId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Authorization",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Authorization_person(ctx context.Context, field graphql.CollectedField, obj *data.Authorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Authorization_person(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Person(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*data.Person)
+	fc.Result = res
+	return ec.marshalNPerson2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚐPerson(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Authorization_person(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Authorization",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Person_id(ctx, field)
+			case "email":
+				return ec.fieldContext_Person_email(ctx, field)
+			case "emailVerifiedAt":
+				return ec.fieldContext_Person_emailVerifiedAt(ctx, field)
+			case "phone":
+				return ec.fieldContext_Person_phone(ctx, field)
+			case "taxId":
+				return ec.fieldContext_Person_taxId(ctx, field)
+			case "firstName":
+				return ec.fieldContext_Person_firstName(ctx, field)
+			case "lastName":
+				return ec.fieldContext_Person_lastName(ctx, field)
+			case "language":
+				return ec.fieldContext_Person_language(ctx, field)
+			case "birthdate":
+				return ec.fieldContext_Person_birthdate(ctx, field)
+			case "gender":
+				return ec.fieldContext_Person_gender(ctx, field)
+			case "address":
+				return ec.fieldContext_Person_address(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Person_postalCode(ctx, field)
+			case "city":
+				return ec.fieldContext_Person_city(ctx, field)
+			case "country":
+				return ec.fieldContext_Person_country(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Person_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Person_updatedAt(ctx, field)
+			case "authentications":
+				return ec.fieldContext_Person_authentications(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Person", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CreateAuthenticationPayload_token(ctx context.Context, field graphql.CollectedField, obj *CreateAuthenticationPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateAuthenticationPayload_token(ctx, field)
 	if err != nil {
@@ -1632,6 +2250,106 @@ func (ec *executionContext) fieldContext_CreateAuthenticationPayload_token(ctx c
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateEmailAuthorizationPayload_authorization(ctx context.Context, field graphql.CollectedField, obj *CreateEmailAuthorizationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateEmailAuthorizationPayload_authorization(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Authorization, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*data.Authorization)
+	fc.Result = res
+	return ec.marshalNAuthorization2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚐAuthorization(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateEmailAuthorizationPayload_authorization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateEmailAuthorizationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Authorization_id(ctx, field)
+			case "kind":
+				return ec.fieldContext_Authorization_kind(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Authorization_createdAt(ctx, field)
+			case "personId":
+				return ec.fieldContext_Authorization_personId(ctx, field)
+			case "person":
+				return ec.fieldContext_Authorization_person(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Authorization", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreatePasswordAuthorizationPayload_success(ctx context.Context, field graphql.CollectedField, obj *CreatePasswordAuthorizationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreatePasswordAuthorizationPayload_success(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Success, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreatePasswordAuthorizationPayload_success(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreatePasswordAuthorizationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1911,6 +2629,230 @@ func (ec *executionContext) fieldContext_Mutation_deleteAuthentication(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteAuthentication_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createEmailAuthorization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createEmailAuthorization(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateEmailAuthorization(rctx, fc.Args["input"].(CreateEmailAuthorizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*CreateEmailAuthorizationPayload)
+	fc.Result = res
+	return ec.marshalOCreateEmailAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateEmailAuthorizationPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createEmailAuthorization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "authorization":
+				return ec.fieldContext_CreateEmailAuthorizationPayload_authorization(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateEmailAuthorizationPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createEmailAuthorization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_applyEmailAuthorization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_applyEmailAuthorization(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ApplyEmailAuthorization(rctx, fc.Args["input"].(ApplyEmailAuthorizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ApplyEmailAuthorizationPayload)
+	fc.Result = res
+	return ec.marshalOApplyEmailAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyEmailAuthorizationPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_applyEmailAuthorization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "authorizationId":
+				return ec.fieldContext_ApplyEmailAuthorizationPayload_authorizationId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ApplyEmailAuthorizationPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_applyEmailAuthorization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createPasswordAuthorization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createPasswordAuthorization(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePasswordAuthorization(rctx, fc.Args["input"].(CreatePasswordAuthorizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*CreatePasswordAuthorizationPayload)
+	fc.Result = res
+	return ec.marshalOCreatePasswordAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreatePasswordAuthorizationPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createPasswordAuthorization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_CreatePasswordAuthorizationPayload_success(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreatePasswordAuthorizationPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createPasswordAuthorization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_applyPasswordAuthorization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_applyPasswordAuthorization(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ApplyPasswordAuthorization(rctx, fc.Args["input"].(ApplyPasswordAuthorizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ApplyPasswordAuthorizationPayload)
+	fc.Result = res
+	return ec.marshalOApplyPasswordAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyPasswordAuthorizationPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_applyPasswordAuthorization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "authorizationId":
+				return ec.fieldContext_ApplyPasswordAuthorizationPayload_authorizationId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ApplyPasswordAuthorizationPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_applyPasswordAuthorization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5190,6 +6132,73 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputApplyEmailAuthorizationInput(ctx context.Context, obj interface{}) (ApplyEmailAuthorizationInput, error) {
+	var it ApplyEmailAuthorizationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"token"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "token":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Token = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputApplyPasswordAuthorizationInput(ctx context.Context, obj interface{}) (ApplyPasswordAuthorizationInput, error) {
+	var it ApplyPasswordAuthorizationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"token", "newPassword"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "token":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Token = data
+		case "newPassword":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NewPassword = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateAuthenticationInput(ctx context.Context, obj interface{}) (CreateAuthenticationInput, error) {
 	var it CreateAuthenticationInput
 	asMap := map[string]interface{}{}
@@ -5222,6 +6231,82 @@ func (ec *executionContext) unmarshalInputCreateAuthenticationInput(ctx context.
 				return it, err
 			}
 			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateEmailAuthorizationInput(ctx context.Context, obj interface{}) (CreateEmailAuthorizationInput, error) {
+	var it CreateEmailAuthorizationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"personId", "captcha"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "personId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("personId"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PersonID = data
+		case "captcha":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("captcha"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Captcha = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreatePasswordAuthorizationInput(ctx context.Context, obj interface{}) (CreatePasswordAuthorizationInput, error) {
+	var it CreatePasswordAuthorizationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email", "captcha"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "captcha":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("captcha"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Captcha = data
 		}
 	}
 
@@ -5588,6 +6673,84 @@ func (ec *executionContext) unmarshalInputUpdatePersonPasswordInput(ctx context.
 
 // region    **************************** object.gotpl ****************************
 
+var applyEmailAuthorizationPayloadImplementors = []string{"ApplyEmailAuthorizationPayload"}
+
+func (ec *executionContext) _ApplyEmailAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, obj *ApplyEmailAuthorizationPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, applyEmailAuthorizationPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ApplyEmailAuthorizationPayload")
+		case "authorizationId":
+			out.Values[i] = ec._ApplyEmailAuthorizationPayload_authorizationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var applyPasswordAuthorizationPayloadImplementors = []string{"ApplyPasswordAuthorizationPayload"}
+
+func (ec *executionContext) _ApplyPasswordAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, obj *ApplyPasswordAuthorizationPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, applyPasswordAuthorizationPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ApplyPasswordAuthorizationPayload")
+		case "authorizationId":
+			out.Values[i] = ec._ApplyPasswordAuthorizationPayload_authorizationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var authenticationImplementors = []string{"Authentication"}
 
 func (ec *executionContext) _Authentication(ctx context.Context, sel ast.SelectionSet, obj *data.Authentication) graphql.Marshaler {
@@ -5775,6 +6938,96 @@ func (ec *executionContext) _AuthenticationEdge(ctx context.Context, sel ast.Sel
 	return out
 }
 
+var authorizationImplementors = []string{"Authorization"}
+
+func (ec *executionContext) _Authorization(ctx context.Context, sel ast.SelectionSet, obj *data.Authorization) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authorizationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Authorization")
+		case "id":
+			out.Values[i] = ec._Authorization_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "kind":
+			out.Values[i] = ec._Authorization_kind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createdAt":
+			out.Values[i] = ec._Authorization_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "personId":
+			out.Values[i] = ec._Authorization_personId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "person":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Authorization_person(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var createAuthenticationPayloadImplementors = []string{"CreateAuthenticationPayload"}
 
 func (ec *executionContext) _CreateAuthenticationPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateAuthenticationPayload) graphql.Marshaler {
@@ -5788,6 +7041,84 @@ func (ec *executionContext) _CreateAuthenticationPayload(ctx context.Context, se
 			out.Values[i] = graphql.MarshalString("CreateAuthenticationPayload")
 		case "token":
 			out.Values[i] = ec._CreateAuthenticationPayload_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var createEmailAuthorizationPayloadImplementors = []string{"CreateEmailAuthorizationPayload"}
+
+func (ec *executionContext) _CreateEmailAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateEmailAuthorizationPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createEmailAuthorizationPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateEmailAuthorizationPayload")
+		case "authorization":
+			out.Values[i] = ec._CreateEmailAuthorizationPayload_authorization(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var createPasswordAuthorizationPayloadImplementors = []string{"CreatePasswordAuthorizationPayload"}
+
+func (ec *executionContext) _CreatePasswordAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, obj *CreatePasswordAuthorizationPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createPasswordAuthorizationPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreatePasswordAuthorizationPayload")
+		case "success":
+			out.Values[i] = ec._CreatePasswordAuthorizationPayload_success(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5957,6 +7288,22 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteAuthentication":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteAuthentication(ctx, field)
+			})
+		case "createEmailAuthorization":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createEmailAuthorization(ctx, field)
+			})
+		case "applyEmailAuthorization":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_applyEmailAuthorization(ctx, field)
+			})
+		case "createPasswordAuthorization":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createPasswordAuthorization(ctx, field)
+			})
+		case "applyPasswordAuthorization":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_applyPasswordAuthorization(ctx, field)
 			})
 		case "createPerson":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -6641,6 +7988,36 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNApplyEmailAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyEmailAuthorizationInput(ctx context.Context, v interface{}) (ApplyEmailAuthorizationInput, error) {
+	res, err := ec.unmarshalInputApplyEmailAuthorizationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNApplyPasswordAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyPasswordAuthorizationInput(ctx context.Context, v interface{}) (ApplyPasswordAuthorizationInput, error) {
+	res, err := ec.unmarshalInputApplyPasswordAuthorizationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAuthorization2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚐAuthorization(ctx context.Context, sel ast.SelectionSet, v *data.Authorization) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Authorization(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAuthorizationKind2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚋauthorizationᚐKind(ctx context.Context, v interface{}) (authorization.Kind, error) {
+	var res authorization.Kind
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAuthorizationKind2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚋauthorizationᚐKind(ctx context.Context, sel ast.SelectionSet, v authorization.Kind) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6658,6 +8035,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 
 func (ec *executionContext) unmarshalNCreateAuthenticationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateAuthenticationInput(ctx context.Context, v interface{}) (CreateAuthenticationInput, error) {
 	res, err := ec.unmarshalInputCreateAuthenticationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateEmailAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateEmailAuthorizationInput(ctx context.Context, v interface{}) (CreateEmailAuthorizationInput, error) {
+	res, err := ec.unmarshalInputCreateEmailAuthorizationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreatePasswordAuthorizationInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreatePasswordAuthorizationInput(ctx context.Context, v interface{}) (CreatePasswordAuthorizationInput, error) {
+	res, err := ec.unmarshalInputCreatePasswordAuthorizationInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -7042,6 +8429,20 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOApplyEmailAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyEmailAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, v *ApplyEmailAuthorizationPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ApplyEmailAuthorizationPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOApplyPasswordAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐApplyPasswordAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, v *ApplyPasswordAuthorizationPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ApplyPasswordAuthorizationPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOAuthentication2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚐAuthentication(ctx context.Context, sel ast.SelectionSet, v *data.Authentication) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -7135,6 +8536,20 @@ func (ec *executionContext) marshalOCreateAuthenticationPayload2ᚖgithubᚗcom�
 		return graphql.Null
 	}
 	return ec._CreateAuthenticationPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCreateEmailAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateEmailAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, v *CreateEmailAuthorizationPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CreateEmailAuthorizationPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCreatePasswordAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreatePasswordAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, v *CreatePasswordAuthorizationPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CreatePasswordAuthorizationPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOCreatePersonPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreatePersonPayload(ctx context.Context, sel ast.SelectionSet, v *CreatePersonPayload) graphql.Marshaler {

@@ -5,6 +5,7 @@ import (
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/messaging/templates"
 	"github.com/stretchr/testify/mock"
@@ -74,10 +75,10 @@ func (t *TestSuite) TestPerson() {
 			Where(person.IDEQ(id)).
 			First(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 
 		match, err := argon2id.ComparePasswordAndHash(input.Password, p.Password)
-		t.Nil(err)
+		t.NoError(err)
 
 		t.Equal(input.Email, p.Email)
 		t.True(match)
@@ -85,6 +86,15 @@ func (t *TestSuite) TestPerson() {
 		t.Equal(input.FirstName, p.FirstName)
 		t.Equal(input.LastName, p.LastName)
 		t.Equal(input.Language, p.Language)
+
+		exists, err := t.data.Authorization.
+			Query().
+			Where(authorization.PersonIDEQ(p.ID)).
+			Exist(t.allowCtx)
+
+		t.NoError(err)
+		t.True(exists)
+
 		t.messenger.AssertExpectations(t.T())
 	})
 
@@ -220,8 +230,9 @@ func (t *TestSuite) TestPerson() {
 			Where(person.IDEQ(p.ID)).
 			First(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 		t.Equal(input.Email, p.Email)
+		t.Nil(p.EmailVerifiedAt)
 		t.NotNil(p.Phone)
 		t.Equal(*input.Phone, *p.Phone)
 		t.Equal(input.TaxID, p.TaxID)
@@ -318,7 +329,7 @@ func (t *TestSuite) TestPerson() {
 	t.Run("update_password", func() {
 		authenticated, p, pf, _, _ := t.authenticate()
 
-		new := t.factory.Person().Fields
+		input := t.factory.Person().Fields
 
 		var response updatePassword
 		t.api.MustPost(
@@ -327,7 +338,7 @@ func (t *TestSuite) TestPerson() {
 			authenticated,
 			client.Var("id", t.toULID(p.ID)),
 			client.Var("currentPassword", pf.Password),
-			client.Var("newPassword", new.Password),
+			client.Var("newPassword", input.Password),
 			client.Var("captcha", captchaResponseToken),
 		)
 
@@ -338,17 +349,17 @@ func (t *TestSuite) TestPerson() {
 			Where(person.IDEQ(p.ID)).
 			First(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 
-		match, err := argon2id.ComparePasswordAndHash(new.Password, p.Password)
-		t.Nil(err)
+		match, err := argon2id.ComparePasswordAndHash(input.Password, p.Password)
+		t.NoError(err)
 		t.True(match)
 	})
 
 	t.Run("update_password_with_wrong_password", func() {
 		authenticated, p, pf, _, _ := t.authenticate()
 
-		new := t.factory.Person().Fields
+		input := t.factory.Person().Fields
 
 		var response updatePassword
 		err := t.api.Post(
@@ -357,7 +368,7 @@ func (t *TestSuite) TestPerson() {
 			authenticated,
 			client.Var("id", t.toULID(p.ID)),
 			client.Var("currentPassword", pf.Password+"wrong"),
-			client.Var("newPassword", new.Password),
+			client.Var("newPassword", input.Password),
 			client.Var("captcha", captchaResponseToken),
 		)
 
@@ -368,10 +379,10 @@ func (t *TestSuite) TestPerson() {
 			Where(person.IDEQ(p.ID)).
 			First(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 
 		match, err := argon2id.ComparePasswordAndHash(pf.Password, p.Password)
-		t.Nil(err)
+		t.NoError(err)
 		t.True(match)
 	})
 
@@ -469,7 +480,7 @@ func (t *TestSuite) TestPerson() {
 			Where(person.IDEQ(p.ID)).
 			Exist(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 		t.False(exists)
 	})
 
@@ -493,7 +504,7 @@ func (t *TestSuite) TestPerson() {
 			Where(person.IDEQ(p.ID)).
 			Exist(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 		t.True(exists)
 	})
 

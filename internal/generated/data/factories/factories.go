@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 
@@ -34,7 +35,7 @@ type AuthenticationFactory struct {
 
 type AuthenticationFields struct {
 	PersonID   uuid.UUID `json:"person_id,omitempty"`
-	Token      []byte    `json:"token,omitempty"`
+	Token      []byte    `json:"token,omitempty" fakesize:"64"`
 	CreatedIP  string    `json:"created_ip,omitempty" fake:"{ipv6address}"`
 	LastUsedIP string    `json:"last_used_ip,omitempty" fake:"{ipv6address}"`
 	CreatedAt  time.Time `json:"created_at,omitempty"`
@@ -64,6 +65,52 @@ func (f *AuthenticationFactory) With(cb func(*data.AuthenticationCreate)) *Authe
 }
 
 func (f *AuthenticationFactory) Create(ctx context.Context) *data.Authentication {
+	if _, exists := f.builder.Mutation().PersonID(); !exists {
+		f.builder.SetPerson(
+			f.Person().Create(ctx),
+		)
+	}
+
+	return f.builder.SaveX(ctx)
+}
+
+// Authorization factory
+type AuthorizationFactory struct {
+	*Factory
+
+	Fields  AuthorizationFields
+	builder *data.AuthorizationCreate
+}
+
+type AuthorizationFields struct {
+	PersonID  uuid.UUID          `json:"person_id,omitempty"`
+	Token     []byte             `json:"token,omitempty" fakesize:"64"`
+	Kind      authorization.Kind `json:"kind,omitempty" fake:"{randomstring:[email,password]}"`
+	CreatedAt time.Time          `json:"created_at,omitempty"`
+}
+
+func (bf *Factory) Authorization() *AuthorizationFactory {
+	f := &AuthorizationFactory{
+		Factory: bf,
+	}
+
+	gofakeit.Struct(&f.Fields)
+
+	f.builder = f.data.Authorization.
+		Create().
+		SetToken(f.Fields.Token).
+		SetKind(f.Fields.Kind)
+
+	return f
+}
+
+func (f *AuthorizationFactory) With(cb func(*data.AuthorizationCreate)) *AuthorizationFactory {
+	cb(f.builder)
+
+	return f
+}
+
+func (f *AuthorizationFactory) Create(ctx context.Context) *data.Authorization {
 	if _, exists := f.builder.Mutation().PersonID(); !exists {
 		f.builder.SetPerson(
 			f.Person().Create(ctx),

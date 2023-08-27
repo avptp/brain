@@ -11,6 +11,7 @@ import (
 
 	"github.com/avptp/brain/internal/generated/container"
 	"github.com/avptp/brain/internal/generated/data/person"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 )
 
 func Migrate(ctn *container.Container) error {
@@ -18,12 +19,12 @@ func Migrate(ctn *container.Container) error {
 
 	return data.Debug().Schema.Create(
 		context.Background(),
-		schema.WithApplyHook(createGenderEnum),
-		schema.WithDiffHook(removeGenderDrop),
+		schema.WithApplyHook(createEnums),
+		schema.WithDiffHook(keepEnums),
 	)
 }
 
-func createGenderEnum(next schema.Applier) schema.Applier {
+func createEnums(next schema.Applier) schema.Applier {
 	return schema.ApplyFunc(func(ctx context.Context, conn dialect.ExecQuerier, plan *migrate.Plan) error {
 		plan.Changes = append([]*migrate.Change{
 			{
@@ -34,38 +35,33 @@ func createGenderEnum(next schema.Applier) schema.Applier {
 					person.GenderNonBinary,
 				),
 			},
+			{
+				Cmd: fmt.Sprintf(
+					"CREATE TYPE IF NOT EXISTS authorization_kind AS ENUM ('%s', '%s');",
+					authorization.KindEmail,
+					authorization.KindPassword,
+				),
+			},
 		}, plan.Changes...)
 
 		return next.Apply(ctx, conn, plan)
 	})
 }
 
-// Atlas tries to remove the gender type, so it becomes necessary
-// to remove the drop query before it is run
-func removeGenderDrop(next schema.Differ) schema.Differ {
+// Atlas tries to remove the enum types, so it becomes necessary
+// to add them to the desired objects slice
+func keepEnums(next schema.Differ) schema.Differ {
 	return schema.DiffFunc(func(current, desired *atlas.Schema) ([]atlas.Change, error) {
-		changes, err := next.Diff(current, desired)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for i, change := range changes {
-			drop, ok := change.(*atlas.DropObject)
+		for _, object := range current.Objects {
+			_, ok := object.(*atlas.EnumType)
 
 			if !ok {
 				continue
 			}
 
-			enum, ok := drop.O.(*atlas.EnumType)
-
-			if !ok || enum.T != "gender" {
-				continue
-			}
-
-			changes = append(changes[:i], changes[i+1:]...)
+			desired.Objects = append(desired.Objects, object)
 		}
 
-		return changes, nil
+		return next.Diff(current, desired)
 	})
 }

@@ -60,13 +60,16 @@ type Person struct {
 type PersonEdges struct {
 	// Authentications holds the value of the authentications edge.
 	Authentications []*Authentication `json:"authentications,omitempty"`
+	// Authorizations holds the value of the authorizations edge.
+	Authorizations []*Authorization `json:"authorizations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 
 	namedAuthentications map[string][]*Authentication
+	namedAuthorizations  map[string][]*Authorization
 }
 
 // AuthenticationsOrErr returns the Authentications value or an error if the edge
@@ -76,6 +79,15 @@ func (e PersonEdges) AuthenticationsOrErr() ([]*Authentication, error) {
 		return e.Authentications, nil
 	}
 	return nil, &NotLoadedError{edge: "authentications"}
+}
+
+// AuthorizationsOrErr returns the Authorizations value or an error if the edge
+// was not loaded in eager-loading.
+func (e PersonEdges) AuthorizationsOrErr() ([]*Authorization, error) {
+	if e.loadedTypes[1] {
+		return e.Authorizations, nil
+	}
+	return nil, &NotLoadedError{edge: "authorizations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -233,6 +245,11 @@ func (pe *Person) QueryAuthentications() *AuthenticationQuery {
 	return NewPersonClient(pe.config).QueryAuthentications(pe)
 }
 
+// QueryAuthorizations queries the "authorizations" edge of the Person entity.
+func (pe *Person) QueryAuthorizations() *AuthorizationQuery {
+	return NewPersonClient(pe.config).QueryAuthorizations(pe)
+}
+
 // Update returns a builder for updating this Person.
 // Note that you need to call Person.Unwrap() before calling this method if this Person
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -357,6 +374,30 @@ func (pe *Person) appendNamedAuthentications(name string, edges ...*Authenticati
 		pe.Edges.namedAuthentications[name] = []*Authentication{}
 	} else {
 		pe.Edges.namedAuthentications[name] = append(pe.Edges.namedAuthentications[name], edges...)
+	}
+}
+
+// NamedAuthorizations returns the Authorizations named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (pe *Person) NamedAuthorizations(name string) ([]*Authorization, error) {
+	if pe.Edges.namedAuthorizations == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := pe.Edges.namedAuthorizations[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (pe *Person) appendNamedAuthorizations(name string, edges ...*Authorization) {
+	if pe.Edges.namedAuthorizations == nil {
+		pe.Edges.namedAuthorizations = make(map[string][]*Authorization)
+	}
+	if len(edges) == 0 {
+		pe.Edges.namedAuthorizations[name] = []*Authorization{}
+	} else {
+		pe.Edges.namedAuthorizations[name] = append(pe.Edges.namedAuthorizations[name], edges...)
 	}
 }
 

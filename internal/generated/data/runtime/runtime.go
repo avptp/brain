@@ -8,6 +8,7 @@ import (
 
 	"github.com/avptp/brain/internal/data/schema"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 
 	"entgo.io/ent"
@@ -42,6 +43,24 @@ func init() {
 	authentication.DefaultLastUsedAt = authenticationDescLastUsedAt.Default.(func() time.Time)
 	// authentication.UpdateDefaultLastUsedAt holds the default value on update for the last_used_at field.
 	authentication.UpdateDefaultLastUsedAt = authenticationDescLastUsedAt.UpdateDefault.(func() time.Time)
+	authorization.Policy = privacy.NewPolicies(schema.Authorization{})
+	authorization.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := authorization.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	authorizationHooks := schema.Authorization{}.Hooks()
+
+	authorization.Hooks[1] = authorizationHooks[0]
+	authorizationFields := schema.Authorization{}.Fields()
+	_ = authorizationFields
+	// authorizationDescCreatedAt is the schema descriptor for created_at field.
+	authorizationDescCreatedAt := authorizationFields[4].Descriptor()
+	// authorization.DefaultCreatedAt holds the default value on creation for the created_at field.
+	authorization.DefaultCreatedAt = authorizationDescCreatedAt.Default.(func() time.Time)
 	person.Policy = privacy.NewPolicies(schema.Person{})
 	person.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
@@ -58,6 +77,8 @@ func init() {
 	person.Hooks[2] = personHooks[1]
 
 	person.Hooks[3] = personHooks[2]
+
+	person.Hooks[4] = personHooks[3]
 	personFields := schema.Person{}.Fields()
 	_ = personFields
 	// personDescEmail is the schema descriptor for email field.

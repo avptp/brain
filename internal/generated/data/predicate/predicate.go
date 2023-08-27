@@ -9,5 +9,8 @@ import (
 // Authentication is the predicate function for authentication builders.
 type Authentication func(*sql.Selector)
 
+// Authorization is the predicate function for authorization builders.
+type Authorization func(*sql.Selector)
+
 // Person is the predicate function for person builders.
 type Person func(*sql.Selector)

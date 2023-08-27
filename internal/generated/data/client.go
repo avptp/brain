@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 
 	stdsql "database/sql"
@@ -28,6 +29,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Authentication is the client for interacting with the Authentication builders.
 	Authentication *AuthenticationClient
+	// Authorization is the client for interacting with the Authorization builders.
+	Authorization *AuthorizationClient
 	// Person is the client for interacting with the Person builders.
 	Person *PersonClient
 }
@@ -44,6 +47,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Authentication = NewAuthenticationClient(c.config)
+	c.Authorization = NewAuthorizationClient(c.config)
 	c.Person = NewPersonClient(c.config)
 }
 
@@ -128,6 +132,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:            ctx,
 		config:         cfg,
 		Authentication: NewAuthenticationClient(cfg),
+		Authorization:  NewAuthorizationClient(cfg),
 		Person:         NewPersonClient(cfg),
 	}, nil
 }
@@ -149,6 +154,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:            ctx,
 		config:         cfg,
 		Authentication: NewAuthenticationClient(cfg),
+		Authorization:  NewAuthorizationClient(cfg),
 		Person:         NewPersonClient(cfg),
 	}, nil
 }
@@ -179,6 +185,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Authentication.Use(hooks...)
+	c.Authorization.Use(hooks...)
 	c.Person.Use(hooks...)
 }
 
@@ -186,6 +193,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Authentication.Intercept(interceptors...)
+	c.Authorization.Intercept(interceptors...)
 	c.Person.Intercept(interceptors...)
 }
 
@@ -194,6 +202,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AuthenticationMutation:
 		return c.Authentication.mutate(ctx, m)
+	case *AuthorizationMutation:
+		return c.Authorization.mutate(ctx, m)
 	case *PersonMutation:
 		return c.Person.mutate(ctx, m)
 	default:
@@ -336,6 +346,141 @@ func (c *AuthenticationClient) mutate(ctx context.Context, m *AuthenticationMuta
 	}
 }
 
+// AuthorizationClient is a client for the Authorization schema.
+type AuthorizationClient struct {
+	config
+}
+
+// NewAuthorizationClient returns a client for the Authorization from the given config.
+func NewAuthorizationClient(c config) *AuthorizationClient {
+	return &AuthorizationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `authorization.Hooks(f(g(h())))`.
+func (c *AuthorizationClient) Use(hooks ...Hook) {
+	c.hooks.Authorization = append(c.hooks.Authorization, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `authorization.Intercept(f(g(h())))`.
+func (c *AuthorizationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Authorization = append(c.inters.Authorization, interceptors...)
+}
+
+// Create returns a builder for creating a Authorization entity.
+func (c *AuthorizationClient) Create() *AuthorizationCreate {
+	mutation := newAuthorizationMutation(c.config, OpCreate)
+	return &AuthorizationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Authorization entities.
+func (c *AuthorizationClient) CreateBulk(builders ...*AuthorizationCreate) *AuthorizationCreateBulk {
+	return &AuthorizationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Authorization.
+func (c *AuthorizationClient) Update() *AuthorizationUpdate {
+	mutation := newAuthorizationMutation(c.config, OpUpdate)
+	return &AuthorizationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AuthorizationClient) UpdateOne(a *Authorization) *AuthorizationUpdateOne {
+	mutation := newAuthorizationMutation(c.config, OpUpdateOne, withAuthorization(a))
+	return &AuthorizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AuthorizationClient) UpdateOneID(id uuid.UUID) *AuthorizationUpdateOne {
+	mutation := newAuthorizationMutation(c.config, OpUpdateOne, withAuthorizationID(id))
+	return &AuthorizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Authorization.
+func (c *AuthorizationClient) Delete() *AuthorizationDelete {
+	mutation := newAuthorizationMutation(c.config, OpDelete)
+	return &AuthorizationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AuthorizationClient) DeleteOne(a *Authorization) *AuthorizationDeleteOne {
+	return c.DeleteOneID(a.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AuthorizationClient) DeleteOneID(id uuid.UUID) *AuthorizationDeleteOne {
+	builder := c.Delete().Where(authorization.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AuthorizationDeleteOne{builder}
+}
+
+// Query returns a query builder for Authorization.
+func (c *AuthorizationClient) Query() *AuthorizationQuery {
+	return &AuthorizationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAuthorization},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Authorization entity by its id.
+func (c *AuthorizationClient) Get(ctx context.Context, id uuid.UUID) (*Authorization, error) {
+	return c.Query().Where(authorization.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AuthorizationClient) GetX(ctx context.Context, id uuid.UUID) *Authorization {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPerson queries the person edge of a Authorization.
+func (c *AuthorizationClient) QueryPerson(a *Authorization) *PersonQuery {
+	query := (&PersonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(authorization.Table, authorization.FieldID, id),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, authorization.PersonTable, authorization.PersonColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AuthorizationClient) Hooks() []Hook {
+	hooks := c.hooks.Authorization
+	return append(hooks[:len(hooks):len(hooks)], authorization.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AuthorizationClient) Interceptors() []Interceptor {
+	return c.inters.Authorization
+}
+
+func (c *AuthorizationClient) mutate(ctx context.Context, m *AuthorizationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AuthorizationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AuthorizationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AuthorizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AuthorizationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("data: unknown Authorization mutation op: %q", m.Op())
+	}
+}
+
 // PersonClient is a client for the Person schema.
 type PersonClient struct {
 	config
@@ -445,6 +590,22 @@ func (c *PersonClient) QueryAuthentications(pe *Person) *AuthenticationQuery {
 	return query
 }
 
+// QueryAuthorizations queries the authorizations edge of a Person.
+func (c *PersonClient) QueryAuthorizations(pe *Person) *AuthorizationQuery {
+	query := (&AuthorizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pe.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, id),
+			sqlgraph.To(authorization.Table, authorization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.AuthorizationsTable, person.AuthorizationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pe.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PersonClient) Hooks() []Hook {
 	hooks := c.hooks.Person
@@ -474,10 +635,10 @@ func (c *PersonClient) mutate(ctx context.Context, m *PersonMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Authentication, Person []ent.Hook
+		Authentication, Authorization, Person []ent.Hook
 	}
 	inters struct {
-		Authentication, Person []ent.Interceptor
+		Authentication, Authorization, Person []ent.Interceptor
 	}
 )
 

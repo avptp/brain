@@ -162,11 +162,16 @@ func (Person) Edges() []ent.Edge {
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),
+		edge.To("authorizations", Authorization.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }
 
 func (Person) Hooks() []ent.Hook {
 	return []ent.Hook{
+		mutators.PersonEmail,
 		mutators.PersonPassword,
 		mutators.PersonLanguage,
 		mutators.PersonBirthdate,

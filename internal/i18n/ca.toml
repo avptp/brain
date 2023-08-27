@@ -21,7 +21,7 @@ other = "Per favor, polsa el botó que hi ha a continuació per verificar-la:"
 [verification.action.text]
 other = "Verifica la teua adreça de correu"
 [verification.outro]
-other = "Tingues en compte que este enllaç és vàlid durant {{.Validity}} minuts."
+other = "Tingues en compte que este enllaç és vàlid durant {{.Validity}} hores."
 
 [recovery.intro]
 other = "Fa un moment ens has indicat que no recordes la contrasenya del teu compte. No patisques!"

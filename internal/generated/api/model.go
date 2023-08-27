@@ -11,6 +11,23 @@ import (
 	"github.com/google/uuid"
 )
 
+type ApplyEmailAuthorizationInput struct {
+	Token string `json:"token"`
+}
+
+type ApplyEmailAuthorizationPayload struct {
+	AuthorizationID uuid.UUID `json:"authorizationId"`
+}
+
+type ApplyPasswordAuthorizationInput struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"newPassword"`
+}
+
+type ApplyPasswordAuthorizationPayload struct {
+	AuthorizationID uuid.UUID `json:"authorizationId"`
+}
+
 type CreateAuthenticationInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -18,6 +35,24 @@ type CreateAuthenticationInput struct {
 
 type CreateAuthenticationPayload struct {
 	Token string `json:"token"`
+}
+
+type CreateEmailAuthorizationInput struct {
+	PersonID uuid.UUID `json:"personId"`
+	Captcha  string    `json:"captcha"`
+}
+
+type CreateEmailAuthorizationPayload struct {
+	Authorization *data.Authorization `json:"authorization"`
+}
+
+type CreatePasswordAuthorizationInput struct {
+	Email   string `json:"email"`
+	Captcha string `json:"captcha"`
+}
+
+type CreatePasswordAuthorizationPayload struct {
+	Success bool `json:"success"`
 }
 
 type CreatePersonInput struct {

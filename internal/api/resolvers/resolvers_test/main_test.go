@@ -3,7 +3,6 @@ package resolvers_test
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"math/rand"
 	"testing"
 
@@ -54,7 +53,6 @@ type TestSuite struct {
 	suite.Suite
 
 	ctn       *container.Container
-	log       *slog.Logger
 	data      *data.Client
 	messenger *messaging_test.MockedMessenger
 	factory   *factories.Factory
@@ -79,7 +77,6 @@ func (t *TestSuite) SetupSuite() {
 	ctn := builder.Build()
 
 	t.ctn = ctn
-	t.log = ctn.GetLogger()
 	t.data = ctn.GetData()
 	t.factory = factories.New(t.data)
 	t.api = client.New(transport.Mux(ctn))
@@ -123,7 +120,7 @@ func (t *TestSuite) toUUID(id string) uuid.UUID {
 	ulid := ulid.ULID{}
 
 	err := ulid.Scan(id)
-	t.Nil(err)
+	t.NoError(err)
 
 	return uuid.UUID(ulid)
 }

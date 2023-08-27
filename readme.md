@@ -97,7 +97,7 @@ For more advanced scenarios, such as debugging tests, you may open a shell in th
 
 ```Shell
 make shell
-dlv test --listen=:8001 --headless --api-version=2 internal/api/resolvers/resolvers_test
+dlv test --listen=:8001 --headless --api-version=2 ./internal/api/resolvers/resolvers_test
 ```
 
 ## Deployment

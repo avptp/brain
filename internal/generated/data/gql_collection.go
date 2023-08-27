@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 )
 
@@ -118,6 +119,102 @@ func newAuthenticationPaginateArgs(rv map[string]any) *authenticationPaginateArg
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (a *AuthorizationQuery) CollectFields(ctx context.Context, satisfies ...string) (*AuthorizationQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return a, nil
+	}
+	if err := a.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+func (a *AuthorizationQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(authorization.Columns))
+		selectedFields = []string{authorization.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "person":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PersonClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			a.withPerson = query
+			if _, ok := fieldSeen[authorization.FieldPersonID]; !ok {
+				selectedFields = append(selectedFields, authorization.FieldPersonID)
+				fieldSeen[authorization.FieldPersonID] = struct{}{}
+			}
+		case "personID":
+			if _, ok := fieldSeen[authorization.FieldPersonID]; !ok {
+				selectedFields = append(selectedFields, authorization.FieldPersonID)
+				fieldSeen[authorization.FieldPersonID] = struct{}{}
+			}
+		case "token":
+			if _, ok := fieldSeen[authorization.FieldToken]; !ok {
+				selectedFields = append(selectedFields, authorization.FieldToken)
+				fieldSeen[authorization.FieldToken] = struct{}{}
+			}
+		case "kind":
+			if _, ok := fieldSeen[authorization.FieldKind]; !ok {
+				selectedFields = append(selectedFields, authorization.FieldKind)
+				fieldSeen[authorization.FieldKind] = struct{}{}
+			}
+		case "createdAt":
+			if _, ok := fieldSeen[authorization.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, authorization.FieldCreatedAt)
+				fieldSeen[authorization.FieldCreatedAt] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		a.Select(selectedFields...)
+	}
+	return nil
+}
+
+type authorizationPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []AuthorizationPaginateOption
+}
+
+func newAuthorizationPaginateArgs(rv map[string]any) *authorizationPaginateArgs {
+	args := &authorizationPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*AuthorizationWhereInput); ok {
+		args.opts = append(args.opts, WithAuthorizationFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (pe *PersonQuery) CollectFields(ctx context.Context, satisfies ...string) (*PersonQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
@@ -148,6 +245,18 @@ func (pe *PersonQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 				return err
 			}
 			pe.WithNamedAuthentications(alias, func(wq *AuthenticationQuery) {
+				*wq = *query
+			})
+		case "authorizations":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&AuthorizationClient{config: pe.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			pe.WithNamedAuthorizations(alias, func(wq *AuthorizationQuery) {
 				*wq = *query
 			})
 		case "email":

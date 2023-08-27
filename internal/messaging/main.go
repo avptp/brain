@@ -45,7 +45,7 @@ func (m *Mailer) Send(t templates.Template, p *data.Person) error {
 		Theme: &theme,
 		Product: hermes.Product{
 			Name:        m.cfg.OrgName,
-			Link:        m.cfg.OrgLink,
+			Link:        m.cfg.FrontUrl,
 			Logo:        m.cfg.OrgLogo,
 			Copyright:   l.MustLocalize(&i18n.LocalizeConfig{MessageID: "sent_by"}),
 			TroubleText: l.MustLocalize(&i18n.LocalizeConfig{MessageID: "trouble"}),

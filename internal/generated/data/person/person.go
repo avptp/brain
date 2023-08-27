@@ -52,6 +52,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeAuthentications holds the string denoting the authentications edge name in mutations.
 	EdgeAuthentications = "authentications"
+	// EdgeAuthorizations holds the string denoting the authorizations edge name in mutations.
+	EdgeAuthorizations = "authorizations"
 	// Table holds the table name of the person in the database.
 	Table = "persons"
 	// AuthenticationsTable is the table that holds the authentications relation/edge.
@@ -61,6 +63,13 @@ const (
 	AuthenticationsInverseTable = "authentications"
 	// AuthenticationsColumn is the table column denoting the authentications relation/edge.
 	AuthenticationsColumn = "person_id"
+	// AuthorizationsTable is the table that holds the authorizations relation/edge.
+	AuthorizationsTable = "authorizations"
+	// AuthorizationsInverseTable is the table name for the Authorization entity.
+	// It exists in this package in order to avoid circular dependency with the "authorization" package.
+	AuthorizationsInverseTable = "authorizations"
+	// AuthorizationsColumn is the table column denoting the authorizations relation/edge.
+	AuthorizationsColumn = "person_id"
 )
 
 // Columns holds all SQL columns for person fields.
@@ -100,7 +109,7 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/avptp/brain/internal/generated/data/runtime"
 var (
-	Hooks  [4]ent.Hook
+	Hooks  [5]ent.Hook
 	Policy ent.Policy
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
@@ -253,11 +262,32 @@ func ByAuthentications(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAuthenticationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAuthorizationsCount orders the results by authorizations count.
+func ByAuthorizationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAuthorizationsStep(), opts...)
+	}
+}
+
+// ByAuthorizations orders the results by authorizations terms.
+func ByAuthorizations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAuthorizationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAuthenticationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AuthenticationsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AuthenticationsTable, AuthenticationsColumn),
+	)
+}
+func newAuthorizationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AuthorizationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AuthorizationsTable, AuthorizationsColumn),
 	)
 }
 

@@ -29,3 +29,5 @@ models:
         resolver: true
   Gender:
     model: github.com/avptp/brain/internal/generated/data/person.Gender
+  AuthorizationKind:
+    model: github.com/avptp/brain/internal/generated/data/authorization.Kind

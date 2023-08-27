@@ -9,6 +9,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
@@ -21,6 +22,9 @@ type Noder interface {
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Authentication) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Authorization) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Person) IsNode() {}
@@ -87,6 +91,18 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		query := c.Authentication.Query().
 			Where(authentication.ID(id))
 		query, err := query.CollectFields(ctx, "Authentication")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case authorization.Table:
+		query := c.Authorization.Query().
+			Where(authorization.ID(id))
+		query, err := query.CollectFields(ctx, "Authorization")
 		if err != nil {
 			return nil, err
 		}
@@ -184,6 +200,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.Authentication.Query().
 			Where(authentication.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Authentication")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case authorization.Table:
+		query := c.Authorization.Query().
+			Where(authorization.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Authorization")
 		if err != nil {
 			return nil, err
 		}

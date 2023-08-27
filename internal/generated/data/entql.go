@@ -4,6 +4,7 @@ package data
 
 import (
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
 
@@ -15,7 +16,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   authentication.Table,
@@ -36,6 +37,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   authorization.Table,
+			Columns: authorization.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: authorization.FieldID,
+			},
+		},
+		Type: "Authorization",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			authorization.FieldPersonID:  {Type: field.TypeUUID, Column: authorization.FieldPersonID},
+			authorization.FieldToken:     {Type: field.TypeBytes, Column: authorization.FieldToken},
+			authorization.FieldKind:      {Type: field.TypeEnum, Column: authorization.FieldKind},
+			authorization.FieldCreatedAt: {Type: field.TypeTime, Column: authorization.FieldCreatedAt},
+		},
+	}
+	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   person.Table,
 			Columns: person.Columns,
@@ -77,6 +95,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Person",
 	)
 	graph.MustAddE(
+		"person",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   authorization.PersonTable,
+			Columns: []string{authorization.PersonColumn},
+			Bidi:    false,
+		},
+		"Authorization",
+		"Person",
+	)
+	graph.MustAddE(
 		"authentications",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -87,6 +117,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Person",
 		"Authentication",
+	)
+	graph.MustAddE(
+		"authorizations",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+		},
+		"Person",
+		"Authorization",
 	)
 	return graph
 }()
@@ -182,6 +224,80 @@ func (f *AuthenticationFilter) WhereHasPersonWith(preds ...predicate.Person) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (aq *AuthorizationQuery) addPredicate(pred func(s *sql.Selector)) {
+	aq.predicates = append(aq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the AuthorizationQuery builder.
+func (aq *AuthorizationQuery) Filter() *AuthorizationFilter {
+	return &AuthorizationFilter{config: aq.config, predicateAdder: aq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *AuthorizationMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the AuthorizationMutation builder.
+func (m *AuthorizationMutation) Filter() *AuthorizationFilter {
+	return &AuthorizationFilter{config: m.config, predicateAdder: m}
+}
+
+// AuthorizationFilter provides a generic filtering capability at runtime for AuthorizationQuery.
+type AuthorizationFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *AuthorizationFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *AuthorizationFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(authorization.FieldID))
+}
+
+// WherePersonID applies the entql [16]byte predicate on the person_id field.
+func (f *AuthorizationFilter) WherePersonID(p entql.ValueP) {
+	f.Where(p.Field(authorization.FieldPersonID))
+}
+
+// WhereToken applies the entql []byte predicate on the token field.
+func (f *AuthorizationFilter) WhereToken(p entql.BytesP) {
+	f.Where(p.Field(authorization.FieldToken))
+}
+
+// WhereKind applies the entql string predicate on the kind field.
+func (f *AuthorizationFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(authorization.FieldKind))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *AuthorizationFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(authorization.FieldCreatedAt))
+}
+
+// WhereHasPerson applies a predicate to check if query has an edge person.
+func (f *AuthorizationFilter) WhereHasPerson() {
+	f.Where(entql.HasEdge("person"))
+}
+
+// WhereHasPersonWith applies a predicate to check if query has an edge person with a given conditions (other predicates).
+func (f *AuthorizationFilter) WhereHasPersonWith(preds ...predicate.Person) {
+	f.Where(entql.HasEdgeWith("person", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (pq *PersonQuery) addPredicate(pred func(s *sql.Selector)) {
 	pq.predicates = append(pq.predicates, pred)
 }
@@ -210,7 +326,7 @@ type PersonFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PersonFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -309,6 +425,20 @@ func (f *PersonFilter) WhereHasAuthentications() {
 // WhereHasAuthenticationsWith applies a predicate to check if query has an edge authentications with a given conditions (other predicates).
 func (f *PersonFilter) WhereHasAuthenticationsWith(preds ...predicate.Authentication) {
 	f.Where(entql.HasEdgeWith("authentications", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAuthorizations applies a predicate to check if query has an edge authorizations.
+func (f *PersonFilter) WhereHasAuthorizations() {
+	f.Where(entql.HasEdge("authorizations"))
+}
+
+// WhereHasAuthorizationsWith applies a predicate to check if query has an edge authorizations with a given conditions (other predicates).
+func (f *PersonFilter) WhereHasAuthorizationsWith(preds ...predicate.Authorization) {
+	f.Where(entql.HasEdgeWith("authorizations", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

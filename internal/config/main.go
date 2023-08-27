@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type Config struct {
 	Environment string `env:"APP_ENV" envDefault:"production"`
 	Debug       bool   `env:"APP_DEBUG" envDefault:"false"`
@@ -24,7 +26,12 @@ type Config struct {
 	AwsKeyId     string `env:"AWS_KEY_ID"`
 	AwsKeySecret string `env:"AWS_KEY_SECRET"`
 
+	AuthorizationMaxAge time.Duration `env:"AUTHORIZATION_MAX_AGE"`
+
+	FrontUrl                       string `env:"FRONT_URL"`
+	FrontEmailAuthorizationPath    string `env:"FRONT_EMAIL_AUTHORIZATION_PATH"`
+	FrontPasswordAuthorizationPath string `env:"FRONT_PASSWORD_AUTHORIZATION_PATH"`
+
 	OrgName string `env:"ORG_NAME"`
-	OrgLink string `env:"ORG_LINK"`
 	OrgLogo string `env:"ORG_LOGO"`
 }

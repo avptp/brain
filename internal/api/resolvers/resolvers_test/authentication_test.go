@@ -41,7 +41,7 @@ func (t *TestSuite) TestAuthentication() {
 		)
 
 		token, err := base64.URLEncoding.DecodeString(response.CreateAuthentication.Token)
-		t.Nil(err)
+		t.NoError(err)
 
 		atc, err := t.data.Authentication.
 			Query().
@@ -49,7 +49,7 @@ func (t *TestSuite) TestAuthentication() {
 			Where(authentication.TokenEQ(token)).
 			First(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 		t.Equal(p.ID, atc.Edges.Person.ID)
 	})
 
@@ -165,7 +165,7 @@ func (t *TestSuite) TestAuthentication() {
 			Where(authentication.IDEQ(a.ID)).
 			Exist(t.allowCtx)
 
-		t.Nil(err)
+		t.NoError(err)
 		t.False(exists)
 	})
 

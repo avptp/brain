@@ -174,6 +174,30 @@ func (f AuthenticationMutationRuleFunc) EvalMutation(ctx context.Context, m data
 	return Denyf("data/privacy: unexpected mutation type %T, expect *data.AuthenticationMutation", m)
 }
 
+// The AuthorizationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AuthorizationQueryRuleFunc func(context.Context, *data.AuthorizationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AuthorizationQueryRuleFunc) EvalQuery(ctx context.Context, q data.Query) error {
+	if q, ok := q.(*data.AuthorizationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("data/privacy: unexpected query type %T, expect *data.AuthorizationQuery", q)
+}
+
+// The AuthorizationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AuthorizationMutationRuleFunc func(context.Context, *data.AuthorizationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AuthorizationMutationRuleFunc) EvalMutation(ctx context.Context, m data.Mutation) error {
+	if m, ok := m.(*data.AuthorizationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("data/privacy: unexpected mutation type %T, expect *data.AuthorizationMutation", m)
+}
+
 // The PersonQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type PersonQueryRuleFunc func(context.Context, *data.PersonQuery) error
@@ -235,6 +259,8 @@ func queryFilter(q data.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *data.AuthenticationQuery:
 		return q.Filter(), nil
+	case *data.AuthorizationQuery:
+		return q.Filter(), nil
 	case *data.PersonQuery:
 		return q.Filter(), nil
 	default:
@@ -245,6 +271,8 @@ func queryFilter(q data.Query) (Filter, error) {
 func mutationFilter(m data.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *data.AuthenticationMutation:
+		return m.Filter(), nil
+	case *data.AuthorizationMutation:
 		return m.Filter(), nil
 	case *data.PersonMutation:
 		return m.Filter(), nil

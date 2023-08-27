@@ -1139,6 +1139,29 @@ func HasAuthenticationsWith(preds ...predicate.Authentication) predicate.Person 
 	})
 }
 
+// HasAuthorizations applies the HasEdge predicate on the "authorizations" edge.
+func HasAuthorizations() predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AuthorizationsTable, AuthorizationsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAuthorizationsWith applies the HasEdge predicate on the "authorizations" edge with a given conditions (other predicates).
+func HasAuthorizationsWith(preds ...predicate.Authorization) predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := newAuthorizationsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Person) predicate.Person {
 	return predicate.Person(func(s *sql.Selector) {

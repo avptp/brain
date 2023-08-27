@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
 	"github.com/google/uuid"
@@ -261,6 +262,21 @@ func (pu *PersonUpdate) AddAuthentications(a ...*Authentication) *PersonUpdate {
 	return pu.AddAuthenticationIDs(ids...)
 }
 
+// AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by IDs.
+func (pu *PersonUpdate) AddAuthorizationIDs(ids ...uuid.UUID) *PersonUpdate {
+	pu.mutation.AddAuthorizationIDs(ids...)
+	return pu
+}
+
+// AddAuthorizations adds the "authorizations" edges to the Authorization entity.
+func (pu *PersonUpdate) AddAuthorizations(a ...*Authorization) *PersonUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return pu.AddAuthorizationIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (pu *PersonUpdate) Mutation() *PersonMutation {
 	return pu.mutation
@@ -285,6 +301,27 @@ func (pu *PersonUpdate) RemoveAuthentications(a ...*Authentication) *PersonUpdat
 		ids[i] = a[i].ID
 	}
 	return pu.RemoveAuthenticationIDs(ids...)
+}
+
+// ClearAuthorizations clears all "authorizations" edges to the Authorization entity.
+func (pu *PersonUpdate) ClearAuthorizations() *PersonUpdate {
+	pu.mutation.ClearAuthorizations()
+	return pu
+}
+
+// RemoveAuthorizationIDs removes the "authorizations" edge to Authorization entities by IDs.
+func (pu *PersonUpdate) RemoveAuthorizationIDs(ids ...uuid.UUID) *PersonUpdate {
+	pu.mutation.RemoveAuthorizationIDs(ids...)
+	return pu
+}
+
+// RemoveAuthorizations removes "authorizations" edges to Authorization entities.
+func (pu *PersonUpdate) RemoveAuthorizations(a ...*Authorization) *PersonUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return pu.RemoveAuthorizationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -506,6 +543,51 @@ func (pu *PersonUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(authentication.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.AuthorizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedAuthorizationsIDs(); len(nodes) > 0 && !pu.mutation.AuthorizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.AuthorizationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -764,6 +846,21 @@ func (puo *PersonUpdateOne) AddAuthentications(a ...*Authentication) *PersonUpda
 	return puo.AddAuthenticationIDs(ids...)
 }
 
+// AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by IDs.
+func (puo *PersonUpdateOne) AddAuthorizationIDs(ids ...uuid.UUID) *PersonUpdateOne {
+	puo.mutation.AddAuthorizationIDs(ids...)
+	return puo
+}
+
+// AddAuthorizations adds the "authorizations" edges to the Authorization entity.
+func (puo *PersonUpdateOne) AddAuthorizations(a ...*Authorization) *PersonUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return puo.AddAuthorizationIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (puo *PersonUpdateOne) Mutation() *PersonMutation {
 	return puo.mutation
@@ -788,6 +885,27 @@ func (puo *PersonUpdateOne) RemoveAuthentications(a ...*Authentication) *PersonU
 		ids[i] = a[i].ID
 	}
 	return puo.RemoveAuthenticationIDs(ids...)
+}
+
+// ClearAuthorizations clears all "authorizations" edges to the Authorization entity.
+func (puo *PersonUpdateOne) ClearAuthorizations() *PersonUpdateOne {
+	puo.mutation.ClearAuthorizations()
+	return puo
+}
+
+// RemoveAuthorizationIDs removes the "authorizations" edge to Authorization entities by IDs.
+func (puo *PersonUpdateOne) RemoveAuthorizationIDs(ids ...uuid.UUID) *PersonUpdateOne {
+	puo.mutation.RemoveAuthorizationIDs(ids...)
+	return puo
+}
+
+// RemoveAuthorizations removes "authorizations" edges to Authorization entities.
+func (puo *PersonUpdateOne) RemoveAuthorizations(a ...*Authorization) *PersonUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return puo.RemoveAuthorizationIDs(ids...)
 }
 
 // Where appends a list predicates to the PersonUpdate builder.
@@ -1039,6 +1157,51 @@ func (puo *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(authentication.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.AuthorizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedAuthorizationsIDs(); len(nodes) > 0 && !puo.mutation.AuthorizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.AuthorizationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -13,6 +13,16 @@ import (
 	"golang.org/x/text/language"
 )
 
+func PersonEmail(next ent.Mutator) ent.Mutator {
+	return hook.PersonFunc(func(ctx context.Context, m *data.PersonMutation) (ent.Value, error) {
+		if _, ok := m.Email(); ok {
+			m.ClearEmailVerifiedAt()
+		}
+
+		return next.Mutate(ctx, m)
+	})
+}
+
 func PersonPassword(next ent.Mutator) ent.Mutator {
 	// see: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
 	params := &argon2id.Params{

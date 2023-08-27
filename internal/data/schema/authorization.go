@@ -8,17 +8,18 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/avptp/brain/internal/data/mutators"
 	"github.com/avptp/brain/internal/data/rules"
 	"github.com/avptp/brain/internal/generated/data/hook"
 	"github.com/google/uuid"
 )
 
-type Authentication struct {
+type Authorization struct {
 	ent.Schema
 }
 
-func (Authentication) Fields() []ent.Field {
+func (Authorization) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Immutable().
@@ -36,35 +37,28 @@ func (Authentication) Fields() []ent.Field {
 			Immutable().
 			Unique().
 			StructTag(`fakesize:"64"`),
-		field.String("created_ip").
+		field.Enum("kind").
 			SchemaType(map[string]string{
-				dialect.Postgres: "inet",
+				dialect.Postgres: "authorization_kind",
 			}).
-			StructTag(`fake:"{ipv6address}"`),
-		field.String("last_used_ip").
-			SchemaType(map[string]string{
-				dialect.Postgres: "inet",
-			}).
-			StructTag(`fake:"{ipv6address}"`),
+			NamedValues(
+				"Email", "email",
+				"Password", "password",
+			).
+			StructTag(`fake:"{randomstring:[email,password]}"`),
 		field.Time("created_at").
 			SchemaType(map[string]string{
 				dialect.Postgres: "timestamp",
 			}).
 			Default(time.Now).
 			Immutable(),
-		field.Time("last_used_at").
-			SchemaType(map[string]string{
-				dialect.Postgres: "timestamp",
-			}).
-			Default(time.Now).
-			UpdateDefault(time.Now),
 	}
 }
 
-func (Authentication) Edges() []ent.Edge {
+func (Authorization) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("person", Person.Type).
-			Ref("authentications").
+			Ref("authorizations").
 			Field("person_id").
 			Unique().
 			Required().
@@ -72,12 +66,19 @@ func (Authentication) Edges() []ent.Edge {
 	}
 }
 
-func (Authentication) Hooks() []ent.Hook {
-	return []ent.Hook{
-		hook.On(mutators.AuthenticationToken, ent.OpCreate),
+func (Authorization) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("person_id", "kind").
+			Unique(),
 	}
 }
 
-func (Authentication) Policy() ent.Policy {
+func (Authorization) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(mutators.AuthorizationToken, ent.OpCreate),
+	}
+}
+
+func (Authorization) Policy() ent.Policy {
 	return rules.FilterPersonOwnedRule()
 }

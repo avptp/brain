@@ -21,7 +21,7 @@ other = "Por favor, pulsa el botón que hay a continuación para verificarla:"
 [verification.action.text]
 other = "Verifica tu dirección de correo"
 [verification.outro]
-other = "Ten en cuenta que este enlace es válido durante {{.Validity}} minutos."
+other = "Ten en cuenta que este enlace es válido durante {{.Validity}} horas."
 
 [recovery.intro]
 other = "Hace un momento nos has indicado que no recuerdas la contraseña de tu cuenta. ¡Que no cunda el pánico!"

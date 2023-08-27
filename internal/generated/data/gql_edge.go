@@ -16,6 +16,14 @@ func (a *Authentication) Person(ctx context.Context) (*Person, error) {
 	return result, err
 }
 
+func (a *Authorization) Person(ctx context.Context) (*Person, error) {
+	result, err := a.Edges.PersonOrErr()
+	if IsNotLoaded(err) {
+		result, err = a.QueryPerson().Only(ctx)
+	}
+	return result, err
+}
+
 func (pe *Person) Authentications(ctx context.Context) (result []*Authentication, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = pe.NamedAuthentications(graphql.GetFieldContext(ctx).Field.Alias)
@@ -24,6 +32,18 @@ func (pe *Person) Authentications(ctx context.Context) (result []*Authentication
 	}
 	if IsNotLoaded(err) {
 		result, err = pe.QueryAuthentications().All(ctx)
+	}
+	return result, err
+}
+
+func (pe *Person) Authorizations(ctx context.Context) (result []*Authorization, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = pe.NamedAuthorizations(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = pe.Edges.AuthorizationsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = pe.QueryAuthorizations().All(ctx)
 	}
 	return result, err
 }

@@ -6,6 +6,8 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"entgo.io/contrib/entgql"
 	"github.com/alexedwards/argon2id"
@@ -13,6 +15,7 @@ import (
 	"github.com/avptp/brain/internal/auth"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/messaging/templates"
@@ -47,10 +50,24 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 		return nil, err
 	}
 
-	// TODO: implement email verifications
+	a, err := d.Authorization.
+		Create().
+		SetPersonID(p.ID).
+		SetKind(authorization.KindEmail).
+		Save(allowCtx)
+
+	if err != nil {
+		return nil, err
+	}
+
 	err = r.messenger.Send(&templates.Welcome{
-		Link:     "",
-		Validity: "",
+		Link: fmt.Sprintf(
+			"%s/%s/%s",
+			r.cfg.FrontUrl,
+			r.cfg.FrontEmailAuthorizationPath,
+			a.Token,
+		),
+		Validity: fmt.Sprintf("%d", r.cfg.AuthorizationMaxAge/time.Hour),
 	}, p)
 
 	if err != nil {

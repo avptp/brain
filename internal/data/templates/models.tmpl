@@ -18,7 +18,7 @@ func ({{ $receiver }} *{{ $.Name }}) FullName() string {
 {{ end }}
 
 {{ define "model/additional/authentication" }}
-{{- if eq $.Name "Authentication" -}}
+{{- if eq $.Name "Authentication" "Authorization" -}}
 {{- range $f := $.Fields -}}
 {{- if eq $f.Name "token" -}}
 {{- $receiver := $.Receiver -}}

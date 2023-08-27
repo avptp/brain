@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 )
@@ -225,6 +226,21 @@ func (pc *PersonCreate) AddAuthentications(a ...*Authentication) *PersonCreate {
 		ids[i] = a[i].ID
 	}
 	return pc.AddAuthenticationIDs(ids...)
+}
+
+// AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by IDs.
+func (pc *PersonCreate) AddAuthorizationIDs(ids ...uuid.UUID) *PersonCreate {
+	pc.mutation.AddAuthorizationIDs(ids...)
+	return pc
+}
+
+// AddAuthorizations adds the "authorizations" edges to the Authorization entity.
+func (pc *PersonCreate) AddAuthorizations(a ...*Authorization) *PersonCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return pc.AddAuthorizationIDs(ids...)
 }
 
 // Mutation returns the PersonMutation object of the builder.
@@ -462,6 +478,22 @@ func (pc *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(authentication.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.AuthorizationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.AuthorizationsTable,
+			Columns: []string{person.AuthorizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(authorization.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

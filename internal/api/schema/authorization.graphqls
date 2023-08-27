@@ -1,0 +1,65 @@
+type Authorization {
+    id: ID!
+
+    kind: AuthorizationKind!
+    createdAt: Time!
+
+    personId: ID!
+    person: Person!
+}
+
+enum AuthorizationKind {
+  EMAIL
+  PASSWORD
+}
+
+extend type Mutation {
+    createEmailAuthorization(input: CreateEmailAuthorizationInput!): CreateEmailAuthorizationPayload
+}
+
+input CreateEmailAuthorizationInput {
+    personId: ID!
+    captcha: String!
+}
+
+type CreateEmailAuthorizationPayload {
+    authorization: Authorization!
+}
+
+extend type Mutation {
+    applyEmailAuthorization(input: ApplyEmailAuthorizationInput!): ApplyEmailAuthorizationPayload
+}
+
+input ApplyEmailAuthorizationInput {
+    token: String!
+}
+
+type ApplyEmailAuthorizationPayload {
+    authorizationId: ID!
+}
+
+extend type Mutation {
+    createPasswordAuthorization(input: CreatePasswordAuthorizationInput!): CreatePasswordAuthorizationPayload
+}
+
+input CreatePasswordAuthorizationInput {
+    email: String!
+    captcha: String!
+}
+
+type CreatePasswordAuthorizationPayload {
+    success: Boolean!
+}
+
+extend type Mutation {
+    applyPasswordAuthorization(input: ApplyPasswordAuthorizationInput!): ApplyPasswordAuthorizationPayload
+}
+
+input ApplyPasswordAuthorizationInput {
+    token: String!
+    newPassword: String!
+}
+
+type ApplyPasswordAuthorizationPayload {
+    authorizationId: ID!
+}

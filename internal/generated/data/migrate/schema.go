@@ -32,6 +32,35 @@ var (
 			},
 		},
 	}
+	// AuthorizationsColumns holds the columns for the "authorizations" table.
+	AuthorizationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Default: "gen_random_ulid()"},
+		{Name: "token", Type: field.TypeBytes, Unique: true, SchemaType: map[string]string{"postgres": "bytes"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"email", "password"}, SchemaType: map[string]string{"postgres": "authorization_kind"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp"}},
+		{Name: "person_id", Type: field.TypeUUID},
+	}
+	// AuthorizationsTable holds the schema information for the "authorizations" table.
+	AuthorizationsTable = &schema.Table{
+		Name:       "authorizations",
+		Columns:    AuthorizationsColumns,
+		PrimaryKey: []*schema.Column{AuthorizationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "authorizations_persons_authorizations",
+				Columns:    []*schema.Column{AuthorizationsColumns[4]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "authorization_person_id_kind",
+				Unique:  true,
+				Columns: []*schema.Column{AuthorizationsColumns[4], AuthorizationsColumns[2]},
+			},
+		},
+	}
 	// PersonsColumns holds the columns for the "persons" table.
 	PersonsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Default: "gen_random_ulid()"},
@@ -61,10 +90,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AuthenticationsTable,
+		AuthorizationsTable,
 		PersonsTable,
 	}
 )
 
 func init() {
 	AuthenticationsTable.ForeignKeys[0].RefTable = PersonsTable
+	AuthorizationsTable.ForeignKeys[0].RefTable = PersonsTable
 }

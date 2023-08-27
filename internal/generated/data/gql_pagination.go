@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -338,6 +339,252 @@ func (a *Authentication) ToEdge(order *AuthenticationOrder) *AuthenticationEdge 
 		order = DefaultAuthenticationOrder
 	}
 	return &AuthenticationEdge{
+		Node:   a,
+		Cursor: order.Field.toCursor(a),
+	}
+}
+
+// AuthorizationEdge is the edge representation of Authorization.
+type AuthorizationEdge struct {
+	Node   *Authorization `json:"node"`
+	Cursor Cursor         `json:"cursor"`
+}
+
+// AuthorizationConnection is the connection containing edges to Authorization.
+type AuthorizationConnection struct {
+	Edges      []*AuthorizationEdge `json:"edges"`
+	PageInfo   PageInfo             `json:"pageInfo"`
+	TotalCount int                  `json:"totalCount"`
+}
+
+func (c *AuthorizationConnection) build(nodes []*Authorization, pager *authorizationPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Authorization
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Authorization {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Authorization {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*AuthorizationEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &AuthorizationEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// AuthorizationPaginateOption enables pagination customization.
+type AuthorizationPaginateOption func(*authorizationPager) error
+
+// WithAuthorizationOrder configures pagination ordering.
+func WithAuthorizationOrder(order *AuthorizationOrder) AuthorizationPaginateOption {
+	if order == nil {
+		order = DefaultAuthorizationOrder
+	}
+	o := *order
+	return func(pager *authorizationPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAuthorizationOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAuthorizationFilter configures pagination filter.
+func WithAuthorizationFilter(filter func(*AuthorizationQuery) (*AuthorizationQuery, error)) AuthorizationPaginateOption {
+	return func(pager *authorizationPager) error {
+		if filter == nil {
+			return errors.New("AuthorizationQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type authorizationPager struct {
+	reverse bool
+	order   *AuthorizationOrder
+	filter  func(*AuthorizationQuery) (*AuthorizationQuery, error)
+}
+
+func newAuthorizationPager(opts []AuthorizationPaginateOption, reverse bool) (*authorizationPager, error) {
+	pager := &authorizationPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAuthorizationOrder
+	}
+	return pager, nil
+}
+
+func (p *authorizationPager) applyFilter(query *AuthorizationQuery) (*AuthorizationQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *authorizationPager) toCursor(a *Authorization) Cursor {
+	return p.order.Field.toCursor(a)
+}
+
+func (p *authorizationPager) applyCursors(query *AuthorizationQuery, after, before *Cursor) (*AuthorizationQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultAuthorizationOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *authorizationPager) applyOrder(query *AuthorizationQuery) *AuthorizationQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultAuthorizationOrder.Field {
+		query = query.Order(DefaultAuthorizationOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *authorizationPager) orderExpr(query *AuthorizationQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultAuthorizationOrder.Field {
+			b.Comma().Ident(DefaultAuthorizationOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Authorization.
+func (a *AuthorizationQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AuthorizationPaginateOption,
+) (*AuthorizationConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAuthorizationPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if a, err = pager.applyFilter(a); err != nil {
+		return nil, err
+	}
+	conn := &AuthorizationConnection{Edges: []*AuthorizationEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = a.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if a, err = pager.applyCursors(a, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		a.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := a.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	a = pager.applyOrder(a)
+	nodes, err := a.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// AuthorizationOrderField defines the ordering field of Authorization.
+type AuthorizationOrderField struct {
+	// Value extracts the ordering value from the given Authorization.
+	Value    func(*Authorization) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) authorization.OrderOption
+	toCursor func(*Authorization) Cursor
+}
+
+// AuthorizationOrder defines the ordering of Authorization.
+type AuthorizationOrder struct {
+	Direction OrderDirection           `json:"direction"`
+	Field     *AuthorizationOrderField `json:"field"`
+}
+
+// DefaultAuthorizationOrder is the default ordering of Authorization.
+var DefaultAuthorizationOrder = &AuthorizationOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &AuthorizationOrderField{
+		Value: func(a *Authorization) (ent.Value, error) {
+			return a.ID, nil
+		},
+		column: authorization.FieldID,
+		toTerm: authorization.ByID,
+		toCursor: func(a *Authorization) Cursor {
+			return Cursor{ID: a.ID}
+		},
+	},
+}
+
+// ToEdge converts Authorization into AuthorizationEdge.
+func (a *Authorization) ToEdge(order *AuthorizationOrder) *AuthorizationEdge {
+	if order == nil {
+		order = DefaultAuthorizationOrder
+	}
+	return &AuthorizationEdge{
 		Node:   a,
 		Cursor: order.Field.toCursor(a),
 	}

@@ -10,13 +10,13 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 )
 
-// Authentication is the model entity for the Authentication schema.
-type Authentication struct {
+// Authorization is the model entity for the Authorization schema.
+type Authorization struct {
 	config `fake:"-" fakesize:"-" json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -24,22 +24,18 @@ type Authentication struct {
 	PersonID uuid.UUID `json:"person_id,omitempty"`
 	// Token holds the value of the "token" field.
 	Token []byte `json:"token,omitempty" fakesize:"64"`
-	// CreatedIP holds the value of the "created_ip" field.
-	CreatedIP string `json:"created_ip,omitempty" fake:"{ipv6address}"`
-	// LastUsedIP holds the value of the "last_used_ip" field.
-	LastUsedIP string `json:"last_used_ip,omitempty" fake:"{ipv6address}"`
+	// Kind holds the value of the "kind" field.
+	Kind authorization.Kind `json:"kind,omitempty" fake:"{randomstring:[email,password]}"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// LastUsedAt holds the value of the "last_used_at" field.
-	LastUsedAt time.Time `json:"last_used_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the AuthenticationQuery when eager-loading is set.
-	Edges        AuthenticationEdges `json:"edges"`
+	// The values are being populated by the AuthorizationQuery when eager-loading is set.
+	Edges        AuthorizationEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// AuthenticationEdges holds the relations/edges for other nodes in the graph.
-type AuthenticationEdges struct {
+// AuthorizationEdges holds the relations/edges for other nodes in the graph.
+type AuthorizationEdges struct {
 	// Person holds the value of the person edge.
 	Person *Person `json:"person,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -51,7 +47,7 @@ type AuthenticationEdges struct {
 
 // PersonOrErr returns the Person value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AuthenticationEdges) PersonOrErr() (*Person, error) {
+func (e AuthorizationEdges) PersonOrErr() (*Person, error) {
 	if e.loadedTypes[0] {
 		if e.Person == nil {
 			// Edge was loaded but was not found.
@@ -63,17 +59,17 @@ func (e AuthenticationEdges) PersonOrErr() (*Person, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Authentication) scanValues(columns []string) ([]any, error) {
+func (*Authorization) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case authentication.FieldToken:
+		case authorization.FieldToken:
 			values[i] = new([]byte)
-		case authentication.FieldCreatedIP, authentication.FieldLastUsedIP:
+		case authorization.FieldKind:
 			values[i] = new(sql.NullString)
-		case authentication.FieldCreatedAt, authentication.FieldLastUsedAt:
+		case authorization.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case authentication.FieldID, authentication.FieldPersonID:
+		case authorization.FieldID, authorization.FieldPersonID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -83,54 +79,42 @@ func (*Authentication) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Authentication fields.
-func (a *Authentication) assignValues(columns []string, values []any) error {
+// to the Authorization fields.
+func (a *Authorization) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case authentication.FieldID:
+		case authorization.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				a.ID = *value
 			}
-		case authentication.FieldPersonID:
+		case authorization.FieldPersonID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field person_id", values[i])
 			} else if value != nil {
 				a.PersonID = *value
 			}
-		case authentication.FieldToken:
+		case authorization.FieldToken:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field token", values[i])
 			} else if value != nil {
 				a.Token = *value
 			}
-		case authentication.FieldCreatedIP:
+		case authorization.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field created_ip", values[i])
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				a.CreatedIP = value.String
+				a.Kind = authorization.Kind(value.String)
 			}
-		case authentication.FieldLastUsedIP:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field last_used_ip", values[i])
-			} else if value.Valid {
-				a.LastUsedIP = value.String
-			}
-		case authentication.FieldCreatedAt:
+		case authorization.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				a.CreatedAt = value.Time
-			}
-		case authentication.FieldLastUsedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_used_at", values[i])
-			} else if value.Valid {
-				a.LastUsedAt = value.Time
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -139,39 +123,39 @@ func (a *Authentication) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Authentication.
+// Value returns the ent.Value that was dynamically selected and assigned to the Authorization.
 // This includes values selected through modifiers, order, etc.
-func (a *Authentication) Value(name string) (ent.Value, error) {
+func (a *Authorization) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
 }
 
-// QueryPerson queries the "person" edge of the Authentication entity.
-func (a *Authentication) QueryPerson() *PersonQuery {
-	return NewAuthenticationClient(a.config).QueryPerson(a)
+// QueryPerson queries the "person" edge of the Authorization entity.
+func (a *Authorization) QueryPerson() *PersonQuery {
+	return NewAuthorizationClient(a.config).QueryPerson(a)
 }
 
-// Update returns a builder for updating this Authentication.
-// Note that you need to call Authentication.Unwrap() before calling this method if this Authentication
+// Update returns a builder for updating this Authorization.
+// Note that you need to call Authorization.Unwrap() before calling this method if this Authorization
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (a *Authentication) Update() *AuthenticationUpdateOne {
-	return NewAuthenticationClient(a.config).UpdateOne(a)
+func (a *Authorization) Update() *AuthorizationUpdateOne {
+	return NewAuthorizationClient(a.config).UpdateOne(a)
 }
 
-// Unwrap unwraps the Authentication entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Authorization entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (a *Authentication) Unwrap() *Authentication {
+func (a *Authorization) Unwrap() *Authorization {
 	_tx, ok := a.config.driver.(*txDriver)
 	if !ok {
-		panic("data: Authentication is not a transactional entity")
+		panic("data: Authorization is not a transactional entity")
 	}
 	a.config.driver = _tx.drv
 	return a
 }
 
 // String implements the fmt.Stringer.
-func (a *Authentication) String() string {
+func (a *Authorization) String() string {
 	var builder strings.Builder
-	builder.WriteString("Authentication(")
+	builder.WriteString("Authorization(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
 	builder.WriteString("person_id=")
 	builder.WriteString(fmt.Sprintf("%v", a.PersonID))
@@ -179,24 +163,18 @@ func (a *Authentication) String() string {
 	builder.WriteString("token=")
 	builder.WriteString(fmt.Sprintf("%v", a.Token))
 	builder.WriteString(", ")
-	builder.WriteString("created_ip=")
-	builder.WriteString(a.CreatedIP)
-	builder.WriteString(", ")
-	builder.WriteString("last_used_ip=")
-	builder.WriteString(a.LastUsedIP)
+	builder.WriteString("kind=")
+	builder.WriteString(fmt.Sprintf("%v", a.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("last_used_at=")
-	builder.WriteString(a.LastUsedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-func (a *Authentication) TokenEncoded() string {
+func (a *Authorization) TokenEncoded() string {
 	return base64.URLEncoding.EncodeToString(a.Token)
 }
 
-// Authentications is a parsable slice of Authentication.
-type Authentications []*Authentication
+// Authorizations is a parsable slice of Authorization.
+type Authorizations []*Authorization
