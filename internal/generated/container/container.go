@@ -17,6 +17,7 @@ import (
 	messaging "github.com/avptp/brain/internal/messaging"
 	ses "github.com/aws/aws-sdk-go/service/ses"
 	hcaptcha "github.com/kataras/hcaptcha"
+	tasks "github.com/madflojo/tasks"
 	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
 )
@@ -1131,6 +1132,131 @@ func (c *Container) UnscopedGetMessenger() messaging.Messenger {
 // If the container can not be retrieved, it panics.
 func Messenger(i interface{}) messaging.Messenger {
 	return C(i).GetMessenger()
+}
+
+// SafeGetScheduler retrieves the "scheduler" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "scheduler"
+//	type: *tasks.Scheduler
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: true
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetScheduler() (*tasks.Scheduler, error) {
+	i, err := c.ctn.SafeGet("scheduler")
+	if err != nil {
+		var eo *tasks.Scheduler
+		return eo, err
+	}
+	o, ok := i.(*tasks.Scheduler)
+	if !ok {
+		return o, errors.New("could get 'scheduler' because the object could not be cast to *tasks.Scheduler")
+	}
+	return o, nil
+}
+
+// GetScheduler retrieves the "scheduler" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "scheduler"
+//	type: *tasks.Scheduler
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: true
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetScheduler() *tasks.Scheduler {
+	o, err := c.SafeGetScheduler()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetScheduler retrieves the "scheduler" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "scheduler"
+//	type: *tasks.Scheduler
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: true
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetScheduler() (*tasks.Scheduler, error) {
+	i, err := c.ctn.UnscopedSafeGet("scheduler")
+	if err != nil {
+		var eo *tasks.Scheduler
+		return eo, err
+	}
+	o, ok := i.(*tasks.Scheduler)
+	if !ok {
+		return o, errors.New("could get 'scheduler' because the object could not be cast to *tasks.Scheduler")
+	}
+	return o, nil
+}
+
+// UnscopedGetScheduler retrieves the "scheduler" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "scheduler"
+//	type: *tasks.Scheduler
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: true
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetScheduler() *tasks.Scheduler {
+	o, err := c.UnscopedSafeGetScheduler()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Scheduler retrieves the "scheduler" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "scheduler"
+//	type: *tasks.Scheduler
+//	scope: "app"
+//	build: func
+//	params: nil
+//	unshared: false
+//	close: true
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetScheduler method.
+// If the container can not be retrieved, it panics.
+func Scheduler(i interface{}) *tasks.Scheduler {
+	return C(i).GetScheduler()
 }
 
 // SafeGetSes retrieves the "ses" object from the app scope.

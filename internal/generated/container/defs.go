@@ -13,6 +13,7 @@ import (
 	messaging "github.com/avptp/brain/internal/messaging"
 	ses "github.com/aws/aws-sdk-go/service/ses"
 	hcaptcha "github.com/kataras/hcaptcha"
+	tasks "github.com/madflojo/tasks"
 	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
 )
@@ -227,6 +228,39 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					return eo, errors.New("could not cast build function to func(*config.Config, *ses.SES, *in.Bundle) (messaging.Messenger, error)")
 				}
 				return b(p0, p1, p2)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "scheduler",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("scheduler")
+				if err != nil {
+					var eo *tasks.Scheduler
+					return eo, err
+				}
+				b, ok := d.Build.(func() (*tasks.Scheduler, error))
+				if !ok {
+					var eo *tasks.Scheduler
+					return eo, errors.New("could not cast build function to func() (*tasks.Scheduler, error)")
+				}
+				return b()
+			},
+			Close: func(obj interface{}) error {
+				d, err := provider.Get("scheduler")
+				if err != nil {
+					return err
+				}
+				c, ok := d.Close.(func(*tasks.Scheduler) error)
+				if !ok {
+					return errors.New("could not cast close function to 'func(*tasks.Scheduler) error'")
+				}
+				o, ok := obj.(*tasks.Scheduler)
+				if !ok {
+					return errors.New("could not cast object to '*tasks.Scheduler'")
+				}
+				return c(o)
 			},
 			Unshared: false,
 		},

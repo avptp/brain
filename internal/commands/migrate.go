@@ -10,15 +10,15 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 
 	"github.com/avptp/brain/internal/generated/container"
-	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/authorization"
+	"github.com/avptp/brain/internal/generated/data/person"
 )
 
-func Migrate(ctn *container.Container) error {
+func Migrate(ctx context.Context, ctn *container.Container) error {
 	data := ctn.GetData()
 
 	return data.Debug().Schema.Create(
-		context.Background(),
+		ctx,
 		schema.WithApplyHook(createEnums),
 		schema.WithDiffHook(keepEnums),
 	)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/avptp/brain/internal/commands"
@@ -36,11 +37,15 @@ func main() {
 	}
 
 	// Run command
+	ctx := context.Background()
+
 	switch arg {
 	case "", "serve":
-		err = commands.Serve(ctn)
+		err = commands.Serve(ctx, ctn)
+	case "work":
+		err = commands.Work(ctx, ctn)
 	case "database:migrate":
-		err = commands.Migrate(ctn)
+		err = commands.Migrate(ctx, ctn)
 	}
 
 	if err != nil {

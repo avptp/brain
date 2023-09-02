@@ -17,6 +17,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/kataras/hcaptcha v0.0.2
 	github.com/lib/pq v1.10.9
+	github.com/madflojo/tasks v1.1.0
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/nyaruka/phonenumbers v1.1.8
@@ -59,6 +60,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rs/xid v1.5.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/objx v0.5.0 // indirect

@@ -14,7 +14,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
-func Serve(ctn *container.Container) error {
+func Serve(ctx context.Context, ctn *container.Container) error {
 	log := ctn.GetLogger()
 	cfg := ctn.GetConfig()
 
@@ -50,7 +50,7 @@ func Serve(ctn *container.Container) error {
 	)
 
 	defer func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()
 
 		if err := srv.Shutdown(ctx); err != nil {
