@@ -97,7 +97,7 @@ jobs:
       - name: Extract binary
         run: |
           ID=$(docker create ${{ env.IMAGE }}:${{needs.build.outputs.TAG}} --entrypoint 'sleep infinity')
-          docker cp "${ID}:/usr/local/bin/bin" ./app
+          docker cp "${ID}:/usr/local/bin/bin" ./bin
           docker rm --volumes "${ID}"
 
       - name: Set up SSH
@@ -109,5 +109,6 @@ jobs:
 
       - name: Deploy
         run: |
-          scp -P 22001 ./app caddy@${{ secrets.WEB_HOST }}:/srv/avptp/brain
-          ssh caddy@${{ secrets.WEB_HOST }} -p 22001 sudo systemctl restart avptp-brain
+          ssh caddy@${{ secrets.WEB_HOST }} -p 22001 sudo systemctl stop avptp-brain
+          scp -P 22001 ./bin caddy@${{ secrets.WEB_HOST }}:/srv/avptp/brain
+          ssh caddy@${{ secrets.WEB_HOST }} -p 22001 sudo systemctl start avptp-brain
