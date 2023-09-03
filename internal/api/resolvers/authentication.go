@@ -59,13 +59,6 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, input api.C
 		return nil, reporting.ErrWrongPassword
 	}
 
-	// Reset rate limit
-	err = r.limiter.Reset(ctx, rlKey)
-
-	if err != nil {
-		return nil, err
-	}
-
 	// Create authentication and return its token
 	ip := request.IPFromCtx(ctx)
 
