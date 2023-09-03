@@ -32,6 +32,7 @@ type Config struct {
 
 	AuthenticationRateLimit        int           `env:"AUTHENTICATION_RATE_LIMIT" envDefault:"5"` // per email and hour
 	AuthorizationMaxAge            time.Duration `env:"AUTHORIZATION_MAX_AGE" envDefault:"24h"`
+	AuthorizationEmailRateLimit    int           `env:"AUTHORIZATION_EMAIL_RATE_LIMIT" envDefault:"2"`    // per email and hour
 	AuthorizationPasswordRateLimit int           `env:"AUTHORIZATION_PASSWORD_RATE_LIMIT" envDefault:"2"` // per email and hour
 
 	FrontUrl                       string `env:"FRONT_URL"`

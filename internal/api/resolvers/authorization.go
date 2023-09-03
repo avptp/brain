@@ -25,6 +25,7 @@ import (
 func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input api.CreateEmailAuthorizationInput) (*api.CreateEmailAuthorizationPayload, error) {
 	d := data.FromContext(ctx) // transactional data client for mutations
 
+	// Retrieve person and check constraints
 	p, err := d.Person.
 		Query().
 		Where(person.IDEQ(input.PersonID)).
@@ -38,6 +39,23 @@ func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input a
 		return nil, reporting.ErrConstraint
 	}
 
+	// Rate limit by normalized email
+	rlKey := fmt.Sprintf(
+		"createEmailAuthorization:%s",
+		strings.ToLower(p.Email),
+	)
+
+	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthorizationEmailRateLimit))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Allowed <= 0 {
+		return nil, reporting.ErrRateLimit
+	}
+
+	// Delete existing person's email authorizations
 	_, err = d.Authorization.
 		Delete().
 		Where(
@@ -50,6 +68,7 @@ func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input a
 		return nil, err
 	}
 
+	// Create the email authorization
 	a, err := d.Authorization.
 		Create().
 		SetPersonID(input.PersonID).
@@ -60,6 +79,7 @@ func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input a
 		return nil, err
 	}
 
+	// Send an email with the token
 	err = r.messenger.Send(&templates.Verification{
 		Link: fmt.Sprintf(
 			"%s/%s/%s",
