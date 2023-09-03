@@ -488,7 +488,7 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrNotFound.Message)
 	})
 
 	t.Run("update_password_without_authorization", func() {
@@ -511,7 +511,7 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 
 	t.Run("update_password_without_authentication", func() {
@@ -530,7 +530,7 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 
 	const deleteMutation = `
@@ -658,7 +658,7 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrNotFound.Message)
 	})
 
 	t.Run("delete_without_authorization", func() {
@@ -680,7 +680,7 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 
 	t.Run("delete_without_authentication", func() {
@@ -698,6 +698,6 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 }

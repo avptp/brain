@@ -196,12 +196,16 @@ func (r *mutationResolver) UpdatePersonPassword(ctx context.Context, input api.U
 		First(ctx)
 
 	if err != nil {
-		return nil, reporting.ErrWrongPassword // not to expose whether a user exists
+		return nil, err
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(input.CurrentPassword, person.Password)
 
-	if err != nil || !match {
+	if err != nil {
+		return nil, err
+	}
+
+	if !match {
 		return nil, reporting.ErrWrongPassword
 	}
 
@@ -233,12 +237,16 @@ func (r *mutationResolver) DeletePerson(ctx context.Context, input api.DeletePer
 		First(ctx)
 
 	if err != nil {
-		return nil, reporting.ErrWrongPassword
+		return nil, err
 	}
 
 	match, err := argon2id.ComparePasswordAndHash(input.CurrentPassword, person.Password)
 
-	if err != nil || !match {
+	if err != nil {
+		return nil, err
+	}
+
+	if !match {
 		return nil, reporting.ErrWrongPassword
 	}
 
