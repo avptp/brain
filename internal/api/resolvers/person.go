@@ -64,7 +64,7 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 			"%s/%s/%s",
 			r.cfg.FrontUrl,
 			r.cfg.FrontEmailAuthorizationPath,
-			a.Token,
+			a.TokenEncoded(),
 		),
 		Validity: fmt.Sprintf("%d", r.cfg.AuthorizationMaxAge/time.Hour),
 	}, p)

@@ -85,7 +85,7 @@ func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input a
 			"%s/%s/%s",
 			r.cfg.FrontUrl,
 			r.cfg.FrontEmailAuthorizationPath,
-			a.Token,
+			a.TokenEncoded(),
 		),
 		Validity: fmt.Sprintf("%d", r.cfg.AuthorizationMaxAge/time.Hour),
 	}, p)
@@ -217,7 +217,7 @@ func (r *mutationResolver) CreatePasswordAuthorization(ctx context.Context, inpu
 			"%s/%s/%s",
 			r.cfg.FrontUrl,
 			r.cfg.FrontPasswordAuthorizationPath,
-			a.Token,
+			a.TokenEncoded(),
 		),
 		Validity: fmt.Sprintf("%d", r.cfg.AuthorizationMaxAge/time.Hour),
 	}, p)
