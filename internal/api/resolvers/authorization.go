@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/avptp/brain/internal/api/reporting"
-	"github.com/avptp/brain/internal/auth"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
@@ -22,7 +21,7 @@ import (
 
 // CreateEmailAuthorization is the resolver for the createEmailAuthorization field.
 func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input api.CreateEmailAuthorizationInput) (*api.CreateEmailAuthorizationPayload, error) {
-	if !auth.Captcha(ctx, input.Captcha) {
+	if !r.captcha.Verify(input.Captcha) {
 		return nil, reporting.ErrCaptcha
 	}
 
@@ -121,7 +120,7 @@ func (r *mutationResolver) ApplyEmailAuthorization(ctx context.Context, input ap
 
 // CreatePasswordAuthorization is the resolver for the createPasswordAuthorization field.
 func (r *mutationResolver) CreatePasswordAuthorization(ctx context.Context, input api.CreatePasswordAuthorizationInput) (*api.CreatePasswordAuthorizationPayload, error) {
-	if !auth.Captcha(ctx, input.Captcha) {
+	if !r.captcha.Verify(input.Captcha) {
 		return nil, reporting.ErrCaptcha
 	}
 

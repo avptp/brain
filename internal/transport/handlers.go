@@ -8,7 +8,6 @@ import (
 	gqlgen "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/avptp/brain/internal/api/reporting"
-	"github.com/avptp/brain/internal/api/resolvers"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/container"
 	"github.com/avptp/brain/internal/transport/middleware"
@@ -43,28 +42,22 @@ func healthHandler(log *slog.Logger) http.Handler {
 func graphHandler(ctn *container.Container) http.Handler {
 	cfg := ctn.GetConfig()
 	data := ctn.GetData()
-	messenger := ctn.GetMessenger()
 
 	// Initialize GraphQL handler
 	handler := gqlgen.NewDefaultServer(
 		api.NewExecutableSchema(api.Config{
-			Resolvers: resolvers.NewResolver(
-				cfg,
-				data,
-				messenger,
-			),
+			Resolvers: ctn.GetResolver(),
 		}),
 	)
 
 	// Configure handler
 	handler.SetRecoverFunc(reporting.PanicHandler)
-	handler.SetErrorPresenter(reporting.ErrorPresenter)
+	handler.SetErrorPresenter(reporting.NewErrorPresenter(cfg))
 	handler.Use(extension.FixedComplexityLimit(100))
 	handler.Use(entgql.Transactioner{TxOpener: data})
 
 	// Chain middlewares
 	return middleware.Chain(handler,
-		middleware.NewSetContainer(ctn),
 		middleware.NewSetIP(ctn.GetIpStrategy()),
 		middleware.NewSetViewer(data),
 	)

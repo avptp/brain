@@ -12,7 +12,6 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
-	"github.com/avptp/brain/internal/auth"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
@@ -25,7 +24,7 @@ import (
 
 // CreatePerson is the resolver for the createPerson field.
 func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePersonInput) (*api.CreatePersonPayload, error) {
-	if !auth.Captcha(ctx, input.Captcha) {
+	if !r.captcha.Verify(input.Captcha) {
 		return nil, reporting.ErrCaptcha
 	}
 
@@ -185,7 +184,7 @@ func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePer
 
 // UpdatePersonPassword is the resolver for the updatePersonPassword field.
 func (r *mutationResolver) UpdatePersonPassword(ctx context.Context, input api.UpdatePersonPasswordInput) (*api.UpdatePersonPasswordPayload, error) {
-	if !auth.Captcha(ctx, input.Captcha) {
+	if !r.captcha.Verify(input.Captcha) {
 		return nil, reporting.ErrCaptcha
 	}
 
@@ -222,7 +221,7 @@ func (r *mutationResolver) UpdatePersonPassword(ctx context.Context, input api.U
 
 // DeletePerson is the resolver for the deletePerson field.
 func (r *mutationResolver) DeletePerson(ctx context.Context, input api.DeletePersonInput) (*api.DeletePersonPayload, error) {
-	if !auth.Captcha(ctx, input.Captcha) {
+	if !r.captcha.Verify(input.Captcha) {
 		return nil, reporting.ErrCaptcha
 	}
 

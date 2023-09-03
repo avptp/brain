@@ -12,11 +12,12 @@ import (
 
 	slog "log/slog"
 
+	resolvers "github.com/avptp/brain/internal/api/resolvers"
+	auth "github.com/avptp/brain/internal/auth"
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	messaging "github.com/avptp/brain/internal/messaging"
 	ses "github.com/aws/aws-sdk-go/service/ses"
-	hcaptcha "github.com/kataras/hcaptcha"
 	tasks "github.com/madflojo/tasks"
 	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
@@ -224,13 +225,13 @@ func (c *Container) IsClosed() bool {
 	return c.ctn.IsClosed()
 }
 
-// SafeGetCaptcha retrieves the "captcha" object from the request scope.
+// SafeGetCaptcha retrieves the "captcha" object from the app scope.
 //
 // ---------------------------------------------
 //
 //	name: "captcha"
-//	type: *hcaptcha.Client
-//	scope: "request"
+//	type: auth.Captcha
+//	scope: "app"
 //	build: func
 //	params:
 //		- "0": Service(*config.Config) ["config"]
@@ -240,26 +241,26 @@ func (c *Container) IsClosed() bool {
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetCaptcha() (*hcaptcha.Client, error) {
+func (c *Container) SafeGetCaptcha() (auth.Captcha, error) {
 	i, err := c.ctn.SafeGet("captcha")
 	if err != nil {
-		var eo *hcaptcha.Client
+		var eo auth.Captcha
 		return eo, err
 	}
-	o, ok := i.(*hcaptcha.Client)
+	o, ok := i.(auth.Captcha)
 	if !ok {
-		return o, errors.New("could get 'captcha' because the object could not be cast to *hcaptcha.Client")
+		return o, errors.New("could get 'captcha' because the object could not be cast to auth.Captcha")
 	}
 	return o, nil
 }
 
-// GetCaptcha retrieves the "captcha" object from the request scope.
+// GetCaptcha retrieves the "captcha" object from the app scope.
 //
 // ---------------------------------------------
 //
 //	name: "captcha"
-//	type: *hcaptcha.Client
-//	scope: "request"
+//	type: auth.Captcha
+//	scope: "app"
 //	build: func
 //	params:
 //		- "0": Service(*config.Config) ["config"]
@@ -269,7 +270,7 @@ func (c *Container) SafeGetCaptcha() (*hcaptcha.Client, error) {
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it panics.
-func (c *Container) GetCaptcha() *hcaptcha.Client {
+func (c *Container) GetCaptcha() auth.Captcha {
 	o, err := c.SafeGetCaptcha()
 	if err != nil {
 		panic(err)
@@ -277,13 +278,13 @@ func (c *Container) GetCaptcha() *hcaptcha.Client {
 	return o
 }
 
-// UnscopedSafeGetCaptcha retrieves the "captcha" object from the request scope.
+// UnscopedSafeGetCaptcha retrieves the "captcha" object from the app scope.
 //
 // ---------------------------------------------
 //
 //	name: "captcha"
-//	type: *hcaptcha.Client
-//	scope: "request"
+//	type: auth.Captcha
+//	scope: "app"
 //	build: func
 //	params:
 //		- "0": Service(*config.Config) ["config"]
@@ -292,28 +293,28 @@ func (c *Container) GetCaptcha() *hcaptcha.Client {
 //
 // ---------------------------------------------
 //
-// This method can be called even if request is a sub-scope of the container.
+// This method can be called even if app is a sub-scope of the container.
 // If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetCaptcha() (*hcaptcha.Client, error) {
+func (c *Container) UnscopedSafeGetCaptcha() (auth.Captcha, error) {
 	i, err := c.ctn.UnscopedSafeGet("captcha")
 	if err != nil {
-		var eo *hcaptcha.Client
+		var eo auth.Captcha
 		return eo, err
 	}
-	o, ok := i.(*hcaptcha.Client)
+	o, ok := i.(auth.Captcha)
 	if !ok {
-		return o, errors.New("could get 'captcha' because the object could not be cast to *hcaptcha.Client")
+		return o, errors.New("could get 'captcha' because the object could not be cast to auth.Captcha")
 	}
 	return o, nil
 }
 
-// UnscopedGetCaptcha retrieves the "captcha" object from the request scope.
+// UnscopedGetCaptcha retrieves the "captcha" object from the app scope.
 //
 // ---------------------------------------------
 //
 //	name: "captcha"
-//	type: *hcaptcha.Client
-//	scope: "request"
+//	type: auth.Captcha
+//	scope: "app"
 //	build: func
 //	params:
 //		- "0": Service(*config.Config) ["config"]
@@ -322,9 +323,9 @@ func (c *Container) UnscopedSafeGetCaptcha() (*hcaptcha.Client, error) {
 //
 // ---------------------------------------------
 //
-// This method can be called even if request is a sub-scope of the container.
+// This method can be called even if app is a sub-scope of the container.
 // If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetCaptcha() *hcaptcha.Client {
+func (c *Container) UnscopedGetCaptcha() auth.Captcha {
 	o, err := c.UnscopedSafeGetCaptcha()
 	if err != nil {
 		panic(err)
@@ -332,13 +333,13 @@ func (c *Container) UnscopedGetCaptcha() *hcaptcha.Client {
 	return o
 }
 
-// Captcha retrieves the "captcha" object from the request scope.
+// Captcha retrieves the "captcha" object from the app scope.
 //
 // ---------------------------------------------
 //
 //	name: "captcha"
-//	type: *hcaptcha.Client
-//	scope: "request"
+//	type: auth.Captcha
+//	scope: "app"
 //	build: func
 //	params:
 //		- "0": Service(*config.Config) ["config"]
@@ -350,7 +351,7 @@ func (c *Container) UnscopedGetCaptcha() *hcaptcha.Client {
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it calls the GetCaptcha method.
 // If the container can not be retrieved, it panics.
-func Captcha(i interface{}) *hcaptcha.Client {
+func Captcha(i interface{}) auth.Captcha {
 	return C(i).GetCaptcha()
 }
 
@@ -1132,6 +1133,151 @@ func (c *Container) UnscopedGetMessenger() messaging.Messenger {
 // If the container can not be retrieved, it panics.
 func Messenger(i interface{}) messaging.Messenger {
 	return C(i).GetMessenger()
+}
+
+// SafeGetResolver retrieves the "resolver" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "resolver"
+//	type: *resolvers.Resolver
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*data.Client) ["data"]
+//		- "3": Service(messaging.Messenger) ["messenger"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetResolver() (*resolvers.Resolver, error) {
+	i, err := c.ctn.SafeGet("resolver")
+	if err != nil {
+		var eo *resolvers.Resolver
+		return eo, err
+	}
+	o, ok := i.(*resolvers.Resolver)
+	if !ok {
+		return o, errors.New("could get 'resolver' because the object could not be cast to *resolvers.Resolver")
+	}
+	return o, nil
+}
+
+// GetResolver retrieves the "resolver" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "resolver"
+//	type: *resolvers.Resolver
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*data.Client) ["data"]
+//		- "3": Service(messaging.Messenger) ["messenger"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetResolver() *resolvers.Resolver {
+	o, err := c.SafeGetResolver()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetResolver retrieves the "resolver" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "resolver"
+//	type: *resolvers.Resolver
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*data.Client) ["data"]
+//		- "3": Service(messaging.Messenger) ["messenger"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetResolver() (*resolvers.Resolver, error) {
+	i, err := c.ctn.UnscopedSafeGet("resolver")
+	if err != nil {
+		var eo *resolvers.Resolver
+		return eo, err
+	}
+	o, ok := i.(*resolvers.Resolver)
+	if !ok {
+		return o, errors.New("could get 'resolver' because the object could not be cast to *resolvers.Resolver")
+	}
+	return o, nil
+}
+
+// UnscopedGetResolver retrieves the "resolver" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "resolver"
+//	type: *resolvers.Resolver
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*data.Client) ["data"]
+//		- "3": Service(messaging.Messenger) ["messenger"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetResolver() *resolvers.Resolver {
+	o, err := c.UnscopedSafeGetResolver()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Resolver retrieves the "resolver" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "resolver"
+//	type: *resolvers.Resolver
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*data.Client) ["data"]
+//		- "3": Service(messaging.Messenger) ["messenger"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetResolver method.
+// If the container can not be retrieved, it panics.
+func Resolver(i interface{}) *resolvers.Resolver {
+	return C(i).GetResolver()
 }
 
 // SafeGetScheduler retrieves the "scheduler" object from the app scope.

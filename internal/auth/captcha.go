@@ -1,14 +1,23 @@
 package auth
 
 import (
-	"context"
-
-	"github.com/avptp/brain/internal/transport/request"
+	"github.com/kataras/hcaptcha"
 )
 
-func Captcha(ctx context.Context, token string) bool {
-	captcha := request.ContainerFromCtx(ctx).GetCaptcha()
-	captcha.RemoteIP = string(request.IPFromCtx(ctx))
+type Captcha interface {
+	Verify(token string) bool
+}
 
-	return captcha.VerifyToken(token).Success
+type CaptchaHandler struct {
+	client *hcaptcha.Client
+}
+
+func NewCaptchaHandler(secret string) Captcha {
+	return &CaptchaHandler{
+		client: hcaptcha.New(secret),
+	}
+}
+
+func (c *CaptchaHandler) Verify(token string) bool {
+	return c.client.VerifyToken(token).Success
 }
