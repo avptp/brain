@@ -53,7 +53,7 @@ func PersonBirthdate(next ent.Mutator) ent.Mutator {
 		if birthdate, ok := m.Birthdate(); ok {
 			if birthdate.After(time.Now()) {
 				return nil, fmt.Errorf(
-					"birthdate cannot be in the future: %w",
+					`data: validator failed for field "Person.birthdate": value cannot be in the future: %w`,
 					&data.ValidationError{
 						Name: "birthdate",
 					},

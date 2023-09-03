@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"runtime/debug"
 
 	"entgo.io/ent/privacy"
@@ -12,8 +13,12 @@ import (
 	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/oklog/ulid/v2"
+	"github.com/stoewer/go-strcase"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+var constraintRegexp = regexp.MustCompile(`violates .* constraint "([\w]+)"`)
+var validationRegexp = regexp.MustCompile(`field "([\w]+).([\w.]+)"`)
 
 func PanicHandler(ctx context.Context, err any) error {
 	fmt.Fprintln(os.Stderr, err)
@@ -29,7 +34,13 @@ func NewErrorPresenter(cfg *config.Config) graphql.ErrorPresenterFunc {
 
 		switch {
 		case data.IsConstraintError(err):
+			fields := constraintRegexp.FindStringSubmatch(err.Error())
+
 			err = ErrConstraint
+
+			if len(fields) >= 2 {
+				err.Extensions["field"] = fields[1]
+			}
 		case
 			errors.Is(err, ulid.ErrDataSize),
 			errors.Is(err, ulid.ErrInvalidCharacters),
@@ -44,7 +55,17 @@ func NewErrorPresenter(cfg *config.Config) graphql.ErrorPresenterFunc {
 		case errors.Is(err, privacy.Deny):
 			err = ErrUnauthorized
 		case data.IsValidationError(err):
+			fields := validationRegexp.FindStringSubmatch(err.Error())
+
 			err = ErrValidation
+
+			if len(fields) >= 3 {
+				err.Extensions["field"] = fmt.Sprintf(
+					"%s.%s",
+					fields[1],
+					strcase.LowerCamelCase(fields[2]),
+				)
+			}
 		}
 
 		if _, ok := err.Extensions["code"]; !ok {

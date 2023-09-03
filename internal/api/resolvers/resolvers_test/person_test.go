@@ -1,6 +1,8 @@
 package resolvers_test
 
 import (
+	"fmt"
+
 	"github.com/99designs/gqlgen/client"
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
@@ -159,6 +161,7 @@ func (t *TestSuite) TestPerson() {
 		t.captcha.AssertExpectations(t.T())
 
 		t.ErrorContains(err, reporting.ErrConstraint.Message)
+		t.ErrorContains(err, `"field":"persons_email_key"`)
 	})
 
 	const showQuery = `
@@ -298,6 +301,40 @@ func (t *TestSuite) TestPerson() {
 		t.NotNil(p.Country)
 		t.Equal(*input.Country, *p.Country)
 	})
+
+	updateWrongCases := []struct {
+		key   string
+		value string
+	}{
+		{"email", "wrong"},
+		{"phone", "+34123"},
+		{"taxId", "00000000A"},
+		{"firstName", "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffff"},
+		{"lastName", "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffff"},
+		{"birthdate", "3000-01-01T00:00:00Z"},
+		{"address", "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffffgggggggggghhhhhhhhhhiiiiiiiiiijjjjjjjjjjkkkkkkkkkk"},
+		{"postalCode", "aaaaaaaaaabbbbbbbbbb"},
+		{"city", "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffff"},
+		{"country", "ZZ"},
+	}
+
+	for _, c := range updateWrongCases {
+		t.Run(fmt.Sprintf("update_with_wrong_input_%s", c.key), func() {
+			authenticated, p, _, _, _ := t.authenticate()
+
+			var response update
+			err := t.api.Post(
+				updateMutation,
+				&response,
+				authenticated,
+				client.Var("id", t.toULID(p.ID)),
+				client.Var(c.key, c.value),
+			)
+
+			t.ErrorContains(err, reporting.ErrValidation.Message)
+			t.ErrorContains(err, fmt.Sprintf(`"field":"Person.%s"`, c.key))
+		})
+	}
 
 	t.Run("update_nonexistent", func() {
 		authenticated, _, _, _, _ := t.authenticate()

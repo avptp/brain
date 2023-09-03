@@ -28,6 +28,7 @@ require (
 	github.com/redis/go-redis/v9 v9.1.0
 	github.com/sarulabs/di/v2 v2.4.2
 	github.com/sarulabs/dingo/v4 v4.2.0
+	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.8.4
 	github.com/vektah/gqlparser/v2 v2.5.8
 	golang.org/x/net v0.14.0
