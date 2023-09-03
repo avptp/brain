@@ -71,6 +71,46 @@ func (t *TestSuite) TestAuthorization() {
 		t.messenger.AssertExpectations(t.T())
 	})
 
+	t.Run("email_create_when_already_verified", func() {
+		authenticated, p, _, _, _ := t.authenticate()
+
+		err := p.
+			Update().
+			SetEmailVerifiedAt(time.Now()).
+			Exec(t.allowCtx)
+
+		t.NoError(err)
+
+		t.messenger.On(
+			"Send",
+			mock.IsType(&templates.Verification{}),
+			mock.IsType(&data.Person{}),
+		).Return(nil).Times(0)
+
+		var response emailCreate
+		err = t.api.Post(
+			emailCreateMutation,
+			&response,
+			authenticated,
+			client.Var("personId", t.toULID(p.ID)),
+		)
+
+		t.messenger.AssertExpectations(t.T())
+
+		t.ErrorContains(err, reporting.ErrConstraint.Message)
+
+		exist, err := t.data.Authorization.
+			Query().
+			Where(
+				authorization.PersonIDEQ(p.ID),
+				authorization.KindEQ(authorization.KindEmail),
+			).
+			Exist(t.allowCtx)
+
+		t.NoError(err)
+		t.False(exist)
+	})
+
 	t.Run("email_create_with_nonexistent_person", func() {
 		authenticated, _, _, _, _ := t.authenticate()
 

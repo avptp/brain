@@ -34,6 +34,10 @@ func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input a
 		return nil, reporting.ErrNotFound
 	}
 
+	if p.EmailVerifiedAt != nil {
+		return nil, reporting.ErrConstraint
+	}
+
 	_, err = d.Authorization.
 		Delete().
 		Where(
