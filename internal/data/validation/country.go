@@ -6,8 +6,8 @@ import (
 	"github.com/pariz/gountries"
 )
 
-func Country(s string) error {
-	_, err := gountries.New().FindCountryByAlpha(s)
+func Country(v string) error {
+	_, err := gountries.New().FindCountryByAlpha(v)
 
 	if err != nil {
 		return errors.New("value is invalid")

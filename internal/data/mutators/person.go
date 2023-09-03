@@ -2,7 +2,7 @@ package mutators
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"runtime"
 	"time"
 
@@ -52,7 +52,12 @@ func PersonBirthdate(next ent.Mutator) ent.Mutator {
 	return hook.PersonFunc(func(ctx context.Context, m *data.PersonMutation) (ent.Value, error) {
 		if birthdate, ok := m.Birthdate(); ok {
 			if birthdate.After(time.Now()) {
-				return nil, errors.New("birthdate cannot be in the future")
+				return nil, fmt.Errorf(
+					"birthdate cannot be in the future: %w",
+					&data.ValidationError{
+						Name: "birthdate",
+					},
+				)
 			}
 		}
 

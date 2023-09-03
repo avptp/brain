@@ -17,6 +17,7 @@ func cleanExpiredAuthorizations(ctx context.Context, ctn *container.Container) *
 			cfg := ctn.GetConfig()
 			log := ctn.GetLogger()
 			data := ctn.GetData()
+
 			allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
 			vertices, err := data.Authorization.

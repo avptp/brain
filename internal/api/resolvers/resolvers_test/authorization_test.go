@@ -55,6 +55,8 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("personId", t.toULID(p.ID)),
 		)
 
+		t.messenger.AssertExpectations(t.T())
+
 		t.NoError(err)
 
 		a, err := t.data.Authorization.
@@ -67,8 +69,6 @@ func (t *TestSuite) TestAuthorization() {
 
 		t.NoError(err)
 		t.Equal(a.ID, t.toUUID(response.CreateEmailAuthorization.Authorization.ID))
-
-		t.messenger.AssertExpectations(t.T())
 	})
 
 	t.Run("email_create_when_already_verified", func() {
@@ -173,9 +173,9 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("personId", zeroID),
 		)
 
-		t.ErrorContains(err, reporting.ErrNotFound.Message)
-
 		t.messenger.AssertExpectations(t.T())
+
+		t.ErrorContains(err, reporting.ErrNotFound.Message)
 	})
 
 	t.Run("email_create_without_authorization", func() {
@@ -196,9 +196,9 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("personId", t.toULID(p.ID)),
 		)
 
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
-
 		t.messenger.AssertExpectations(t.T())
+
+		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 
 	t.Run("email_create_without_authentication", func() {
@@ -215,9 +215,9 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("personId", zeroID),
 		)
 
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
-
 		t.messenger.AssertExpectations(t.T())
+
+		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 
 	const emailApplyMutation = `

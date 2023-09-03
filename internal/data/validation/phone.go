@@ -6,8 +6,8 @@ import (
 	"github.com/nyaruka/phonenumbers"
 )
 
-func Phone(s string) error {
-	phone, err := phonenumbers.Parse(s, "")
+func Phone(v string) error {
+	phone, err := phonenumbers.Parse(v, "")
 
 	if err != nil {
 		return err

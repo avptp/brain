@@ -6,8 +6,8 @@ import (
 	nif "github.com/criptalia/spanish_dni_validator"
 )
 
-func TaxID(s string) error {
-	if !nif.IsValid(s) {
+func TaxID(v string) error {
+	if !nif.IsValid(v) {
 		return errors.New("value is invalid")
 	}
 
