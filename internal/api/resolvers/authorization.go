@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/avptp/brain/internal/api/reporting"
@@ -17,6 +18,7 @@ import (
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/messaging/templates"
+	"github.com/go-redis/redis_rate/v10"
 )
 
 // CreateEmailAuthorization is the resolver for the createEmailAuthorization field.
@@ -120,6 +122,25 @@ func (r *mutationResolver) CreatePasswordAuthorization(ctx context.Context, inpu
 		return nil, reporting.ErrCaptcha
 	}
 
+	// Rate limit by normalized email
+	// (to avoid exposing whether an email is in use)
+	rlKey := fmt.Sprintf(
+		"createPasswordAuthorization:%s",
+		strings.ToLower(input.Email),
+	)
+
+	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthorizationPasswordRateLimit))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Allowed <= 0 {
+		return nil, reporting.ErrRateLimit
+	}
+
+	// Retrieve person by email
+	// (it always returns "success" to avoid exposing whether an email is in use)
 	d := data.FromContext(ctx) // transactional data client for mutations
 	allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
@@ -129,12 +150,12 @@ func (r *mutationResolver) CreatePasswordAuthorization(ctx context.Context, inpu
 		First(allowCtx)
 
 	if err != nil {
-		// In order not to expose whether an email is in use
 		return &api.CreatePasswordAuthorizationPayload{
 			Success: true,
 		}, nil
 	}
 
+	// Delete existing person's password authorizations
 	_, err = d.Authorization.
 		Delete().
 		Where(
@@ -147,6 +168,7 @@ func (r *mutationResolver) CreatePasswordAuthorization(ctx context.Context, inpu
 		return nil, err
 	}
 
+	// Create the password authorization
 	a, err := d.Authorization.
 		Create().
 		SetPersonID(p.ID).
@@ -157,6 +179,7 @@ func (r *mutationResolver) CreatePasswordAuthorization(ctx context.Context, inpu
 		return nil, err
 	}
 
+	// Send an email with the token
 	err = r.messenger.Send(&templates.Recovery{
 		Link: fmt.Sprintf(
 			"%s/%s/%s",

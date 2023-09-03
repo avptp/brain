@@ -1,6 +1,7 @@
 package resolvers_test
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/99designs/gqlgen/client"
@@ -10,6 +11,7 @@ import (
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/messaging/templates"
+	"github.com/go-redis/redis_rate/v10"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -314,6 +316,54 @@ func (t *TestSuite) TestAuthorization() {
 		t.messenger.AssertExpectations(t.T())
 
 		t.ErrorContains(err, reporting.ErrCaptcha.Message)
+
+		exist, err := t.data.Authorization.
+			Query().
+			Where(
+				authorization.PersonIDEQ(p.ID),
+				authorization.KindEQ(authorization.KindPassword),
+			).
+			Exist(t.allowCtx)
+
+		t.NoError(err)
+		t.False(exist)
+	})
+
+	t.Run("password_create_with_too_many_attempts", func() {
+		_, p, _, _, _ := t.authenticate()
+
+		rlKey := fmt.Sprintf("createPasswordAuthorization:%s", p.Email)
+
+		res, err := t.limiter.AllowN(
+			t.allowCtx,
+			rlKey,
+			redis_rate.PerHour(t.cfg.AuthorizationPasswordRateLimit),
+			t.cfg.AuthorizationPasswordRateLimit,
+		)
+
+		t.NoError(err)
+		t.LessOrEqual(res.Remaining, 0)
+
+		t.captcha.On("Verify", "").Return(true).Once()
+
+		t.messenger.On(
+			"Send",
+			mock.IsType(&templates.Recovery{}),
+			mock.IsType(&data.Person{}),
+		).Return(nil).Times(0)
+
+		var response passwordCreate
+		err = t.api.Post(
+			passwordCreateMutation,
+			&response,
+			client.Var("email", p.Email),
+			client.Var("captcha", ""),
+		)
+
+		t.captcha.AssertExpectations(t.T())
+		t.messenger.AssertExpectations(t.T())
+
+		t.ErrorContains(err, reporting.ErrRateLimit.Message)
 
 		exist, err := t.data.Authorization.
 			Query().

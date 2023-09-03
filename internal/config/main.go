@@ -30,8 +30,9 @@ type Config struct {
 	AwsKeyId     string `env:"AWS_KEY_ID"`
 	AwsKeySecret string `env:"AWS_KEY_SECRET"`
 
-	AuthenticationRateLimit int           `env:"AUTHENTICATION_RATE_LIMIT" envDefault:"5"` // per person and hour
-	AuthorizationMaxAge     time.Duration `env:"AUTHORIZATION_MAX_AGE"`
+	AuthenticationRateLimit        int           `env:"AUTHENTICATION_RATE_LIMIT" envDefault:"5"` // per email and hour
+	AuthorizationMaxAge            time.Duration `env:"AUTHORIZATION_MAX_AGE" envDefault:"24h"`
+	AuthorizationPasswordRateLimit int           `env:"AUTHORIZATION_PASSWORD_RATE_LIMIT" envDefault:"2"` // per email and hour
 
 	FrontUrl                       string `env:"FRONT_URL"`
 	FrontEmailAuthorizationPath    string `env:"FRONT_EMAIL_AUTHORIZATION_PATH"`
