@@ -19,7 +19,6 @@ extend type Mutation {
 
 input CreateEmailAuthorizationInput {
     personId: ID!
-    captcha: String!
 }
 
 type CreateEmailAuthorizationPayload {

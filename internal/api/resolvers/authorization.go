@@ -21,10 +21,6 @@ import (
 
 // CreateEmailAuthorization is the resolver for the createEmailAuthorization field.
 func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input api.CreateEmailAuthorizationInput) (*api.CreateEmailAuthorizationPayload, error) {
-	if !r.captcha.Verify(input.Captcha) {
-		return nil, reporting.ErrCaptcha
-	}
-
 	d := data.FromContext(ctx) // transactional data client for mutations
 
 	p, err := d.Person.

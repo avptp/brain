@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/avptp/brain/internal/auth/auth_test"
 	"github.com/avptp/brain/internal/generated/container"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/factories"
@@ -23,7 +24,6 @@ import (
 )
 
 const zeroID = "00000000000000000000000000"
-const captchaResponseToken = "10000000-aaaa-bbbb-cccc-000000000001"
 const spanishTaxIdLetters = "TRWAGMYFPDXBNJZSQVHLCKE"
 
 func init() {
@@ -52,12 +52,15 @@ func init() {
 type TestSuite struct {
 	suite.Suite
 
-	ctn       *container.Container
-	data      *data.Client
+	ctn  *container.Container
+	data *data.Client
+
+	captcha   *auth_test.MockedCaptcha
 	messenger *messaging_test.MockedMessenger
-	factory   *factories.Factory
-	api       *client.Client
-	allowCtx  context.Context
+
+	factory  *factories.Factory
+	api      *client.Client
+	allowCtx context.Context
 }
 
 func (t *TestSuite) SetupSuite() {
@@ -67,8 +70,15 @@ func (t *TestSuite) SetupSuite() {
 		panic(err) // unrecoverable situation
 	}
 
+	t.captcha = &auth_test.MockedCaptcha{}
+	err = builder.Set(services.Captcha, t.captcha)
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
+
 	t.messenger = &messaging_test.MockedMessenger{}
-	builder.Set(services.Messenger, t.messenger)
+	err = builder.Set(services.Messenger, t.messenger)
 
 	if err != nil {
 		panic(err) // unrecoverable situation
@@ -78,6 +88,7 @@ func (t *TestSuite) SetupSuite() {
 
 	t.ctn = ctn
 	t.data = ctn.GetData()
+
 	t.factory = factories.New(t.data)
 	t.api = client.New(transport.Mux(ctn))
 	t.allowCtx = privacy.DecisionContext(context.Background(), privacy.Allow)

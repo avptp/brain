@@ -33,12 +33,14 @@ func (t *TestSuite) TestAuthentication() {
 		_, p, pf, _, _ := t.authenticate()
 
 		var response create
-		t.api.MustPost(
+		err := t.api.Post(
 			createMutation,
 			&response,
 			client.Var("email", pf.Email),
 			client.Var("password", pf.Password),
 		)
+
+		t.NoError(err)
 
 		token, err := base64.URLEncoding.DecodeString(response.CreateAuthentication.Token)
 		t.NoError(err)
@@ -113,8 +115,9 @@ func (t *TestSuite) TestAuthentication() {
 		authenticated, _, _, a, _ := t.authenticate()
 
 		var response list
-		t.api.MustPost(listQuery, &response, authenticated)
+		err := t.api.Post(listQuery, &response, authenticated)
 
+		t.NoError(err)
 		t.Len(response.Viewer.Authentications.Edges, 1)
 
 		id := t.toUUID(response.Viewer.Authentications.Edges[0].Node.ID)
@@ -151,13 +154,14 @@ func (t *TestSuite) TestAuthentication() {
 		authenticated, _, _, a, _ := t.authenticate()
 
 		var response delete
-		t.api.MustPost(
+		err := t.api.Post(
 			deleteMutation,
 			&response,
 			authenticated,
 			client.Var("id", t.toULID(a.ID)),
 		)
 
+		t.NoError(err)
 		t.Equal(a.ID, t.toUUID(response.DeleteAuthentication.AuthenticationID))
 
 		exists, err := t.data.Authentication.

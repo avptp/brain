@@ -39,7 +39,6 @@ type CreateAuthenticationPayload struct {
 
 type CreateEmailAuthorizationInput struct {
 	PersonID uuid.UUID `json:"personId"`
-	Captcha  string    `json:"captcha"`
 }
 
 type CreateEmailAuthorizationPayload struct {

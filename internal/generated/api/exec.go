@@ -850,7 +850,6 @@ extend type Mutation {
 
 input CreateEmailAuthorizationInput {
     personId: ID!
-    captcha: String!
 }
 
 type CreateEmailAuthorizationPayload {
@@ -6244,7 +6243,7 @@ func (ec *executionContext) unmarshalInputCreateEmailAuthorizationInput(ctx cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"personId", "captcha"}
+	fieldsInOrder := [...]string{"personId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6260,15 +6259,6 @@ func (ec *executionContext) unmarshalInputCreateEmailAuthorizationInput(ctx cont
 				return it, err
 			}
 			it.PersonID = data
-		case "captcha":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("captcha"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Captcha = data
 		}
 	}
 
