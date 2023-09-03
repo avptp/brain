@@ -135,6 +135,14 @@ func (r *mutationResolver) ApplyEmailAuthorization(ctx context.Context, input ap
 		return nil, err
 	}
 
+	err = d.Authorization.
+		DeleteOne(a).
+		Exec(allowCtx)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &api.ApplyEmailAuthorizationPayload{
 		AuthorizationID: a.ID,
 	}, nil
@@ -253,6 +261,14 @@ func (r *mutationResolver) ApplyPasswordAuthorization(ctx context.Context, input
 		Update().
 		Where(person.IDEQ(a.PersonID)).
 		SetPassword(input.NewPassword).
+		Exec(allowCtx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.Authorization.
+		DeleteOne(a).
 		Exec(allowCtx)
 
 	if err != nil {

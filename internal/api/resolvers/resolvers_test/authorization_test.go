@@ -271,6 +271,14 @@ func (t *TestSuite) TestAuthorization() {
 
 		t.NoError(err)
 		t.True(exist)
+
+		exist, err = t.data.Authorization.
+			Query().
+			Where(authorization.IDEQ(a.ID)).
+			Exist(t.allowCtx)
+
+		t.NoError(err)
+		t.False(exist)
 	})
 
 	t.Run("email_apply_with_expired_token", func() {
@@ -539,6 +547,14 @@ func (t *TestSuite) TestAuthorization() {
 		match, err := argon2id.ComparePasswordAndHash(input.Password, p.Password)
 		t.NoError(err)
 		t.True(match)
+
+		exist, err := t.data.Authorization.
+			Query().
+			Where(authorization.IDEQ(a.ID)).
+			Exist(t.allowCtx)
+
+		t.NoError(err)
+		t.False(exist)
 	})
 
 	t.Run("password_apply_with_expired_token", func() {
