@@ -2,10 +2,12 @@ package resolvers_test
 
 import (
 	"encoding/base64"
+	"fmt"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/generated/data/authentication"
+	"github.com/go-redis/redis_rate/v10"
 )
 
 func (t *TestSuite) TestAuthentication() {
@@ -53,6 +55,32 @@ func (t *TestSuite) TestAuthentication() {
 
 		t.NoError(err)
 		t.Equal(p.ID, atc.Edges.Person.ID)
+	})
+
+	t.Run("create_with_too_many_attempts", func() {
+		_, p, pf, _, _ := t.authenticate()
+
+		rlKey := fmt.Sprintf("createAuthentication:%s", p.Email)
+
+		res, err := t.limiter.AllowN(
+			t.allowCtx,
+			rlKey,
+			redis_rate.PerHour(t.cfg.AuthenticationRateLimit),
+			t.cfg.AuthenticationRateLimit,
+		)
+
+		t.NoError(err)
+		t.LessOrEqual(res.Remaining, 0)
+
+		var response create
+		err = t.api.Post(
+			createMutation,
+			&response,
+			client.Var("email", pf.Email),
+			client.Var("password", pf.Password),
+		)
+
+		t.ErrorContains(err, reporting.ErrRateLimit.Message)
 	})
 
 	t.Run("create_with_wrong_email", func() {

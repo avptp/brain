@@ -22,6 +22,11 @@ var ErrInternal = &gqlerror.Error{
 	Extensions: map[string]any{"code": "INTERNAL"},
 }
 
+var ErrRateLimit = &gqlerror.Error{
+	Message:    "A limit of attempts per unit of time has been reached for this action.",
+	Extensions: map[string]any{"code": "RATE_LIMIT"},
+}
+
 var ErrNotFound = &gqlerror.Error{
 	Message:    "The specified resource does not exist.",
 	Extensions: map[string]any{"code": "NOT_FOUND"},

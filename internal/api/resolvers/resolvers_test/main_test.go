@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/avptp/brain/internal/auth/auth_test"
+	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/container"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/factories"
@@ -15,6 +16,7 @@ import (
 	"github.com/avptp/brain/internal/messaging/messaging_test"
 	"github.com/avptp/brain/internal/services"
 	"github.com/avptp/brain/internal/transport"
+	"github.com/go-redis/redis_rate/v10"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/brianvoe/gofakeit/v6"
@@ -52,10 +54,11 @@ func init() {
 type TestSuite struct {
 	suite.Suite
 
-	ctn  *container.Container
-	data *data.Client
-
+	ctn       *container.Container
 	captcha   *auth_test.MockedCaptcha
+	cfg       *config.Config
+	data      *data.Client
+	limiter   *redis_rate.Limiter
 	messenger *messaging_test.MockedMessenger
 
 	factory  *factories.Factory
@@ -87,7 +90,9 @@ func (t *TestSuite) SetupSuite() {
 	ctn := builder.Build()
 
 	t.ctn = ctn
+	t.cfg = ctn.GetConfig()
 	t.data = ctn.GetData()
+	t.limiter = ctn.GetLimiter()
 
 	t.factory = factories.New(t.data)
 	t.api = client.New(transport.Mux(ctn))

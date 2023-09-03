@@ -15,6 +15,7 @@ services:
       - ${DELVE_PORT:-8001}:${DELVE_PORT:-8001}
     depends_on:
       - cockroachdb
+      - redis
     tty: true
 
   cockroachdb:
@@ -31,5 +32,18 @@ services:
       timeout: 3s
       retries: 3
 
+  redis:
+    image: redis:7.2.0-alpine
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+    user: redis
+    volumes:
+      - redis:/data
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+
 volumes:
   cockroachdb:
+  redis:

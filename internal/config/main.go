@@ -17,6 +17,10 @@ type Config struct {
 	CockroachDBTLSMode  string `env:"COCKROACHDB_TLS_MODE" envDefault:"require"`
 	CockroachDBTLSCA    string `env:"COCKROACHDB_TLS_CA"`
 
+	RedisAddress  string `env:"REDIS_ADDRESS"`
+	RedisPassword string `env:"REDIS_PASSWORD"`
+	RedisDatabase int    `env:"REDIS_DATABASE"`
+
 	HcaptchaSecret string `env:"HCAPTCHA_SECRET"`
 
 	MailSource  string `env:"MAIL_SOURCE"`
@@ -26,7 +30,8 @@ type Config struct {
 	AwsKeyId     string `env:"AWS_KEY_ID"`
 	AwsKeySecret string `env:"AWS_KEY_SECRET"`
 
-	AuthorizationMaxAge time.Duration `env:"AUTHORIZATION_MAX_AGE"`
+	AuthenticationRateLimit int           `env:"AUTHENTICATION_RATE_LIMIT" envDefault:"5"` // per person and hour
+	AuthorizationMaxAge     time.Duration `env:"AUTHORIZATION_MAX_AGE"`
 
 	FrontUrl                       string `env:"FRONT_URL"`
 	FrontEmailAuthorizationPath    string `env:"FRONT_EMAIL_AUTHORIZATION_PATH"`

@@ -6,6 +6,8 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
@@ -14,10 +16,30 @@ import (
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/transport/request"
+	"github.com/go-redis/redis_rate/v10"
 )
 
 // CreateAuthentication is the resolver for the createAuthentication field.
 func (r *mutationResolver) CreateAuthentication(ctx context.Context, input api.CreateAuthenticationInput) (*api.CreateAuthenticationPayload, error) {
+	// Rate limit by normalized email
+	// (to avoid exposing whether an email is in use)
+	rlKey := fmt.Sprintf(
+		"createAuthentication:%s",
+		strings.ToLower(input.Email),
+	)
+
+	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthenticationRateLimit))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Allowed <= 0 {
+		return nil, reporting.ErrRateLimit
+	}
+
+	// Retrieve person by email
+	// (it returns "wrong password" error to avoid exposing whether an email is in use)
 	d := data.FromContext(ctx) // transactional data client for mutations
 	allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
@@ -30,12 +52,21 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, input api.C
 		return nil, reporting.ErrWrongPassword
 	}
 
+	// Match the password
 	match, err := argon2id.ComparePasswordAndHash(input.Password, person.Password)
 
 	if err != nil || !match {
 		return nil, reporting.ErrWrongPassword
 	}
 
+	// Reset rate limit
+	err = r.limiter.Reset(ctx, rlKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Create authentication and return its token
 	ip := request.IPFromCtx(ctx)
 
 	a, err := d.Authentication.

@@ -18,9 +18,11 @@ import (
 	data "github.com/avptp/brain/internal/generated/data"
 	messaging "github.com/avptp/brain/internal/messaging"
 	ses "github.com/aws/aws-sdk-go/service/ses"
+	v1 "github.com/go-redis/redis_rate/v10"
 	tasks "github.com/madflojo/tasks"
 	in "github.com/nicksnyder/go-i18n/v2/i18n"
 	realclientipgo "github.com/realclientip/realclientip-go"
+	v "github.com/redis/go-redis/v9"
 )
 
 // C retrieves a Container from an interface.
@@ -865,6 +867,141 @@ func IpStrategy(i interface{}) realclientipgo.Strategy {
 	return C(i).GetIpStrategy()
 }
 
+// SafeGetLimiter retrieves the "limiter" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "limiter"
+//	type: *v1.Limiter
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*v.Client) ["redis"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetLimiter() (*v1.Limiter, error) {
+	i, err := c.ctn.SafeGet("limiter")
+	if err != nil {
+		var eo *v1.Limiter
+		return eo, err
+	}
+	o, ok := i.(*v1.Limiter)
+	if !ok {
+		return o, errors.New("could get 'limiter' because the object could not be cast to *v1.Limiter")
+	}
+	return o, nil
+}
+
+// GetLimiter retrieves the "limiter" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "limiter"
+//	type: *v1.Limiter
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*v.Client) ["redis"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetLimiter() *v1.Limiter {
+	o, err := c.SafeGetLimiter()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetLimiter retrieves the "limiter" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "limiter"
+//	type: *v1.Limiter
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*v.Client) ["redis"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetLimiter() (*v1.Limiter, error) {
+	i, err := c.ctn.UnscopedSafeGet("limiter")
+	if err != nil {
+		var eo *v1.Limiter
+		return eo, err
+	}
+	o, ok := i.(*v1.Limiter)
+	if !ok {
+		return o, errors.New("could get 'limiter' because the object could not be cast to *v1.Limiter")
+	}
+	return o, nil
+}
+
+// UnscopedGetLimiter retrieves the "limiter" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "limiter"
+//	type: *v1.Limiter
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*v.Client) ["redis"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetLimiter() *v1.Limiter {
+	o, err := c.UnscopedSafeGetLimiter()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Limiter retrieves the "limiter" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "limiter"
+//	type: *v1.Limiter
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*v.Client) ["redis"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetLimiter method.
+// If the container can not be retrieved, it panics.
+func Limiter(i interface{}) *v1.Limiter {
+	return C(i).GetLimiter()
+}
+
 // SafeGetLogger retrieves the "logger" object from the main scope.
 //
 // ---------------------------------------------
@@ -1135,6 +1272,136 @@ func Messenger(i interface{}) messaging.Messenger {
 	return C(i).GetMessenger()
 }
 
+// SafeGetRedis retrieves the "redis" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "redis"
+//	type: *v.Client
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetRedis() (*v.Client, error) {
+	i, err := c.ctn.SafeGet("redis")
+	if err != nil {
+		var eo *v.Client
+		return eo, err
+	}
+	o, ok := i.(*v.Client)
+	if !ok {
+		return o, errors.New("could get 'redis' because the object could not be cast to *v.Client")
+	}
+	return o, nil
+}
+
+// GetRedis retrieves the "redis" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "redis"
+//	type: *v.Client
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetRedis() *v.Client {
+	o, err := c.SafeGetRedis()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetRedis retrieves the "redis" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "redis"
+//	type: *v.Client
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetRedis() (*v.Client, error) {
+	i, err := c.ctn.UnscopedSafeGet("redis")
+	if err != nil {
+		var eo *v.Client
+		return eo, err
+	}
+	o, ok := i.(*v.Client)
+	if !ok {
+		return o, errors.New("could get 'redis' because the object could not be cast to *v.Client")
+	}
+	return o, nil
+}
+
+// UnscopedGetRedis retrieves the "redis" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "redis"
+//	type: *v.Client
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetRedis() *v.Client {
+	o, err := c.UnscopedSafeGetRedis()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Redis retrieves the "redis" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "redis"
+//	type: *v.Client
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetRedis method.
+// If the container can not be retrieved, it panics.
+func Redis(i interface{}) *v.Client {
+	return C(i).GetRedis()
+}
+
 // SafeGetResolver retrieves the "resolver" object from the app scope.
 //
 // ---------------------------------------------
@@ -1144,10 +1411,11 @@ func Messenger(i interface{}) messaging.Messenger {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(*config.Config) ["config"]
-//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "0": Service(auth.Captcha) ["captcha"]
+//		- "1": Service(*config.Config) ["config"]
 //		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(messaging.Messenger) ["messenger"]
+//		- "3": Service(*v1.Limiter) ["limiter"]
+//		- "4": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1176,10 +1444,11 @@ func (c *Container) SafeGetResolver() (*resolvers.Resolver, error) {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(*config.Config) ["config"]
-//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "0": Service(auth.Captcha) ["captcha"]
+//		- "1": Service(*config.Config) ["config"]
 //		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(messaging.Messenger) ["messenger"]
+//		- "3": Service(*v1.Limiter) ["limiter"]
+//		- "4": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1203,10 +1472,11 @@ func (c *Container) GetResolver() *resolvers.Resolver {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(*config.Config) ["config"]
-//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "0": Service(auth.Captcha) ["captcha"]
+//		- "1": Service(*config.Config) ["config"]
 //		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(messaging.Messenger) ["messenger"]
+//		- "3": Service(*v1.Limiter) ["limiter"]
+//		- "4": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1236,10 +1506,11 @@ func (c *Container) UnscopedSafeGetResolver() (*resolvers.Resolver, error) {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(*config.Config) ["config"]
-//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "0": Service(auth.Captcha) ["captcha"]
+//		- "1": Service(*config.Config) ["config"]
 //		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(messaging.Messenger) ["messenger"]
+//		- "3": Service(*v1.Limiter) ["limiter"]
+//		- "4": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1264,10 +1535,11 @@ func (c *Container) UnscopedGetResolver() *resolvers.Resolver {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(*config.Config) ["config"]
-//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "0": Service(auth.Captcha) ["captcha"]
+//		- "1": Service(*config.Config) ["config"]
 //		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(messaging.Messenger) ["messenger"]
+//		- "3": Service(*v1.Limiter) ["limiter"]
+//		- "4": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //

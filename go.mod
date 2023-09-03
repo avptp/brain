@@ -13,6 +13,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.23.1
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/criptalia/spanish_dni_validator v0.0.0-20230502125532-3278e5ffc050
+	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/google/uuid v1.3.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/kataras/hcaptcha v0.0.2
@@ -24,6 +25,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/pariz/gountries v0.1.6
 	github.com/realclientip/realclientip-go v1.0.0
+	github.com/redis/go-redis/v9 v9.1.0
 	github.com/sarulabs/di/v2 v2.4.2
 	github.com/sarulabs/dingo/v4 v4.2.0
 	github.com/stretchr/testify v1.8.4
@@ -41,8 +43,10 @@ require (
 	github.com/andybalholm/cascadia v1.0.0 // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
