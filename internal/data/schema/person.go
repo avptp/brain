@@ -91,7 +91,8 @@ func (Person) Fields() []ent.Field {
 				dialect.Postgres: "date",
 			}).
 			Optional().
-			Nillable(),
+			Nillable().
+			StructTag(`fake:"{date}"`),
 		// We don't care about people's gender, but we ask for this field
 		// voluntarily to make statistics on the underrepresentation of women.
 		field.Enum("gender").

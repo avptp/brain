@@ -507,11 +507,15 @@ func (pc *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 // PersonCreateBulk is the builder for creating many Person entities in bulk.
 type PersonCreateBulk struct {
 	config
+	err      error
 	builders []*PersonCreate
 }
 
 // Save creates the Person entities in the database.
 func (pcb *PersonCreateBulk) Save(ctx context.Context) ([]*Person, error) {
+	if pcb.err != nil {
+		return nil, pcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
 	nodes := make([]*Person, len(pcb.builders))
 	mutators := make([]Mutator, len(pcb.builders))

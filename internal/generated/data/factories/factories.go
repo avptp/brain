@@ -137,7 +137,7 @@ type PersonFields struct {
 	FirstName       string         `json:"first_name,omitempty" fake:"{firstname}"`
 	LastName        *string        `json:"last_name,omitempty" fake:"{lastname}"`
 	Language        string         `json:"language,omitempty" fake:"{randomstring:[ca,es,en]}"`
-	Birthdate       *time.Time     `json:"birthdate,omitempty"`
+	Birthdate       *time.Time     `json:"birthdate,omitempty" fake:"{date}"`
 	Gender          *person.Gender `json:"gender,omitempty" fake:"{randomstring:[woman,man,nonbinary]}"`
 	Address         *string        `json:"address,omitempty" fake:"{street}"`
 	PostalCode      *string        `json:"postal_code,omitempty" fake:"{zip}"`

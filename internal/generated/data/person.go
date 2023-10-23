@@ -35,7 +35,7 @@ type Person struct {
 	// Language holds the value of the "language" field.
 	Language string `json:"language,omitempty" fake:"{randomstring:[ca,es,en]}"`
 	// Birthdate holds the value of the "birthdate" field.
-	Birthdate *time.Time `json:"birthdate,omitempty"`
+	Birthdate *time.Time `json:"birthdate,omitempty" fake:"{date}"`
 	// Gender holds the value of the "gender" field.
 	Gender *person.Gender `json:"gender,omitempty" fake:"{randomstring:[woman,man,nonbinary]}"`
 	// Address holds the value of the "address" field.

@@ -19,7 +19,7 @@ services:
     tty: true
 
   cockroachdb:
-    image: cockroachdb/cockroach:v23.1.10
+    image: cockroachdb/cockroach:v23.1.11
     command: start-single-node --insecure
     ports:
       - ${COCKROACHDB_PORT:-26257}:26257
@@ -33,7 +33,7 @@ services:
       retries: 3
 
   redis:
-    image: redis:7.2.1-alpine
+    image: redis:7.2.2-alpine
     command:
       - redis-server
       - --appendonly

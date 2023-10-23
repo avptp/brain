@@ -2,6 +2,7 @@ package resolvers_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/alexedwards/argon2id"
@@ -289,7 +290,9 @@ func (t *TestSuite) TestPerson() {
 		t.Equal(*input.LastName, *p.LastName)
 		t.Equal(input.Language, p.Language)
 		t.NotNil(p.Birthdate)
-		t.True(input.Birthdate.Equal(*p.Birthdate))
+		t.True(
+			input.Birthdate.Truncate(24 * time.Hour).Equal(*p.Birthdate),
+		)
 		t.NotNil(p.Gender)
 		t.Equal(input.Gender.String(), p.Gender.String())
 		t.NotNil(p.Address)

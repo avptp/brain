@@ -204,11 +204,15 @@ func (ac *AuthorizationCreate) createSpec() (*Authorization, *sqlgraph.CreateSpe
 // AuthorizationCreateBulk is the builder for creating many Authorization entities in bulk.
 type AuthorizationCreateBulk struct {
 	config
+	err      error
 	builders []*AuthorizationCreate
 }
 
 // Save creates the Authorization entities in the database.
 func (acb *AuthorizationCreateBulk) Save(ctx context.Context) ([]*Authorization, error) {
+	if acb.err != nil {
+		return nil, acb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(acb.builders))
 	nodes := make([]*Authorization, len(acb.builders))
 	mutators := make([]Mutator, len(acb.builders))

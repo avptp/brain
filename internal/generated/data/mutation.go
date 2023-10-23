@@ -374,6 +374,7 @@ func (m *AuthenticationMutation) ResetLastUsedAt() {
 // ClearPerson clears the "person" edge to the Person entity.
 func (m *AuthenticationMutation) ClearPerson() {
 	m.clearedperson = true
+	m.clearedFields[authentication.FieldPersonID] = struct{}{}
 }
 
 // PersonCleared reports if the "person" edge to the Person entity was cleared.
@@ -955,6 +956,7 @@ func (m *AuthorizationMutation) ResetCreatedAt() {
 // ClearPerson clears the "person" edge to the Person entity.
 func (m *AuthorizationMutation) ClearPerson() {
 	m.clearedperson = true
+	m.clearedFields[authorization.FieldPersonID] = struct{}{}
 }
 
 // PersonCleared reports if the "person" edge to the Person entity was cleared.
