@@ -587,6 +587,23 @@ type PersonWhereInput struct {
 	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
 	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
 
+	// "stripe_id" field predicates.
+	StripeID             *string  `json:"stripeID,omitempty"`
+	StripeIDNEQ          *string  `json:"stripeIDNEQ,omitempty"`
+	StripeIDIn           []string `json:"stripeIDIn,omitempty"`
+	StripeIDNotIn        []string `json:"stripeIDNotIn,omitempty"`
+	StripeIDGT           *string  `json:"stripeIDGT,omitempty"`
+	StripeIDGTE          *string  `json:"stripeIDGTE,omitempty"`
+	StripeIDLT           *string  `json:"stripeIDLT,omitempty"`
+	StripeIDLTE          *string  `json:"stripeIDLTE,omitempty"`
+	StripeIDContains     *string  `json:"stripeIDContains,omitempty"`
+	StripeIDHasPrefix    *string  `json:"stripeIDHasPrefix,omitempty"`
+	StripeIDHasSuffix    *string  `json:"stripeIDHasSuffix,omitempty"`
+	StripeIDIsNil        bool     `json:"stripeIDIsNil,omitempty"`
+	StripeIDNotNil       bool     `json:"stripeIDNotNil,omitempty"`
+	StripeIDEqualFold    *string  `json:"stripeIDEqualFold,omitempty"`
+	StripeIDContainsFold *string  `json:"stripeIDContainsFold,omitempty"`
+
 	// "email" field predicates.
 	Email             *string  `json:"email,omitempty"`
 	EmailNEQ          *string  `json:"emailNEQ,omitempty"`
@@ -796,6 +813,10 @@ type PersonWhereInput struct {
 	CountryEqualFold    *string  `json:"countryEqualFold,omitempty"`
 	CountryContainsFold *string  `json:"countryContainsFold,omitempty"`
 
+	// "subscribed" field predicates.
+	Subscribed    *bool `json:"subscribed,omitempty"`
+	SubscribedNEQ *bool `json:"subscribedNEQ,omitempty"`
+
 	// "created_at" field predicates.
 	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
 	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
@@ -919,6 +940,51 @@ func (i *PersonWhereInput) P() (predicate.Person, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, person.IDLTE(*i.IDLTE))
+	}
+	if i.StripeID != nil {
+		predicates = append(predicates, person.StripeIDEQ(*i.StripeID))
+	}
+	if i.StripeIDNEQ != nil {
+		predicates = append(predicates, person.StripeIDNEQ(*i.StripeIDNEQ))
+	}
+	if len(i.StripeIDIn) > 0 {
+		predicates = append(predicates, person.StripeIDIn(i.StripeIDIn...))
+	}
+	if len(i.StripeIDNotIn) > 0 {
+		predicates = append(predicates, person.StripeIDNotIn(i.StripeIDNotIn...))
+	}
+	if i.StripeIDGT != nil {
+		predicates = append(predicates, person.StripeIDGT(*i.StripeIDGT))
+	}
+	if i.StripeIDGTE != nil {
+		predicates = append(predicates, person.StripeIDGTE(*i.StripeIDGTE))
+	}
+	if i.StripeIDLT != nil {
+		predicates = append(predicates, person.StripeIDLT(*i.StripeIDLT))
+	}
+	if i.StripeIDLTE != nil {
+		predicates = append(predicates, person.StripeIDLTE(*i.StripeIDLTE))
+	}
+	if i.StripeIDContains != nil {
+		predicates = append(predicates, person.StripeIDContains(*i.StripeIDContains))
+	}
+	if i.StripeIDHasPrefix != nil {
+		predicates = append(predicates, person.StripeIDHasPrefix(*i.StripeIDHasPrefix))
+	}
+	if i.StripeIDHasSuffix != nil {
+		predicates = append(predicates, person.StripeIDHasSuffix(*i.StripeIDHasSuffix))
+	}
+	if i.StripeIDIsNil {
+		predicates = append(predicates, person.StripeIDIsNil())
+	}
+	if i.StripeIDNotNil {
+		predicates = append(predicates, person.StripeIDNotNil())
+	}
+	if i.StripeIDEqualFold != nil {
+		predicates = append(predicates, person.StripeIDEqualFold(*i.StripeIDEqualFold))
+	}
+	if i.StripeIDContainsFold != nil {
+		predicates = append(predicates, person.StripeIDContainsFold(*i.StripeIDContainsFold))
 	}
 	if i.Email != nil {
 		predicates = append(predicates, person.EmailEQ(*i.Email))
@@ -1462,6 +1528,12 @@ func (i *PersonWhereInput) P() (predicate.Person, error) {
 	}
 	if i.CountryContainsFold != nil {
 		predicates = append(predicates, person.CountryContainsFold(*i.CountryContainsFold))
+	}
+	if i.Subscribed != nil {
+		predicates = append(predicates, person.SubscribedEQ(*i.Subscribed))
+	}
+	if i.SubscribedNEQ != nil {
+		predicates = append(predicates, person.SubscribedNEQ(*i.SubscribedNEQ))
 	}
 	if i.CreatedAt != nil {
 		predicates = append(predicates, person.CreatedAtEQ(*i.CreatedAt))

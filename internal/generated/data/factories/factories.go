@@ -129,6 +129,7 @@ type PersonFactory struct {
 }
 
 type PersonFields struct {
+	StripeID        *string        `json:"stripe_id,omitempty"`
 	Email           string         `json:"email,omitempty" fake:"{email}"`
 	EmailVerifiedAt *time.Time     `json:"email_verified_at,omitempty"`
 	Phone           *string        `json:"phone,omitempty" fake:"{phone_e164}"`
@@ -143,6 +144,7 @@ type PersonFields struct {
 	PostalCode      *string        `json:"postal_code,omitempty" fake:"{zip}"`
 	City            *string        `json:"city,omitempty" fake:"{city}"`
 	Country         *string        `json:"country,omitempty" fake:"{countryabr}"`
+	Subscribed      bool           `json:"subscribed,omitempty"`
 	CreatedAt       time.Time      `json:"created_at,omitempty"`
 	UpdatedAt       time.Time      `json:"updated_at,omitempty"`
 }
@@ -156,6 +158,7 @@ func (bf *Factory) Person() *PersonFactory {
 
 	f.builder = f.data.Person.
 		Create().
+		SetNillableStripeID(f.Fields.StripeID).
 		SetEmail(f.Fields.Email).
 		SetNillableEmailVerifiedAt(f.Fields.EmailVerifiedAt).
 		SetNillablePhone(f.Fields.Phone).

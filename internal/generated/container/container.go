@@ -14,6 +14,7 @@ import (
 
 	resolvers "github.com/avptp/brain/internal/api/resolvers"
 	auth "github.com/avptp/brain/internal/auth"
+	billing "github.com/avptp/brain/internal/billing"
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	messaging "github.com/avptp/brain/internal/messaging"
@@ -225,6 +226,146 @@ func (c *Container) Delete() error {
 // IsClosed returns true if the Container has been deleted.
 func (c *Container) IsClosed() bool {
 	return c.ctn.IsClosed()
+}
+
+// SafeGetBiller retrieves the "biller" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "biller"
+//	type: billing.Biller
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*slog.Logger) ["logger"]
+//		- "2": Service(*data.Client) ["data"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetBiller() (billing.Biller, error) {
+	i, err := c.ctn.SafeGet("biller")
+	if err != nil {
+		var eo billing.Biller
+		return eo, err
+	}
+	o, ok := i.(billing.Biller)
+	if !ok {
+		return o, errors.New("could get 'biller' because the object could not be cast to billing.Biller")
+	}
+	return o, nil
+}
+
+// GetBiller retrieves the "biller" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "biller"
+//	type: billing.Biller
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*slog.Logger) ["logger"]
+//		- "2": Service(*data.Client) ["data"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetBiller() billing.Biller {
+	o, err := c.SafeGetBiller()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetBiller retrieves the "biller" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "biller"
+//	type: billing.Biller
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*slog.Logger) ["logger"]
+//		- "2": Service(*data.Client) ["data"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetBiller() (billing.Biller, error) {
+	i, err := c.ctn.UnscopedSafeGet("biller")
+	if err != nil {
+		var eo billing.Biller
+		return eo, err
+	}
+	o, ok := i.(billing.Biller)
+	if !ok {
+		return o, errors.New("could get 'biller' because the object could not be cast to billing.Biller")
+	}
+	return o, nil
+}
+
+// UnscopedGetBiller retrieves the "biller" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "biller"
+//	type: billing.Biller
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*slog.Logger) ["logger"]
+//		- "2": Service(*data.Client) ["data"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if app is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetBiller() billing.Biller {
+	o, err := c.UnscopedSafeGetBiller()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Biller retrieves the "biller" object from the app scope.
+//
+// ---------------------------------------------
+//
+//	name: "biller"
+//	type: billing.Biller
+//	scope: "app"
+//	build: func
+//	params:
+//		- "0": Service(*config.Config) ["config"]
+//		- "1": Service(*slog.Logger) ["logger"]
+//		- "2": Service(*data.Client) ["data"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetBiller method.
+// If the container can not be retrieved, it panics.
+func Biller(i interface{}) billing.Biller {
+	return C(i).GetBiller()
 }
 
 // SafeGetCaptcha retrieves the "captcha" object from the app scope.
@@ -1411,11 +1552,12 @@ func Redis(i interface{}) *v.Client {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(auth.Captcha) ["captcha"]
-//		- "1": Service(*config.Config) ["config"]
-//		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(*v1.Limiter) ["limiter"]
-//		- "4": Service(messaging.Messenger) ["messenger"]
+//		- "0": Service(billing.Biller) ["biller"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*config.Config) ["config"]
+//		- "3": Service(*data.Client) ["data"]
+//		- "4": Service(*v1.Limiter) ["limiter"]
+//		- "5": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1444,11 +1586,12 @@ func (c *Container) SafeGetResolver() (*resolvers.Resolver, error) {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(auth.Captcha) ["captcha"]
-//		- "1": Service(*config.Config) ["config"]
-//		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(*v1.Limiter) ["limiter"]
-//		- "4": Service(messaging.Messenger) ["messenger"]
+//		- "0": Service(billing.Biller) ["biller"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*config.Config) ["config"]
+//		- "3": Service(*data.Client) ["data"]
+//		- "4": Service(*v1.Limiter) ["limiter"]
+//		- "5": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1472,11 +1615,12 @@ func (c *Container) GetResolver() *resolvers.Resolver {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(auth.Captcha) ["captcha"]
-//		- "1": Service(*config.Config) ["config"]
-//		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(*v1.Limiter) ["limiter"]
-//		- "4": Service(messaging.Messenger) ["messenger"]
+//		- "0": Service(billing.Biller) ["biller"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*config.Config) ["config"]
+//		- "3": Service(*data.Client) ["data"]
+//		- "4": Service(*v1.Limiter) ["limiter"]
+//		- "5": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1506,11 +1650,12 @@ func (c *Container) UnscopedSafeGetResolver() (*resolvers.Resolver, error) {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(auth.Captcha) ["captcha"]
-//		- "1": Service(*config.Config) ["config"]
-//		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(*v1.Limiter) ["limiter"]
-//		- "4": Service(messaging.Messenger) ["messenger"]
+//		- "0": Service(billing.Biller) ["biller"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*config.Config) ["config"]
+//		- "3": Service(*data.Client) ["data"]
+//		- "4": Service(*v1.Limiter) ["limiter"]
+//		- "5": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //
@@ -1535,11 +1680,12 @@ func (c *Container) UnscopedGetResolver() *resolvers.Resolver {
 //	scope: "app"
 //	build: func
 //	params:
-//		- "0": Service(auth.Captcha) ["captcha"]
-//		- "1": Service(*config.Config) ["config"]
-//		- "2": Service(*data.Client) ["data"]
-//		- "3": Service(*v1.Limiter) ["limiter"]
-//		- "4": Service(messaging.Messenger) ["messenger"]
+//		- "0": Service(billing.Biller) ["biller"]
+//		- "1": Service(auth.Captcha) ["captcha"]
+//		- "2": Service(*config.Config) ["config"]
+//		- "3": Service(*data.Client) ["data"]
+//		- "4": Service(*v1.Limiter) ["limiter"]
+//		- "5": Service(messaging.Messenger) ["messenger"]
 //	unshared: false
 //	close: false
 //

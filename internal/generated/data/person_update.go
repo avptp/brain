@@ -31,6 +31,26 @@ func (pu *PersonUpdate) Where(ps ...predicate.Person) *PersonUpdate {
 	return pu
 }
 
+// SetStripeID sets the "stripe_id" field.
+func (pu *PersonUpdate) SetStripeID(s string) *PersonUpdate {
+	pu.mutation.SetStripeID(s)
+	return pu
+}
+
+// SetNillableStripeID sets the "stripe_id" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillableStripeID(s *string) *PersonUpdate {
+	if s != nil {
+		pu.SetStripeID(*s)
+	}
+	return pu
+}
+
+// ClearStripeID clears the value of the "stripe_id" field.
+func (pu *PersonUpdate) ClearStripeID() *PersonUpdate {
+	pu.mutation.ClearStripeID()
+	return pu
+}
+
 // SetEmail sets the "email" field.
 func (pu *PersonUpdate) SetEmail(s string) *PersonUpdate {
 	pu.mutation.SetEmail(s)
@@ -241,6 +261,20 @@ func (pu *PersonUpdate) ClearCountry() *PersonUpdate {
 	return pu
 }
 
+// SetSubscribed sets the "subscribed" field.
+func (pu *PersonUpdate) SetSubscribed(b bool) *PersonUpdate {
+	pu.mutation.SetSubscribed(b)
+	return pu
+}
+
+// SetNillableSubscribed sets the "subscribed" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillableSubscribed(b *bool) *PersonUpdate {
+	if b != nil {
+		pu.SetSubscribed(*b)
+	}
+	return pu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (pu *PersonUpdate) SetUpdatedAt(t time.Time) *PersonUpdate {
 	pu.mutation.SetUpdatedAt(t)
@@ -433,6 +467,12 @@ func (pu *PersonUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := pu.mutation.StripeID(); ok {
+		_spec.SetField(person.FieldStripeID, field.TypeString, value)
+	}
+	if pu.mutation.StripeIDCleared() {
+		_spec.ClearField(person.FieldStripeID, field.TypeString)
+	}
 	if value, ok := pu.mutation.Email(); ok {
 		_spec.SetField(person.FieldEmail, field.TypeString, value)
 	}
@@ -501,6 +541,9 @@ func (pu *PersonUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.CountryCleared() {
 		_spec.ClearField(person.FieldCountry, field.TypeString)
+	}
+	if value, ok := pu.mutation.Subscribed(); ok {
+		_spec.SetField(person.FieldSubscribed, field.TypeBool, value)
 	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(person.FieldUpdatedAt, field.TypeTime, value)
@@ -613,6 +656,26 @@ type PersonUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *PersonMutation
+}
+
+// SetStripeID sets the "stripe_id" field.
+func (puo *PersonUpdateOne) SetStripeID(s string) *PersonUpdateOne {
+	puo.mutation.SetStripeID(s)
+	return puo
+}
+
+// SetNillableStripeID sets the "stripe_id" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillableStripeID(s *string) *PersonUpdateOne {
+	if s != nil {
+		puo.SetStripeID(*s)
+	}
+	return puo
+}
+
+// ClearStripeID clears the value of the "stripe_id" field.
+func (puo *PersonUpdateOne) ClearStripeID() *PersonUpdateOne {
+	puo.mutation.ClearStripeID()
+	return puo
 }
 
 // SetEmail sets the "email" field.
@@ -822,6 +885,20 @@ func (puo *PersonUpdateOne) SetNillableCountry(s *string) *PersonUpdateOne {
 // ClearCountry clears the value of the "country" field.
 func (puo *PersonUpdateOne) ClearCountry() *PersonUpdateOne {
 	puo.mutation.ClearCountry()
+	return puo
+}
+
+// SetSubscribed sets the "subscribed" field.
+func (puo *PersonUpdateOne) SetSubscribed(b bool) *PersonUpdateOne {
+	puo.mutation.SetSubscribed(b)
+	return puo
+}
+
+// SetNillableSubscribed sets the "subscribed" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillableSubscribed(b *bool) *PersonUpdateOne {
+	if b != nil {
+		puo.SetSubscribed(*b)
+	}
 	return puo
 }
 
@@ -1047,6 +1124,12 @@ func (puo *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err err
 			}
 		}
 	}
+	if value, ok := puo.mutation.StripeID(); ok {
+		_spec.SetField(person.FieldStripeID, field.TypeString, value)
+	}
+	if puo.mutation.StripeIDCleared() {
+		_spec.ClearField(person.FieldStripeID, field.TypeString)
+	}
 	if value, ok := puo.mutation.Email(); ok {
 		_spec.SetField(person.FieldEmail, field.TypeString, value)
 	}
@@ -1115,6 +1198,9 @@ func (puo *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err err
 	}
 	if puo.mutation.CountryCleared() {
 		_spec.ClearField(person.FieldCountry, field.TypeString)
+	}
+	if value, ok := puo.mutation.Subscribed(); ok {
+		_spec.SetField(person.FieldSubscribed, field.TypeBool, value)
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(person.FieldUpdatedAt, field.TypeTime, value)

@@ -10,6 +10,7 @@ import (
 
 	resolvers "github.com/avptp/brain/internal/api/resolvers"
 	auth "github.com/avptp/brain/internal/auth"
+	billing "github.com/avptp/brain/internal/billing"
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"
 	messaging "github.com/avptp/brain/internal/messaging"
@@ -23,6 +24,54 @@ import (
 
 func getDiDefs(provider dingo.Provider) []di.Def {
 	return []di.Def{
+		{
+			Name:  "biller",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("biller")
+				if err != nil {
+					var eo billing.Biller
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("config")
+				if err != nil {
+					var eo billing.Biller
+					return eo, err
+				}
+				p0, ok := pi0.(*config.Config)
+				if !ok {
+					var eo billing.Biller
+					return eo, errors.New("could not cast parameter 0 to *config.Config")
+				}
+				pi1, err := ctn.SafeGet("logger")
+				if err != nil {
+					var eo billing.Biller
+					return eo, err
+				}
+				p1, ok := pi1.(*slog.Logger)
+				if !ok {
+					var eo billing.Biller
+					return eo, errors.New("could not cast parameter 1 to *slog.Logger")
+				}
+				pi2, err := ctn.SafeGet("data")
+				if err != nil {
+					var eo billing.Biller
+					return eo, err
+				}
+				p2, ok := pi2.(*data.Client)
+				if !ok {
+					var eo billing.Biller
+					return eo, errors.New("could not cast parameter 2 to *data.Client")
+				}
+				b, ok := d.Build.(func(*config.Config, *slog.Logger, *data.Client) (billing.Biller, error))
+				if !ok {
+					var eo billing.Biller
+					return eo, errors.New("could not cast build function to func(*config.Config, *slog.Logger, *data.Client) (billing.Biller, error)")
+				}
+				return b(p0, p1, p2)
+			},
+			Unshared: false,
+		},
 		{
 			Name:  "captcha",
 			Scope: "app",
@@ -309,62 +358,72 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					var eo *resolvers.Resolver
 					return eo, err
 				}
-				pi0, err := ctn.SafeGet("captcha")
+				pi0, err := ctn.SafeGet("biller")
 				if err != nil {
 					var eo *resolvers.Resolver
 					return eo, err
 				}
-				p0, ok := pi0.(auth.Captcha)
+				p0, ok := pi0.(billing.Biller)
 				if !ok {
 					var eo *resolvers.Resolver
-					return eo, errors.New("could not cast parameter 0 to auth.Captcha")
+					return eo, errors.New("could not cast parameter 0 to billing.Biller")
 				}
-				pi1, err := ctn.SafeGet("config")
+				pi1, err := ctn.SafeGet("captcha")
 				if err != nil {
 					var eo *resolvers.Resolver
 					return eo, err
 				}
-				p1, ok := pi1.(*config.Config)
+				p1, ok := pi1.(auth.Captcha)
 				if !ok {
 					var eo *resolvers.Resolver
-					return eo, errors.New("could not cast parameter 1 to *config.Config")
+					return eo, errors.New("could not cast parameter 1 to auth.Captcha")
 				}
-				pi2, err := ctn.SafeGet("data")
+				pi2, err := ctn.SafeGet("config")
 				if err != nil {
 					var eo *resolvers.Resolver
 					return eo, err
 				}
-				p2, ok := pi2.(*data.Client)
+				p2, ok := pi2.(*config.Config)
 				if !ok {
 					var eo *resolvers.Resolver
-					return eo, errors.New("could not cast parameter 2 to *data.Client")
+					return eo, errors.New("could not cast parameter 2 to *config.Config")
 				}
-				pi3, err := ctn.SafeGet("limiter")
+				pi3, err := ctn.SafeGet("data")
 				if err != nil {
 					var eo *resolvers.Resolver
 					return eo, err
 				}
-				p3, ok := pi3.(*v1.Limiter)
+				p3, ok := pi3.(*data.Client)
 				if !ok {
 					var eo *resolvers.Resolver
-					return eo, errors.New("could not cast parameter 3 to *v1.Limiter")
+					return eo, errors.New("could not cast parameter 3 to *data.Client")
 				}
-				pi4, err := ctn.SafeGet("messenger")
+				pi4, err := ctn.SafeGet("limiter")
 				if err != nil {
 					var eo *resolvers.Resolver
 					return eo, err
 				}
-				p4, ok := pi4.(messaging.Messenger)
+				p4, ok := pi4.(*v1.Limiter)
 				if !ok {
 					var eo *resolvers.Resolver
-					return eo, errors.New("could not cast parameter 4 to messaging.Messenger")
+					return eo, errors.New("could not cast parameter 4 to *v1.Limiter")
 				}
-				b, ok := d.Build.(func(auth.Captcha, *config.Config, *data.Client, *v1.Limiter, messaging.Messenger) (*resolvers.Resolver, error))
+				pi5, err := ctn.SafeGet("messenger")
+				if err != nil {
+					var eo *resolvers.Resolver
+					return eo, err
+				}
+				p5, ok := pi5.(messaging.Messenger)
 				if !ok {
 					var eo *resolvers.Resolver
-					return eo, errors.New("could not cast build function to func(auth.Captcha, *config.Config, *data.Client, *v1.Limiter, messaging.Messenger) (*resolvers.Resolver, error)")
+					return eo, errors.New("could not cast parameter 5 to messaging.Messenger")
 				}
-				return b(p0, p1, p2, p3, p4)
+				b, ok := d.Build.(func(billing.Biller, auth.Captcha, *config.Config, *data.Client, *v1.Limiter, messaging.Messenger) (*resolvers.Resolver, error))
+				if !ok {
+					var eo *resolvers.Resolver
+					return eo, errors.New("could not cast build function to func(billing.Biller, auth.Captcha, *config.Config, *data.Client, *v1.Limiter, messaging.Messenger) (*resolvers.Resolver, error)")
+				}
+				return b(p0, p1, p2, p3, p4, p5)
 			},
 			Unshared: false,
 		},

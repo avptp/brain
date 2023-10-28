@@ -259,6 +259,11 @@ func (pe *PersonQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			pe.WithNamedAuthorizations(alias, func(wq *AuthorizationQuery) {
 				*wq = *query
 			})
+		case "stripeID":
+			if _, ok := fieldSeen[person.FieldStripeID]; !ok {
+				selectedFields = append(selectedFields, person.FieldStripeID)
+				fieldSeen[person.FieldStripeID] = struct{}{}
+			}
 		case "email":
 			if _, ok := fieldSeen[person.FieldEmail]; !ok {
 				selectedFields = append(selectedFields, person.FieldEmail)
@@ -323,6 +328,11 @@ func (pe *PersonQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if _, ok := fieldSeen[person.FieldCountry]; !ok {
 				selectedFields = append(selectedFields, person.FieldCountry)
 				fieldSeen[person.FieldCountry] = struct{}{}
+			}
+		case "subscribed":
+			if _, ok := fieldSeen[person.FieldSubscribed]; !ok {
+				selectedFields = append(selectedFields, person.FieldSubscribed)
+				fieldSeen[person.FieldSubscribed] = struct{}{}
 			}
 		case "createdAt":
 			if _, ok := fieldSeen[person.FieldCreatedAt]; !ok {

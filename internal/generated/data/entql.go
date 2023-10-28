@@ -64,6 +64,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Person",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			person.FieldStripeID:        {Type: field.TypeString, Column: person.FieldStripeID},
 			person.FieldEmail:           {Type: field.TypeString, Column: person.FieldEmail},
 			person.FieldEmailVerifiedAt: {Type: field.TypeTime, Column: person.FieldEmailVerifiedAt},
 			person.FieldPhone:           {Type: field.TypeString, Column: person.FieldPhone},
@@ -78,6 +79,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			person.FieldPostalCode:      {Type: field.TypeString, Column: person.FieldPostalCode},
 			person.FieldCity:            {Type: field.TypeString, Column: person.FieldCity},
 			person.FieldCountry:         {Type: field.TypeString, Column: person.FieldCountry},
+			person.FieldSubscribed:      {Type: field.TypeBool, Column: person.FieldSubscribed},
 			person.FieldCreatedAt:       {Type: field.TypeTime, Column: person.FieldCreatedAt},
 			person.FieldUpdatedAt:       {Type: field.TypeTime, Column: person.FieldUpdatedAt},
 		},
@@ -337,6 +339,11 @@ func (f *PersonFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(person.FieldID))
 }
 
+// WhereStripeID applies the entql string predicate on the stripe_id field.
+func (f *PersonFilter) WhereStripeID(p entql.StringP) {
+	f.Where(p.Field(person.FieldStripeID))
+}
+
 // WhereEmail applies the entql string predicate on the email field.
 func (f *PersonFilter) WhereEmail(p entql.StringP) {
 	f.Where(p.Field(person.FieldEmail))
@@ -405,6 +412,11 @@ func (f *PersonFilter) WhereCity(p entql.StringP) {
 // WhereCountry applies the entql string predicate on the country field.
 func (f *PersonFilter) WhereCountry(p entql.StringP) {
 	f.Where(p.Field(person.FieldCountry))
+}
+
+// WhereSubscribed applies the entql bool predicate on the subscribed field.
+func (f *PersonFilter) WhereSubscribed(p entql.BoolP) {
+	f.Where(p.Field(person.FieldSubscribed))
 }
 
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.

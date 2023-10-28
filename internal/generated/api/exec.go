@@ -94,6 +94,14 @@ type ComplexityRoot struct {
 		Token func(childComplexity int) int
 	}
 
+	CreateBillingCheckoutSessionPayload struct {
+		CheckoutSessionURL func(childComplexity int) int
+	}
+
+	CreateBillingPortalSessionPayload struct {
+		PortalSessionURL func(childComplexity int) int
+	}
+
 	CreateEmailAuthorizationPayload struct {
 		Authorization func(childComplexity int) int
 	}
@@ -115,16 +123,18 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ApplyEmailAuthorization     func(childComplexity int, input ApplyEmailAuthorizationInput) int
-		ApplyPasswordAuthorization  func(childComplexity int, input ApplyPasswordAuthorizationInput) int
-		CreateAuthentication        func(childComplexity int, input CreateAuthenticationInput) int
-		CreateEmailAuthorization    func(childComplexity int, input CreateEmailAuthorizationInput) int
-		CreatePasswordAuthorization func(childComplexity int, input CreatePasswordAuthorizationInput) int
-		CreatePerson                func(childComplexity int, input CreatePersonInput) int
-		DeleteAuthentication        func(childComplexity int, input DeleteAuthenticationInput) int
-		DeletePerson                func(childComplexity int, input DeletePersonInput) int
-		UpdatePerson                func(childComplexity int, input UpdatePersonInput) int
-		UpdatePersonPassword        func(childComplexity int, input UpdatePersonPasswordInput) int
+		ApplyEmailAuthorization      func(childComplexity int, input ApplyEmailAuthorizationInput) int
+		ApplyPasswordAuthorization   func(childComplexity int, input ApplyPasswordAuthorizationInput) int
+		CreateAuthentication         func(childComplexity int, input CreateAuthenticationInput) int
+		CreateBillingCheckoutSession func(childComplexity int) int
+		CreateBillingPortalSession   func(childComplexity int) int
+		CreateEmailAuthorization     func(childComplexity int, input CreateEmailAuthorizationInput) int
+		CreatePasswordAuthorization  func(childComplexity int, input CreatePasswordAuthorizationInput) int
+		CreatePerson                 func(childComplexity int, input CreatePersonInput) int
+		DeleteAuthentication         func(childComplexity int, input DeleteAuthenticationInput) int
+		DeletePerson                 func(childComplexity int, input DeletePersonInput) int
+		UpdatePerson                 func(childComplexity int, input UpdatePersonInput) int
+		UpdatePersonPassword         func(childComplexity int, input UpdatePersonPasswordInput) int
 	}
 
 	PageInfo struct {
@@ -150,6 +160,7 @@ type ComplexityRoot struct {
 		LastName        func(childComplexity int) int
 		Phone           func(childComplexity int) int
 		PostalCode      func(childComplexity int) int
+		Subscribed      func(childComplexity int) int
 		TaxID           func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
 	}
@@ -174,6 +185,8 @@ type MutationResolver interface {
 	ApplyEmailAuthorization(ctx context.Context, input ApplyEmailAuthorizationInput) (*ApplyEmailAuthorizationPayload, error)
 	CreatePasswordAuthorization(ctx context.Context, input CreatePasswordAuthorizationInput) (*CreatePasswordAuthorizationPayload, error)
 	ApplyPasswordAuthorization(ctx context.Context, input ApplyPasswordAuthorizationInput) (*ApplyPasswordAuthorizationPayload, error)
+	CreateBillingCheckoutSession(ctx context.Context) (*CreateBillingCheckoutSessionPayload, error)
+	CreateBillingPortalSession(ctx context.Context) (*CreateBillingPortalSessionPayload, error)
 	CreatePerson(ctx context.Context, input CreatePersonInput) (*CreatePersonPayload, error)
 	UpdatePerson(ctx context.Context, input UpdatePersonInput) (*UpdatePersonPayload, error)
 	UpdatePersonPassword(ctx context.Context, input UpdatePersonPasswordInput) (*UpdatePersonPasswordPayload, error)
@@ -345,6 +358,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateAuthenticationPayload.Token(childComplexity), true
 
+	case "CreateBillingCheckoutSessionPayload.checkoutSessionUrl":
+		if e.complexity.CreateBillingCheckoutSessionPayload.CheckoutSessionURL == nil {
+			break
+		}
+
+		return e.complexity.CreateBillingCheckoutSessionPayload.CheckoutSessionURL(childComplexity), true
+
+	case "CreateBillingPortalSessionPayload.portalSessionUrl":
+		if e.complexity.CreateBillingPortalSessionPayload.PortalSessionURL == nil {
+			break
+		}
+
+		return e.complexity.CreateBillingPortalSessionPayload.PortalSessionURL(childComplexity), true
+
 	case "CreateEmailAuthorizationPayload.authorization":
 		if e.complexity.CreateEmailAuthorizationPayload.Authorization == nil {
 			break
@@ -415,6 +442,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateAuthentication(childComplexity, args["input"].(CreateAuthenticationInput)), true
+
+	case "Mutation.createBillingCheckoutSession":
+		if e.complexity.Mutation.CreateBillingCheckoutSession == nil {
+			break
+		}
+
+		return e.complexity.Mutation.CreateBillingCheckoutSession(childComplexity), true
+
+	case "Mutation.createBillingPortalSession":
+		if e.complexity.Mutation.CreateBillingPortalSession == nil {
+			break
+		}
+
+		return e.complexity.Mutation.CreateBillingPortalSession(childComplexity), true
 
 	case "Mutation.createEmailAuthorization":
 		if e.complexity.Mutation.CreateEmailAuthorization == nil {
@@ -637,6 +678,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Person.PostalCode(childComplexity), true
+
+	case "Person.subscribed":
+		if e.complexity.Person.Subscribed == nil {
+			break
+		}
+
+		return e.complexity.Person.Subscribed(childComplexity), true
 
 	case "Person.taxId":
 		if e.complexity.Person.TaxID == nil {
@@ -900,6 +948,22 @@ type ApplyPasswordAuthorizationPayload {
     authorizationId: ID!
 }
 `, BuiltIn: false},
+	{Name: "../../api/schema/billing.graphqls", Input: `extend type Mutation {
+    createBillingCheckoutSession: CreateBillingCheckoutSessionPayload
+}
+
+type CreateBillingCheckoutSessionPayload {
+    checkoutSessionUrl: String!
+}
+
+extend type Mutation {
+    createBillingPortalSession: CreateBillingPortalSessionPayload
+}
+
+type CreateBillingPortalSessionPayload {
+    portalSessionUrl: String!
+}
+`, BuiltIn: false},
 	{Name: "../../api/schema/main.graphqls", Input: `type Query
 
 type Mutation
@@ -937,6 +1001,8 @@ type PageInfo {
     postalCode: String
     city: String
     country: String
+
+    subscribed: Boolean!
 
     createdAt: Time!
     updatedAt: Time!
@@ -1701,6 +1767,8 @@ func (ec *executionContext) fieldContext_Authentication_person(ctx context.Conte
 				return ec.fieldContext_Person_city(ctx, field)
 			case "country":
 				return ec.fieldContext_Person_country(ctx, field)
+			case "subscribed":
+				return ec.fieldContext_Person_subscribed(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Person_createdAt(ctx, field)
 			case "updatedAt":
@@ -2203,6 +2271,8 @@ func (ec *executionContext) fieldContext_Authorization_person(ctx context.Contex
 				return ec.fieldContext_Person_city(ctx, field)
 			case "country":
 				return ec.fieldContext_Person_country(ctx, field)
+			case "subscribed":
+				return ec.fieldContext_Person_subscribed(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Person_createdAt(ctx, field)
 			case "updatedAt":
@@ -2250,6 +2320,94 @@ func (ec *executionContext) _CreateAuthenticationPayload_token(ctx context.Conte
 func (ec *executionContext) fieldContext_CreateAuthenticationPayload_token(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateAuthenticationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateBillingCheckoutSessionPayload_checkoutSessionUrl(ctx context.Context, field graphql.CollectedField, obj *CreateBillingCheckoutSessionPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateBillingCheckoutSessionPayload_checkoutSessionUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CheckoutSessionURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateBillingCheckoutSessionPayload_checkoutSessionUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateBillingCheckoutSessionPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateBillingPortalSessionPayload_portalSessionUrl(ctx context.Context, field graphql.CollectedField, obj *CreateBillingPortalSessionPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateBillingPortalSessionPayload_portalSessionUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PortalSessionURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateBillingPortalSessionPayload_portalSessionUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateBillingPortalSessionPayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2427,6 +2585,8 @@ func (ec *executionContext) fieldContext_CreatePersonPayload_person(ctx context.
 				return ec.fieldContext_Person_city(ctx, field)
 			case "country":
 				return ec.fieldContext_Person_country(ctx, field)
+			case "subscribed":
+				return ec.fieldContext_Person_subscribed(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Person_createdAt(ctx, field)
 			case "updatedAt":
@@ -2860,6 +3020,96 @@ func (ec *executionContext) fieldContext_Mutation_applyPasswordAuthorization(ctx
 	if fc.Args, err = ec.field_Mutation_applyPasswordAuthorization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createBillingCheckoutSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createBillingCheckoutSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateBillingCheckoutSession(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*CreateBillingCheckoutSessionPayload)
+	fc.Result = res
+	return ec.marshalOCreateBillingCheckoutSessionPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateBillingCheckoutSessionPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createBillingCheckoutSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "checkoutSessionUrl":
+				return ec.fieldContext_CreateBillingCheckoutSessionPayload_checkoutSessionUrl(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateBillingCheckoutSessionPayload", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createBillingPortalSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createBillingPortalSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateBillingPortalSession(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*CreateBillingPortalSessionPayload)
+	fc.Result = res
+	return ec.marshalOCreateBillingPortalSessionPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateBillingPortalSessionPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createBillingPortalSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "portalSessionUrl":
+				return ec.fieldContext_CreateBillingPortalSessionPayload_portalSessionUrl(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateBillingPortalSessionPayload", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -3847,6 +4097,50 @@ func (ec *executionContext) fieldContext_Person_country(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Person_subscribed(ctx context.Context, field graphql.CollectedField, obj *data.Person) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Person_subscribed(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Subscribed, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Person_subscribed(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Person",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Person_createdAt(ctx context.Context, field graphql.CollectedField, obj *data.Person) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Person_createdAt(ctx, field)
 	if err != nil {
@@ -4062,6 +4356,8 @@ func (ec *executionContext) fieldContext_Query_viewer(ctx context.Context, field
 				return ec.fieldContext_Person_city(ctx, field)
 			case "country":
 				return ec.fieldContext_Person_country(ctx, field)
+			case "subscribed":
+				return ec.fieldContext_Person_subscribed(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Person_createdAt(ctx, field)
 			case "updatedAt":
@@ -4271,6 +4567,8 @@ func (ec *executionContext) fieldContext_UpdatePersonPasswordPayload_person(ctx 
 				return ec.fieldContext_Person_city(ctx, field)
 			case "country":
 				return ec.fieldContext_Person_country(ctx, field)
+			case "subscribed":
+				return ec.fieldContext_Person_subscribed(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Person_createdAt(ctx, field)
 			case "updatedAt":
@@ -4351,6 +4649,8 @@ func (ec *executionContext) fieldContext_UpdatePersonPayload_person(ctx context.
 				return ec.fieldContext_Person_city(ctx, field)
 			case "country":
 				return ec.fieldContext_Person_country(ctx, field)
+			case "subscribed":
+				return ec.fieldContext_Person_subscribed(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Person_createdAt(ctx, field)
 			case "updatedAt":
@@ -7063,6 +7363,84 @@ func (ec *executionContext) _CreateAuthenticationPayload(ctx context.Context, se
 	return out
 }
 
+var createBillingCheckoutSessionPayloadImplementors = []string{"CreateBillingCheckoutSessionPayload"}
+
+func (ec *executionContext) _CreateBillingCheckoutSessionPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateBillingCheckoutSessionPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createBillingCheckoutSessionPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateBillingCheckoutSessionPayload")
+		case "checkoutSessionUrl":
+			out.Values[i] = ec._CreateBillingCheckoutSessionPayload_checkoutSessionUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var createBillingPortalSessionPayloadImplementors = []string{"CreateBillingPortalSessionPayload"}
+
+func (ec *executionContext) _CreateBillingPortalSessionPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateBillingPortalSessionPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createBillingPortalSessionPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateBillingPortalSessionPayload")
+		case "portalSessionUrl":
+			out.Values[i] = ec._CreateBillingPortalSessionPayload_portalSessionUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var createEmailAuthorizationPayloadImplementors = []string{"CreateEmailAuthorizationPayload"}
 
 func (ec *executionContext) _CreateEmailAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateEmailAuthorizationPayload) graphql.Marshaler {
@@ -7301,6 +7679,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_applyPasswordAuthorization(ctx, field)
 			})
+		case "createBillingCheckoutSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createBillingCheckoutSession(ctx, field)
+			})
+		case "createBillingPortalSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createBillingPortalSession(ctx, field)
+			})
 		case "createPerson":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createPerson(ctx, field)
@@ -7442,6 +7828,11 @@ func (ec *executionContext) _Person(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec._Person_city(ctx, field, obj)
 		case "country":
 			out.Values[i] = ec._Person_country(ctx, field, obj)
+		case "subscribed":
+			out.Values[i] = ec._Person_subscribed(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "createdAt":
 			out.Values[i] = ec._Person_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -8532,6 +8923,20 @@ func (ec *executionContext) marshalOCreateAuthenticationPayload2ᚖgithubᚗcom�
 		return graphql.Null
 	}
 	return ec._CreateAuthenticationPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCreateBillingCheckoutSessionPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateBillingCheckoutSessionPayload(ctx context.Context, sel ast.SelectionSet, v *CreateBillingCheckoutSessionPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CreateBillingCheckoutSessionPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCreateBillingPortalSessionPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateBillingPortalSessionPayload(ctx context.Context, sel ast.SelectionSet, v *CreateBillingPortalSessionPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CreateBillingPortalSessionPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOCreateEmailAuthorizationPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐCreateEmailAuthorizationPayload(ctx context.Context, sel ast.SelectionSet, v *CreateEmailAuthorizationPayload) graphql.Marshaler {

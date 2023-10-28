@@ -16,30 +16,14 @@ import (
 func Mux(ctn *container.Container) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.Handle("/ping", healthHandler(ctn.GetLogger()))
-	mux.Handle("/", graphHandler(ctn))
+	mux.Handle("/", GraphHandler(ctn))
+	mux.Handle("/stripe", ctn.GetBiller().WebhookHandler())
+	mux.Handle("/ping", HealthHandler(ctn.GetLogger()))
 
 	return mux
 }
 
-func healthHandler(log *slog.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "text/plain")
-
-		_, err := w.Write([]byte("pong"))
-
-		if err != nil {
-			log.Error(
-				err.Error(),
-			)
-
-			http.Error(w, reporting.ErrInternal.Message, http.StatusInternalServerError)
-		}
-	})
-}
-
-func graphHandler(ctn *container.Container) http.Handler {
+func GraphHandler(ctn *container.Container) http.Handler {
 	cfg := ctn.GetConfig()
 	data := ctn.GetData()
 
@@ -61,4 +45,21 @@ func graphHandler(ctn *container.Container) http.Handler {
 		middleware.NewSetIP(ctn.GetIpStrategy()),
 		middleware.NewSetViewer(data),
 	)
+}
+
+func HealthHandler(log *slog.Logger) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.WriteHeader(http.StatusOK)
+		res.Header().Set("Content-Type", "text/plain")
+
+		_, err := res.Write([]byte("pong"))
+
+		if err != nil {
+			log.Error(
+				err.Error(),
+			)
+
+			http.Error(res, reporting.ErrInternal.Message, http.StatusInternalServerError)
+		}
+	})
 }
