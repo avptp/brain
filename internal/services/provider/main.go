@@ -11,6 +11,7 @@ type Provider struct {
 
 func (p *Provider) Load() error {
 	return p.AddDefSlice([]dingo.Def{
+		services.BillerDef,
 		services.CaptchaDef,
 		services.ConfigDef,
 		services.DataDef,

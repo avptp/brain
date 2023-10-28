@@ -49,14 +49,16 @@ func PersonPassword(next ent.Mutator) ent.Mutator {
 }
 
 func PersonBirthdate(next ent.Mutator) ent.Mutator {
+	birthdateValidationError := data.ValidationError{
+		Name: "birthdate",
+	}
+
 	return hook.PersonFunc(func(ctx context.Context, m *data.PersonMutation) (ent.Value, error) {
 		if birthdate, ok := m.Birthdate(); ok {
 			if birthdate.After(time.Now()) {
 				return nil, fmt.Errorf(
 					`data: validator failed for field "Person.birthdate": value cannot be in the future: %w`,
-					&data.ValidationError{
-						Name: "birthdate",
-					},
+					&birthdateValidationError,
 				)
 			}
 		}

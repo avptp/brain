@@ -41,4 +41,8 @@ type Config struct {
 
 	OrgName string `env:"ORG_NAME"`
 	OrgLogo string `env:"ORG_LOGO"`
+
+	StripeApiSecret      string `env:"STRIPE_API_SECRET"`
+	StripeEndpointSecret string `env:"STRIPE_ENDPOINT_SECRET"`
+	StripePriceID        string `env:"STRIPE_PRICE_ID"`
 }

@@ -28,6 +28,13 @@ func (Person) Fields() []ent.Field {
 					Default: "gen_random_ulid()",
 				},
 			),
+		field.String("stripe_id").
+			SchemaType(map[string]string{
+				dialect.Postgres: "string(255)",
+			}).
+			Optional().
+			Nillable().
+			Unique(),
 		field.String("email").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(254)",
@@ -142,6 +149,8 @@ func (Person) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			StructTag(`fake:"{countryabr}"`),
+		field.Bool("subscribed").
+			Default(false),
 		field.Time("created_at").
 			SchemaType(map[string]string{
 				dialect.Postgres: "timestamp",

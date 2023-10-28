@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/avptp/brain/internal/auth/auth_test"
+	"github.com/avptp/brain/internal/billing/billing_test"
 	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/container"
 	"github.com/avptp/brain/internal/generated/data"
@@ -55,6 +56,7 @@ type TestSuite struct {
 	suite.Suite
 
 	ctn       *container.Container
+	biller    *billing_test.MockedBiller
 	captcha   *auth_test.MockedCaptcha
 	cfg       *config.Config
 	data      *data.Client
@@ -68,6 +70,13 @@ type TestSuite struct {
 
 func (t *TestSuite) SetupSuite() {
 	builder, err := container.NewBuilder()
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
+
+	t.biller = &billing_test.MockedBiller{}
+	err = builder.Set(services.Biller, t.biller)
 
 	if err != nil {
 		panic(err) // unrecoverable situation
@@ -95,7 +104,7 @@ func (t *TestSuite) SetupSuite() {
 	t.limiter = ctn.GetLimiter()
 
 	t.factory = factories.New(t.data)
-	t.api = client.New(transport.Mux(ctn))
+	t.api = client.New(transport.GraphHandler(ctn))
 	t.allowCtx = privacy.DecisionContext(context.Background(), privacy.Allow)
 }
 

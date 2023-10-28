@@ -18,6 +18,8 @@ type Person struct {
 	config `fake:"-" json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// StripeID holds the value of the "stripe_id" field.
+	StripeID *string `json:"stripe_id,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty" fake:"{email}"`
 	// EmailVerifiedAt holds the value of the "email_verified_at" field.
@@ -46,6 +48,8 @@ type Person struct {
 	City *string `json:"city,omitempty" fake:"{city}"`
 	// Country holds the value of the "country" field.
 	Country *string `json:"country,omitempty" fake:"{countryabr}"`
+	// Subscribed holds the value of the "subscribed" field.
+	Subscribed bool `json:"subscribed,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -95,7 +99,9 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case person.FieldEmail, person.FieldPhone, person.FieldPassword, person.FieldTaxID, person.FieldFirstName, person.FieldLastName, person.FieldLanguage, person.FieldGender, person.FieldAddress, person.FieldPostalCode, person.FieldCity, person.FieldCountry:
+		case person.FieldSubscribed:
+			values[i] = new(sql.NullBool)
+		case person.FieldStripeID, person.FieldEmail, person.FieldPhone, person.FieldPassword, person.FieldTaxID, person.FieldFirstName, person.FieldLastName, person.FieldLanguage, person.FieldGender, person.FieldAddress, person.FieldPostalCode, person.FieldCity, person.FieldCountry:
 			values[i] = new(sql.NullString)
 		case person.FieldEmailVerifiedAt, person.FieldBirthdate, person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -121,6 +127,13 @@ func (pe *Person) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				pe.ID = *value
+			}
+		case person.FieldStripeID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field stripe_id", values[i])
+			} else if value.Valid {
+				pe.StripeID = new(string)
+				*pe.StripeID = value.String
 			}
 		case person.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -215,6 +228,12 @@ func (pe *Person) assignValues(columns []string, values []any) error {
 				pe.Country = new(string)
 				*pe.Country = value.String
 			}
+		case person.FieldSubscribed:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field subscribed", values[i])
+			} else if value.Valid {
+				pe.Subscribed = value.Bool
+			}
 		case person.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -273,6 +292,11 @@ func (pe *Person) String() string {
 	var builder strings.Builder
 	builder.WriteString("Person(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pe.ID))
+	if v := pe.StripeID; v != nil {
+		builder.WriteString("stripe_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(pe.Email)
 	builder.WriteString(", ")
@@ -332,6 +356,9 @@ func (pe *Person) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
+	builder.WriteString("subscribed=")
+	builder.WriteString(fmt.Sprintf("%v", pe.Subscribed))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pe.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
@@ -351,6 +378,15 @@ func (pe *Person) FullName() string {
 	}
 
 	return strings.Join(parts, " ")
+}
+
+func (pe *Person) CanSubscribe() bool {
+	return pe.Phone != nil &&
+		pe.Birthdate != nil &&
+		pe.Address != nil &&
+		pe.PostalCode != nil &&
+		pe.City != nil &&
+		pe.Country != nil
 }
 
 // NamedAuthentications returns the Authentications named value or an error if the edge was not

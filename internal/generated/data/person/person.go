@@ -18,6 +18,8 @@ const (
 	Label = "person"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldStripeID holds the string denoting the stripe_id field in the database.
+	FieldStripeID = "stripe_id"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldEmailVerifiedAt holds the string denoting the email_verified_at field in the database.
@@ -46,6 +48,8 @@ const (
 	FieldCity = "city"
 	// FieldCountry holds the string denoting the country field in the database.
 	FieldCountry = "country"
+	// FieldSubscribed holds the string denoting the subscribed field in the database.
+	FieldSubscribed = "subscribed"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -75,6 +79,7 @@ const (
 // Columns holds all SQL columns for person fields.
 var Columns = []string{
 	FieldID,
+	FieldStripeID,
 	FieldEmail,
 	FieldEmailVerifiedAt,
 	FieldPhone,
@@ -89,6 +94,7 @@ var Columns = []string{
 	FieldPostalCode,
 	FieldCity,
 	FieldCountry,
+	FieldSubscribed,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -129,6 +135,8 @@ var (
 	CityValidator func(string) error
 	// CountryValidator is a validator for the "country" field. It is called by the builders before save.
 	CountryValidator func(string) error
+	// DefaultSubscribed holds the default value on creation for the "subscribed" field.
+	DefaultSubscribed bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -167,6 +175,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByStripeID orders the results by the stripe_id field.
+func ByStripeID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStripeID, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.
@@ -237,6 +250,11 @@ func ByCity(opts ...sql.OrderTermOption) OrderOption {
 // ByCountry orders the results by the country field.
 func ByCountry(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCountry, opts...).ToFunc()
+}
+
+// BySubscribed orders the results by the subscribed field.
+func BySubscribed(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubscribed, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

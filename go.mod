@@ -30,6 +30,7 @@ require (
 	github.com/sarulabs/dingo/v4 v4.2.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.8.4
+	github.com/stripe/stripe-go/v76 v76.12.0
 	github.com/vektah/gqlparser/v2 v2.5.10
 	golang.org/x/net v0.17.0
 	golang.org/x/text v0.13.0

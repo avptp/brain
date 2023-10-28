@@ -31,6 +31,7 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 	d := data.FromContext(ctx) // transactional data client for mutations
 	allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
+	// Create person
 	create := d.Person.
 		Create().
 		SetEmail(input.Email).
@@ -49,6 +50,7 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 		return nil, err
 	}
 
+	// Create authorization
 	a, err := d.Authorization.
 		Create().
 		SetPersonID(p.ID).
@@ -59,6 +61,7 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 		return nil, err
 	}
 
+	// Send welcome message
 	err = r.messenger.Send(&templates.Welcome{
 		Link: fmt.Sprintf(
 			"%s/%s/%s",
@@ -73,6 +76,7 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 		return nil, err
 	}
 
+	// Return payload
 	return &api.CreatePersonPayload{
 		Person: p,
 	}, nil
@@ -81,6 +85,8 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 // UpdatePerson is the resolver for the updatePerson field.
 func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePersonInput) (*api.UpdatePersonPayload, error) {
 	d := data.FromContext(ctx) // transactional data client for mutations
+
+	// Update person
 	update := d.Person.UpdateOneID(input.ID)
 
 	if input.Email.IsSet() {
@@ -177,6 +183,14 @@ func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePer
 		return nil, err
 	}
 
+	// Sync with biller
+	err = r.biller.SyncPerson(person)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Return payload
 	return &api.UpdatePersonPayload{
 		Person: person,
 	}, nil

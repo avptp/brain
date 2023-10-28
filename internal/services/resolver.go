@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/avptp/brain/internal/api/resolvers"
 	"github.com/avptp/brain/internal/auth"
+	"github.com/avptp/brain/internal/billing"
 	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/messaging"
@@ -17,6 +18,7 @@ var ResolverDef = dingo.Def{
 	Name:  Resolver,
 	Scope: di.App,
 	Build: func(
+		biller billing.Biller,
 		captcha auth.Captcha,
 		cfg *config.Config,
 		data *data.Client,
@@ -24,6 +26,7 @@ var ResolverDef = dingo.Def{
 		messenger messaging.Messenger,
 	) (*resolvers.Resolver, error) {
 		return resolvers.NewResolver(
+			biller,
 			captcha,
 			cfg,
 			data,

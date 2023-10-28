@@ -1242,6 +1242,7 @@ type PersonMutation struct {
 	op                     Op
 	typ                    string
 	id                     *uuid.UUID
+	stripe_id              *string
 	email                  *string
 	email_verified_at      *time.Time
 	phone                  *string
@@ -1256,6 +1257,7 @@ type PersonMutation struct {
 	postal_code            *string
 	city                   *string
 	country                *string
+	subscribed             *bool
 	created_at             *time.Time
 	updated_at             *time.Time
 	clearedFields          map[string]struct{}
@@ -1372,6 +1374,55 @@ func (m *PersonMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetStripeID sets the "stripe_id" field.
+func (m *PersonMutation) SetStripeID(s string) {
+	m.stripe_id = &s
+}
+
+// StripeID returns the value of the "stripe_id" field in the mutation.
+func (m *PersonMutation) StripeID() (r string, exists bool) {
+	v := m.stripe_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStripeID returns the old "stripe_id" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldStripeID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStripeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStripeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStripeID: %w", err)
+	}
+	return oldValue.StripeID, nil
+}
+
+// ClearStripeID clears the value of the "stripe_id" field.
+func (m *PersonMutation) ClearStripeID() {
+	m.stripe_id = nil
+	m.clearedFields[person.FieldStripeID] = struct{}{}
+}
+
+// StripeIDCleared returns if the "stripe_id" field was cleared in this mutation.
+func (m *PersonMutation) StripeIDCleared() bool {
+	_, ok := m.clearedFields[person.FieldStripeID]
+	return ok
+}
+
+// ResetStripeID resets all changes to the "stripe_id" field.
+func (m *PersonMutation) ResetStripeID() {
+	m.stripe_id = nil
+	delete(m.clearedFields, person.FieldStripeID)
 }
 
 // SetEmail sets the "email" field.
@@ -1995,6 +2046,42 @@ func (m *PersonMutation) ResetCountry() {
 	delete(m.clearedFields, person.FieldCountry)
 }
 
+// SetSubscribed sets the "subscribed" field.
+func (m *PersonMutation) SetSubscribed(b bool) {
+	m.subscribed = &b
+}
+
+// Subscribed returns the value of the "subscribed" field in the mutation.
+func (m *PersonMutation) Subscribed() (r bool, exists bool) {
+	v := m.subscribed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubscribed returns the old "subscribed" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldSubscribed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubscribed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubscribed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubscribed: %w", err)
+	}
+	return oldValue.Subscribed, nil
+}
+
+// ResetSubscribed resets all changes to the "subscribed" field.
+func (m *PersonMutation) ResetSubscribed() {
+	m.subscribed = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *PersonMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2209,7 +2296,10 @@ func (m *PersonMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PersonMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 18)
+	if m.stripe_id != nil {
+		fields = append(fields, person.FieldStripeID)
+	}
 	if m.email != nil {
 		fields = append(fields, person.FieldEmail)
 	}
@@ -2252,6 +2342,9 @@ func (m *PersonMutation) Fields() []string {
 	if m.country != nil {
 		fields = append(fields, person.FieldCountry)
 	}
+	if m.subscribed != nil {
+		fields = append(fields, person.FieldSubscribed)
+	}
 	if m.created_at != nil {
 		fields = append(fields, person.FieldCreatedAt)
 	}
@@ -2266,6 +2359,8 @@ func (m *PersonMutation) Fields() []string {
 // schema.
 func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case person.FieldStripeID:
+		return m.StripeID()
 	case person.FieldEmail:
 		return m.Email()
 	case person.FieldEmailVerifiedAt:
@@ -2294,6 +2389,8 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 		return m.City()
 	case person.FieldCountry:
 		return m.Country()
+	case person.FieldSubscribed:
+		return m.Subscribed()
 	case person.FieldCreatedAt:
 		return m.CreatedAt()
 	case person.FieldUpdatedAt:
@@ -2307,6 +2404,8 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case person.FieldStripeID:
+		return m.OldStripeID(ctx)
 	case person.FieldEmail:
 		return m.OldEmail(ctx)
 	case person.FieldEmailVerifiedAt:
@@ -2335,6 +2434,8 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldCity(ctx)
 	case person.FieldCountry:
 		return m.OldCountry(ctx)
+	case person.FieldSubscribed:
+		return m.OldSubscribed(ctx)
 	case person.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case person.FieldUpdatedAt:
@@ -2348,6 +2449,13 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 // type.
 func (m *PersonMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case person.FieldStripeID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStripeID(v)
+		return nil
 	case person.FieldEmail:
 		v, ok := value.(string)
 		if !ok {
@@ -2446,6 +2554,13 @@ func (m *PersonMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCountry(v)
 		return nil
+	case person.FieldSubscribed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubscribed(v)
+		return nil
 	case person.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -2490,6 +2605,9 @@ func (m *PersonMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *PersonMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(person.FieldStripeID) {
+		fields = append(fields, person.FieldStripeID)
+	}
 	if m.FieldCleared(person.FieldEmailVerifiedAt) {
 		fields = append(fields, person.FieldEmailVerifiedAt)
 	}
@@ -2531,6 +2649,9 @@ func (m *PersonMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *PersonMutation) ClearField(name string) error {
 	switch name {
+	case person.FieldStripeID:
+		m.ClearStripeID()
+		return nil
 	case person.FieldEmailVerifiedAt:
 		m.ClearEmailVerifiedAt()
 		return nil
@@ -2566,6 +2687,9 @@ func (m *PersonMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *PersonMutation) ResetField(name string) error {
 	switch name {
+	case person.FieldStripeID:
+		m.ResetStripeID()
+		return nil
 	case person.FieldEmail:
 		m.ResetEmail()
 		return nil
@@ -2607,6 +2731,9 @@ func (m *PersonMutation) ResetField(name string) error {
 		return nil
 	case person.FieldCountry:
 		m.ResetCountry()
+		return nil
+	case person.FieldSubscribed:
+		m.ResetSubscribed()
 		return nil
 	case person.FieldCreatedAt:
 		m.ResetCreatedAt()

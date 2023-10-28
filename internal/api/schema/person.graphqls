@@ -18,6 +18,8 @@ type Person {
     city: String
     country: String
 
+    subscribed: Boolean!
+
     createdAt: Time!
     updatedAt: Time!
 

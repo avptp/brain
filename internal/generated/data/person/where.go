@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.Person {
 	return predicate.Person(sql.FieldLTE(FieldID, id))
 }
 
+// StripeID applies equality check predicate on the "stripe_id" field. It's identical to StripeIDEQ.
+func StripeID(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldStripeID, v))
+}
+
 // Email applies equality check predicate on the "email" field. It's identical to EmailEQ.
 func Email(v string) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldEmail, v))
@@ -121,6 +126,11 @@ func Country(v string) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCountry, v))
 }
 
+// Subscribed applies equality check predicate on the "subscribed" field. It's identical to SubscribedEQ.
+func Subscribed(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldSubscribed, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -129,6 +139,81 @@ func CreatedAt(v time.Time) predicate.Person {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// StripeIDEQ applies the EQ predicate on the "stripe_id" field.
+func StripeIDEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldStripeID, v))
+}
+
+// StripeIDNEQ applies the NEQ predicate on the "stripe_id" field.
+func StripeIDNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldStripeID, v))
+}
+
+// StripeIDIn applies the In predicate on the "stripe_id" field.
+func StripeIDIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldStripeID, vs...))
+}
+
+// StripeIDNotIn applies the NotIn predicate on the "stripe_id" field.
+func StripeIDNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldStripeID, vs...))
+}
+
+// StripeIDGT applies the GT predicate on the "stripe_id" field.
+func StripeIDGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldStripeID, v))
+}
+
+// StripeIDGTE applies the GTE predicate on the "stripe_id" field.
+func StripeIDGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldStripeID, v))
+}
+
+// StripeIDLT applies the LT predicate on the "stripe_id" field.
+func StripeIDLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldStripeID, v))
+}
+
+// StripeIDLTE applies the LTE predicate on the "stripe_id" field.
+func StripeIDLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldStripeID, v))
+}
+
+// StripeIDContains applies the Contains predicate on the "stripe_id" field.
+func StripeIDContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldStripeID, v))
+}
+
+// StripeIDHasPrefix applies the HasPrefix predicate on the "stripe_id" field.
+func StripeIDHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldStripeID, v))
+}
+
+// StripeIDHasSuffix applies the HasSuffix predicate on the "stripe_id" field.
+func StripeIDHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldStripeID, v))
+}
+
+// StripeIDIsNil applies the IsNil predicate on the "stripe_id" field.
+func StripeIDIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldStripeID))
+}
+
+// StripeIDNotNil applies the NotNil predicate on the "stripe_id" field.
+func StripeIDNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldStripeID))
+}
+
+// StripeIDEqualFold applies the EqualFold predicate on the "stripe_id" field.
+func StripeIDEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldStripeID, v))
+}
+
+// StripeIDContainsFold applies the ContainsFold predicate on the "stripe_id" field.
+func StripeIDContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldStripeID, v))
 }
 
 // EmailEQ applies the EQ predicate on the "email" field.
@@ -1034,6 +1119,16 @@ func CountryEqualFold(v string) predicate.Person {
 // CountryContainsFold applies the ContainsFold predicate on the "country" field.
 func CountryContainsFold(v string) predicate.Person {
 	return predicate.Person(sql.FieldContainsFold(FieldCountry, v))
+}
+
+// SubscribedEQ applies the EQ predicate on the "subscribed" field.
+func SubscribedEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldSubscribed, v))
+}
+
+// SubscribedNEQ applies the NEQ predicate on the "subscribed" field.
+func SubscribedNEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldSubscribed, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

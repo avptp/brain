@@ -1,0 +1,15 @@
+extend type Mutation {
+    createBillingCheckoutSession: CreateBillingCheckoutSessionPayload
+}
+
+type CreateBillingCheckoutSessionPayload {
+    checkoutSessionUrl: String!
+}
+
+extend type Mutation {
+    createBillingPortalSession: CreateBillingPortalSessionPayload
+}
+
+type CreateBillingPortalSessionPayload {
+    portalSessionUrl: String!
+}

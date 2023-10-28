@@ -82,7 +82,7 @@ func init() {
 	personFields := schema.Person{}.Fields()
 	_ = personFields
 	// personDescEmail is the schema descriptor for email field.
-	personDescEmail := personFields[1].Descriptor()
+	personDescEmail := personFields[2].Descriptor()
 	// person.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	person.EmailValidator = func() func(string) error {
 		validators := personDescEmail.Validators
@@ -100,7 +100,7 @@ func init() {
 		}
 	}()
 	// personDescPhone is the schema descriptor for phone field.
-	personDescPhone := personFields[3].Descriptor()
+	personDescPhone := personFields[4].Descriptor()
 	// person.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
 	person.PhoneValidator = func() func(string) error {
 		validators := personDescPhone.Validators
@@ -118,7 +118,7 @@ func init() {
 		}
 	}()
 	// personDescTaxID is the schema descriptor for tax_id field.
-	personDescTaxID := personFields[5].Descriptor()
+	personDescTaxID := personFields[6].Descriptor()
 	// person.TaxIDValidator is a validator for the "tax_id" field. It is called by the builders before save.
 	person.TaxIDValidator = func() func(string) error {
 		validators := personDescTaxID.Validators
@@ -136,7 +136,7 @@ func init() {
 		}
 	}()
 	// personDescFirstName is the schema descriptor for first_name field.
-	personDescFirstName := personFields[6].Descriptor()
+	personDescFirstName := personFields[7].Descriptor()
 	// person.FirstNameValidator is a validator for the "first_name" field. It is called by the builders before save.
 	person.FirstNameValidator = func() func(string) error {
 		validators := personDescFirstName.Validators
@@ -154,7 +154,7 @@ func init() {
 		}
 	}()
 	// personDescLastName is the schema descriptor for last_name field.
-	personDescLastName := personFields[7].Descriptor()
+	personDescLastName := personFields[8].Descriptor()
 	// person.LastNameValidator is a validator for the "last_name" field. It is called by the builders before save.
 	person.LastNameValidator = func() func(string) error {
 		validators := personDescLastName.Validators
@@ -172,7 +172,7 @@ func init() {
 		}
 	}()
 	// personDescAddress is the schema descriptor for address field.
-	personDescAddress := personFields[11].Descriptor()
+	personDescAddress := personFields[12].Descriptor()
 	// person.AddressValidator is a validator for the "address" field. It is called by the builders before save.
 	person.AddressValidator = func() func(string) error {
 		validators := personDescAddress.Validators
@@ -190,7 +190,7 @@ func init() {
 		}
 	}()
 	// personDescPostalCode is the schema descriptor for postal_code field.
-	personDescPostalCode := personFields[12].Descriptor()
+	personDescPostalCode := personFields[13].Descriptor()
 	// person.PostalCodeValidator is a validator for the "postal_code" field. It is called by the builders before save.
 	person.PostalCodeValidator = func() func(string) error {
 		validators := personDescPostalCode.Validators
@@ -208,7 +208,7 @@ func init() {
 		}
 	}()
 	// personDescCity is the schema descriptor for city field.
-	personDescCity := personFields[13].Descriptor()
+	personDescCity := personFields[14].Descriptor()
 	// person.CityValidator is a validator for the "city" field. It is called by the builders before save.
 	person.CityValidator = func() func(string) error {
 		validators := personDescCity.Validators
@@ -226,15 +226,19 @@ func init() {
 		}
 	}()
 	// personDescCountry is the schema descriptor for country field.
-	personDescCountry := personFields[14].Descriptor()
+	personDescCountry := personFields[15].Descriptor()
 	// person.CountryValidator is a validator for the "country" field. It is called by the builders before save.
 	person.CountryValidator = personDescCountry.Validators[0].(func(string) error)
+	// personDescSubscribed is the schema descriptor for subscribed field.
+	personDescSubscribed := personFields[16].Descriptor()
+	// person.DefaultSubscribed holds the default value on creation for the subscribed field.
+	person.DefaultSubscribed = personDescSubscribed.Default.(bool)
 	// personDescCreatedAt is the schema descriptor for created_at field.
-	personDescCreatedAt := personFields[15].Descriptor()
+	personDescCreatedAt := personFields[17].Descriptor()
 	// person.DefaultCreatedAt holds the default value on creation for the created_at field.
 	person.DefaultCreatedAt = personDescCreatedAt.Default.(func() time.Time)
 	// personDescUpdatedAt is the schema descriptor for updated_at field.
-	personDescUpdatedAt := personFields[16].Descriptor()
+	personDescUpdatedAt := personFields[18].Descriptor()
 	// person.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	person.DefaultUpdatedAt = personDescUpdatedAt.Default.(func() time.Time)
 	// person.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

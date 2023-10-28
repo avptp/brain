@@ -23,6 +23,20 @@ type PersonCreate struct {
 	hooks    []Hook
 }
 
+// SetStripeID sets the "stripe_id" field.
+func (pc *PersonCreate) SetStripeID(s string) *PersonCreate {
+	pc.mutation.SetStripeID(s)
+	return pc
+}
+
+// SetNillableStripeID sets the "stripe_id" field if the given value is not nil.
+func (pc *PersonCreate) SetNillableStripeID(s *string) *PersonCreate {
+	if s != nil {
+		pc.SetStripeID(*s)
+	}
+	return pc
+}
+
 // SetEmail sets the "email" field.
 func (pc *PersonCreate) SetEmail(s string) *PersonCreate {
 	pc.mutation.SetEmail(s)
@@ -179,6 +193,20 @@ func (pc *PersonCreate) SetNillableCountry(s *string) *PersonCreate {
 	return pc
 }
 
+// SetSubscribed sets the "subscribed" field.
+func (pc *PersonCreate) SetSubscribed(b bool) *PersonCreate {
+	pc.mutation.SetSubscribed(b)
+	return pc
+}
+
+// SetNillableSubscribed sets the "subscribed" field if the given value is not nil.
+func (pc *PersonCreate) SetNillableSubscribed(b *bool) *PersonCreate {
+	if b != nil {
+		pc.SetSubscribed(*b)
+	}
+	return pc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (pc *PersonCreate) SetCreatedAt(t time.Time) *PersonCreate {
 	pc.mutation.SetCreatedAt(t)
@@ -280,6 +308,10 @@ func (pc *PersonCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PersonCreate) defaults() error {
+	if _, ok := pc.mutation.Subscribed(); !ok {
+		v := person.DefaultSubscribed
+		pc.mutation.SetSubscribed(v)
+	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		if person.DefaultCreatedAt == nil {
 			return fmt.Errorf("data: uninitialized person.DefaultCreatedAt (forgotten import data/runtime?)")
@@ -364,6 +396,9 @@ func (pc *PersonCreate) check() error {
 			return &ValidationError{Name: "country", err: fmt.Errorf(`data: validator failed for field "Person.country": %w`, err)}
 		}
 	}
+	if _, ok := pc.mutation.Subscribed(); !ok {
+		return &ValidationError{Name: "subscribed", err: errors.New(`data: missing required field "Person.subscribed"`)}
+	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`data: missing required field "Person.created_at"`)}
 	}
@@ -404,6 +439,10 @@ func (pc *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if id, ok := pc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := pc.mutation.StripeID(); ok {
+		_spec.SetField(person.FieldStripeID, field.TypeString, value)
+		_node.StripeID = &value
 	}
 	if value, ok := pc.mutation.Email(); ok {
 		_spec.SetField(person.FieldEmail, field.TypeString, value)
@@ -460,6 +499,10 @@ func (pc *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Country(); ok {
 		_spec.SetField(person.FieldCountry, field.TypeString, value)
 		_node.Country = &value
+	}
+	if value, ok := pc.mutation.Subscribed(); ok {
+		_spec.SetField(person.FieldSubscribed, field.TypeBool, value)
+		_node.Subscribed = value
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

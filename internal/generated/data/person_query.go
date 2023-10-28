@@ -340,12 +340,12 @@ func (pq *PersonQuery) WithAuthorizations(opts ...func(*AuthorizationQuery)) *Pe
 // Example:
 //
 //	var v []struct {
-//		Email string `json:"email,omitempty" fake:"{email}"`
+//		StripeID string `json:"stripe_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Person.Query().
-//		GroupBy(person.FieldEmail).
+//		GroupBy(person.FieldStripeID).
 //		Aggregate(data.Count()).
 //		Scan(ctx, &v)
 func (pq *PersonQuery) GroupBy(field string, fields ...string) *PersonGroupBy {
@@ -363,11 +363,11 @@ func (pq *PersonQuery) GroupBy(field string, fields ...string) *PersonGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Email string `json:"email,omitempty" fake:"{email}"`
+//		StripeID string `json:"stripe_id,omitempty"`
 //	}
 //
 //	client.Person.Query().
-//		Select(person.FieldEmail).
+//		Select(person.FieldStripeID).
 //		Scan(ctx, &v)
 func (pq *PersonQuery) Select(fields ...string) *PersonSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)

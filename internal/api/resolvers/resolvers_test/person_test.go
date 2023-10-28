@@ -251,6 +251,11 @@ func (t *TestSuite) TestPerson() {
 
 		input := t.factory.Person().Fields
 
+		t.biller.On(
+			"SyncPerson",
+			mock.IsType(&data.Person{}),
+		).Return(nil).Once()
+
 		var response update
 		err := t.api.Post(
 			updateMutation,
@@ -270,6 +275,8 @@ func (t *TestSuite) TestPerson() {
 			client.Var("city", input.City),
 			client.Var("country", input.Country),
 		)
+
+		t.biller.AssertExpectations(t.T())
 
 		t.NoError(err)
 		t.Equal(p.ID, t.toUUID(response.UpdatePerson.Person.ID))

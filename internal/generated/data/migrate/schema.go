@@ -64,6 +64,7 @@ var (
 	// PersonsColumns holds the columns for the "persons" table.
 	PersonsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Default: "gen_random_ulid()"},
+		{Name: "stripe_id", Type: field.TypeString, Unique: true, Nullable: true, SchemaType: map[string]string{"postgres": "string(255)"}},
 		{Name: "email", Type: field.TypeString, Unique: true, Size: 254, SchemaType: map[string]string{"postgres": "string(254)"}},
 		{Name: "email_verified_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp"}},
 		{Name: "phone", Type: field.TypeString, Unique: true, Nullable: true, Size: 16, SchemaType: map[string]string{"postgres": "string(16)"}},
@@ -78,6 +79,7 @@ var (
 		{Name: "postal_code", Type: field.TypeString, Nullable: true, Size: 10, SchemaType: map[string]string{"postgres": "string(10)"}},
 		{Name: "city", Type: field.TypeString, Nullable: true, Size: 58, SchemaType: map[string]string{"postgres": "string(58)"}},
 		{Name: "country", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "char(2)"}},
+		{Name: "subscribed", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp"}},
 	}

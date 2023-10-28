@@ -37,6 +37,14 @@ type CreateAuthenticationPayload struct {
 	Token string `json:"token"`
 }
 
+type CreateBillingCheckoutSessionPayload struct {
+	CheckoutSessionURL string `json:"checkoutSessionUrl"`
+}
+
+type CreateBillingPortalSessionPayload struct {
+	PortalSessionURL string `json:"portalSessionUrl"`
+}
+
 type CreateEmailAuthorizationInput struct {
 	PersonID uuid.UUID `json:"personId"`
 }
