@@ -20,14 +20,20 @@ type Noder interface {
 	IsNode()
 }
 
-// IsNode implements the Node interface check for GQLGen.
-func (n *Authentication) IsNode() {}
+var authenticationImplementors = []string{"Authentication", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *Authorization) IsNode() {}
+func (*Authentication) IsNode() {}
+
+var authorizationImplementors = []string{"Authorization", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *Person) IsNode() {}
+func (*Authorization) IsNode() {}
+
+var personImplementors = []string{"Person", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Person) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -90,39 +96,30 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 	case authentication.Table:
 		query := c.Authentication.Query().
 			Where(authentication.ID(id))
-		query, err := query.CollectFields(ctx, "Authentication")
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, authenticationImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	case authorization.Table:
 		query := c.Authorization.Query().
 			Where(authorization.ID(id))
-		query, err := query.CollectFields(ctx, "Authorization")
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, authorizationImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	case person.Table:
 		query := c.Person.Query().
 			Where(person.ID(id))
-		query, err := query.CollectFields(ctx, "Person")
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, personImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	default:
 		return nil, fmt.Errorf("cannot resolve noder from table %q: %w", table, errNodeInvalidID)
 	}
@@ -199,7 +196,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 	case authentication.Table:
 		query := c.Authentication.Query().
 			Where(authentication.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Authentication")
+		query, err := query.CollectFields(ctx, authenticationImplementors...)
 		if err != nil {
 			return nil, err
 		}
@@ -215,7 +212,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 	case authorization.Table:
 		query := c.Authorization.Query().
 			Where(authorization.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Authorization")
+		query, err := query.CollectFields(ctx, authorizationImplementors...)
 		if err != nil {
 			return nil, err
 		}
@@ -231,7 +228,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 	case person.Table:
 		query := c.Person.Query().
 			Where(person.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Person")
+		query, err := query.CollectFields(ctx, personImplementors...)
 		if err != nil {
 			return nil, err
 		}

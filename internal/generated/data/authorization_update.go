@@ -33,6 +33,14 @@ func (au *AuthorizationUpdate) SetKind(a authorization.Kind) *AuthorizationUpdat
 	return au
 }
 
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (au *AuthorizationUpdate) SetNillableKind(a *authorization.Kind) *AuthorizationUpdate {
+	if a != nil {
+		au.SetKind(*a)
+	}
+	return au
+}
+
 // Mutation returns the AuthorizationMutation object of the builder.
 func (au *AuthorizationUpdate) Mutation() *AuthorizationMutation {
 	return au.mutation
@@ -116,6 +124,14 @@ type AuthorizationUpdateOne struct {
 // SetKind sets the "kind" field.
 func (auo *AuthorizationUpdateOne) SetKind(a authorization.Kind) *AuthorizationUpdateOne {
 	auo.mutation.SetKind(a)
+	return auo
+}
+
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (auo *AuthorizationUpdateOne) SetNillableKind(a *authorization.Kind) *AuthorizationUpdateOne {
+	if a != nil {
+		auo.SetKind(*a)
+	}
 	return auo
 }
 

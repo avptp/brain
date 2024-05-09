@@ -34,9 +34,25 @@ func (au *AuthenticationUpdate) SetCreatedIP(s string) *AuthenticationUpdate {
 	return au
 }
 
+// SetNillableCreatedIP sets the "created_ip" field if the given value is not nil.
+func (au *AuthenticationUpdate) SetNillableCreatedIP(s *string) *AuthenticationUpdate {
+	if s != nil {
+		au.SetCreatedIP(*s)
+	}
+	return au
+}
+
 // SetLastUsedIP sets the "last_used_ip" field.
 func (au *AuthenticationUpdate) SetLastUsedIP(s string) *AuthenticationUpdate {
 	au.mutation.SetLastUsedIP(s)
+	return au
+}
+
+// SetNillableLastUsedIP sets the "last_used_ip" field if the given value is not nil.
+func (au *AuthenticationUpdate) SetNillableLastUsedIP(s *string) *AuthenticationUpdate {
+	if s != nil {
+		au.SetLastUsedIP(*s)
+	}
 	return au
 }
 
@@ -148,9 +164,25 @@ func (auo *AuthenticationUpdateOne) SetCreatedIP(s string) *AuthenticationUpdate
 	return auo
 }
 
+// SetNillableCreatedIP sets the "created_ip" field if the given value is not nil.
+func (auo *AuthenticationUpdateOne) SetNillableCreatedIP(s *string) *AuthenticationUpdateOne {
+	if s != nil {
+		auo.SetCreatedIP(*s)
+	}
+	return auo
+}
+
 // SetLastUsedIP sets the "last_used_ip" field.
 func (auo *AuthenticationUpdateOne) SetLastUsedIP(s string) *AuthenticationUpdateOne {
 	auo.mutation.SetLastUsedIP(s)
+	return auo
+}
+
+// SetNillableLastUsedIP sets the "last_used_ip" field if the given value is not nil.
+func (auo *AuthenticationUpdateOne) SetNillableLastUsedIP(s *string) *AuthenticationUpdateOne {
+	if s != nil {
+		auo.SetLastUsedIP(*s)
+	}
 	return auo
 }
 

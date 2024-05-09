@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/avptp/brain/internal/generated/data"
-	"github.com/stripe/stripe-go/v76"
-	session "github.com/stripe/stripe-go/v76/billingportal/session"
+	"github.com/stripe/stripe-go/v78"
+	session "github.com/stripe/stripe-go/v78/billingportal/session"
 )
 
 func (b *StripeBiller) CreatePortalSession(p *data.Person) (string, error) {

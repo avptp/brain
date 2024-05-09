@@ -20,7 +20,7 @@ import (
 	"github.com/go-redis/redis_rate/v10"
 
 	"github.com/99designs/gqlgen/client"
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/suite"
@@ -33,7 +33,7 @@ func init() {
 	gofakeit.AddFuncLookup("tax_id", gofakeit.Info{
 		Category: "custom",
 		Output:   "string",
-		Generate: func(r *rand.Rand, m *gofakeit.MapParams, info *gofakeit.Info) (interface{}, error) {
+		Generate: func(f *gofakeit.Faker, m *gofakeit.MapParams, info *gofakeit.Info) (any, error) {
 			number := rand.Intn(99999999)
 			letter := spanishTaxIdLetters[number%23]
 
@@ -44,7 +44,7 @@ func init() {
 	gofakeit.AddFuncLookup("phone_e164", gofakeit.Info{
 		Category: "custom",
 		Output:   "string",
-		Generate: func(r *rand.Rand, m *gofakeit.MapParams, info *gofakeit.Info) (interface{}, error) {
+		Generate: func(f *gofakeit.Faker, m *gofakeit.MapParams, info *gofakeit.Info) (any, error) {
 			number := rand.Intn(99999999)
 
 			return fmt.Sprintf("+346%08d", number), nil

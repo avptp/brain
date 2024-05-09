@@ -57,6 +57,14 @@ func (pu *PersonUpdate) SetEmail(s string) *PersonUpdate {
 	return pu
 }
 
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillableEmail(s *string) *PersonUpdate {
+	if s != nil {
+		pu.SetEmail(*s)
+	}
+	return pu
+}
+
 // SetEmailVerifiedAt sets the "email_verified_at" field.
 func (pu *PersonUpdate) SetEmailVerifiedAt(t time.Time) *PersonUpdate {
 	pu.mutation.SetEmailVerifiedAt(t)
@@ -103,15 +111,39 @@ func (pu *PersonUpdate) SetPassword(s string) *PersonUpdate {
 	return pu
 }
 
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillablePassword(s *string) *PersonUpdate {
+	if s != nil {
+		pu.SetPassword(*s)
+	}
+	return pu
+}
+
 // SetTaxID sets the "tax_id" field.
 func (pu *PersonUpdate) SetTaxID(s string) *PersonUpdate {
 	pu.mutation.SetTaxID(s)
 	return pu
 }
 
+// SetNillableTaxID sets the "tax_id" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillableTaxID(s *string) *PersonUpdate {
+	if s != nil {
+		pu.SetTaxID(*s)
+	}
+	return pu
+}
+
 // SetFirstName sets the "first_name" field.
 func (pu *PersonUpdate) SetFirstName(s string) *PersonUpdate {
 	pu.mutation.SetFirstName(s)
+	return pu
+}
+
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillableFirstName(s *string) *PersonUpdate {
+	if s != nil {
+		pu.SetFirstName(*s)
+	}
 	return pu
 }
 
@@ -138,6 +170,14 @@ func (pu *PersonUpdate) ClearLastName() *PersonUpdate {
 // SetLanguage sets the "language" field.
 func (pu *PersonUpdate) SetLanguage(s string) *PersonUpdate {
 	pu.mutation.SetLanguage(s)
+	return pu
+}
+
+// SetNillableLanguage sets the "language" field if the given value is not nil.
+func (pu *PersonUpdate) SetNillableLanguage(s *string) *PersonUpdate {
+	if s != nil {
+		pu.SetLanguage(*s)
+	}
 	return pu
 }
 
@@ -684,6 +724,14 @@ func (puo *PersonUpdateOne) SetEmail(s string) *PersonUpdateOne {
 	return puo
 }
 
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillableEmail(s *string) *PersonUpdateOne {
+	if s != nil {
+		puo.SetEmail(*s)
+	}
+	return puo
+}
+
 // SetEmailVerifiedAt sets the "email_verified_at" field.
 func (puo *PersonUpdateOne) SetEmailVerifiedAt(t time.Time) *PersonUpdateOne {
 	puo.mutation.SetEmailVerifiedAt(t)
@@ -730,15 +778,39 @@ func (puo *PersonUpdateOne) SetPassword(s string) *PersonUpdateOne {
 	return puo
 }
 
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillablePassword(s *string) *PersonUpdateOne {
+	if s != nil {
+		puo.SetPassword(*s)
+	}
+	return puo
+}
+
 // SetTaxID sets the "tax_id" field.
 func (puo *PersonUpdateOne) SetTaxID(s string) *PersonUpdateOne {
 	puo.mutation.SetTaxID(s)
 	return puo
 }
 
+// SetNillableTaxID sets the "tax_id" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillableTaxID(s *string) *PersonUpdateOne {
+	if s != nil {
+		puo.SetTaxID(*s)
+	}
+	return puo
+}
+
 // SetFirstName sets the "first_name" field.
 func (puo *PersonUpdateOne) SetFirstName(s string) *PersonUpdateOne {
 	puo.mutation.SetFirstName(s)
+	return puo
+}
+
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillableFirstName(s *string) *PersonUpdateOne {
+	if s != nil {
+		puo.SetFirstName(*s)
+	}
 	return puo
 }
 
@@ -765,6 +837,14 @@ func (puo *PersonUpdateOne) ClearLastName() *PersonUpdateOne {
 // SetLanguage sets the "language" field.
 func (puo *PersonUpdateOne) SetLanguage(s string) *PersonUpdateOne {
 	puo.mutation.SetLanguage(s)
+	return puo
+}
+
+// SetNillableLanguage sets the "language" field if the given value is not nil.
+func (puo *PersonUpdateOne) SetNillableLanguage(s *string) *PersonUpdateOne {
+	if s != nil {
+		puo.SetLanguage(*s)
+	}
 	return puo
 }
 

@@ -3,7 +3,7 @@ package resolvers_test
 import (
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/generated/data"
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/stretchr/testify/mock"
 )
 

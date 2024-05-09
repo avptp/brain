@@ -48,12 +48,10 @@ type AuthorizationEdges struct {
 // PersonOrErr returns the Person value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e AuthorizationEdges) PersonOrErr() (*Person, error) {
-	if e.loadedTypes[0] {
-		if e.Person == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: person.Label}
-		}
+	if e.Person != nil {
 		return e.Person, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: person.Label}
 	}
 	return nil, &NotLoadedError{edge: "person"}
 }

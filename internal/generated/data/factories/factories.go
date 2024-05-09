@@ -11,7 +11,7 @@ import (
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/google/uuid"
 
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/brianvoe/gofakeit/v7"
 )
 
 // Base factory
