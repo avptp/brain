@@ -14,6 +14,8 @@ other = "Welcome"
 [welcome.intro]
 other = "Welcome to Associació Valenciana pel Transport Públic (Valencian Association for Public Transport). To complete the sign up process, we need to verify that your email address is correct."
 
+[verification.subject]
+other = "Verify your email address"
 [verification.intro]
 other = "Since you have added an email address to your account, we need to verify that it is correct."
 [verification.action.instructions]
@@ -23,6 +25,8 @@ other = "Verify your email address"
 [verification.outro]
 other = "Note that this link is valid for {{.Validity}} hours."
 
+[recovery.subject]
+other = "Reset your password"
 [recovery.intro]
 other = "A moment ago you stated that you do not remember the password of your account."
 [recovery.action.instructions]

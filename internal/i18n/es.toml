@@ -14,6 +14,8 @@ other = "Te damos la bienvenida"
 [welcome.intro]
 other = "Te damos la bienvenida a la Associació Valenciana pel Transport Públic (Asociación Valenciana por el Transporte Público). Para completar el registro, necesitamos comprobar que tu dirección de correo es correcta."
 
+[verification.subject]
+other = "Verifica tu dirección de correo"
 [verification.intro]
 other = "Como has añadido una dirección de correo a tu cuenta, necesitamos comprobar que es correcta."
 [verification.action.instructions]
@@ -23,6 +25,8 @@ other = "Verifica tu dirección de correo"
 [verification.outro]
 other = "Ten en cuenta que este enlace es válido durante {{.Validity}} horas."
 
+[recovery.subject]
+other = "Restablece tu contraseña"
 [recovery.intro]
 other = "Hace un momento nos has indicado que no recuerdas la contraseña de tu cuenta. ¡Que no cunda el pánico!"
 [recovery.action.instructions]

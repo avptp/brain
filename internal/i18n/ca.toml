@@ -14,6 +14,8 @@ other = "Et donem la benvinguda"
 [welcome.intro]
 other = "Et donem la benvinguda a l'Associació Valenciana pel Transport Públic. Per completar el registre, necessitem comprovar que la teua adreça de correu és correcta."
 
+[verification.subject]
+other = "Verifica la teua adreça de correu"
 [verification.intro]
 other = "Com que has afegit una adreça de correu al teu compte, necessitem comprovar que és correcta."
 [verification.action.instructions]
@@ -23,6 +25,8 @@ other = "Verifica la teua adreça de correu"
 [verification.outro]
 other = "Tingues en compte que este enllaç és vàlid durant {{.Validity}} hores."
 
+[recovery.subject]
+other = "Restablix la contrasenya"
 [recovery.intro]
 other = "Fa un moment ens has indicat que no recordes la contrasenya del teu compte. No patisques!"
 [recovery.action.instructions]
