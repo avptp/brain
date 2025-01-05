@@ -18,12 +18,20 @@ import (
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/messaging/templates"
+	"github.com/avptp/brain/internal/transport/request"
 	redis_rate "github.com/go-redis/redis_rate/v10"
 )
 
 // CreateEmailAuthorization is the resolver for the createEmailAuthorization field.
 func (r *mutationResolver) CreateEmailAuthorization(ctx context.Context, input api.CreateEmailAuthorizationInput) (*api.CreateEmailAuthorizationPayload, error) {
 	d := data.FromContext(ctx) // transactional data client for mutations
+
+	// Ensure that the mutation is authenticated
+	viewer := request.ViewerFromCtx(ctx)
+
+	if viewer == nil {
+		return nil, reporting.ErrUnauthenticated
+	}
 
 	// Retrieve person and check constraints
 	p, err := d.Person.

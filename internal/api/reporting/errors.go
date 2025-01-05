@@ -37,7 +37,7 @@ var ErrUnauthenticated = &gqlerror.Error{
 	Extensions: map[string]any{"code": "UNAUTHENTICATED"},
 }
 
-var ErrUnauthorized = ErrNotFound // not to expose whether a resource exists
+var ErrUnauthorized = ErrNotFound // same as ErrNotFound to avoid exposing whether a resource exists
 
 var ErrValidation = &gqlerror.Error{
 	Message:    "Input does not meet data validation rules.",

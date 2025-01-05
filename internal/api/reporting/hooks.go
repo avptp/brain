@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/config"
+	"github.com/avptp/brain/internal/data/rules"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/stoewer/go-strcase"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -48,6 +49,8 @@ func NewErrorPresenter(cfg *config.Config) graphql.ErrorPresenterFunc {
 			err = ErrInput
 		case data.IsNotFound(err):
 			err = ErrNotFound
+		case errors.Is(err, rules.DenyUnauthenticated):
+			err = ErrUnauthenticated
 		case errors.Is(err, privacy.Deny):
 			err = ErrUnauthorized
 		case data.IsValidationError(err):
