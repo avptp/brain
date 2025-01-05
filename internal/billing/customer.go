@@ -6,8 +6,8 @@ import (
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 
-	"github.com/stripe/stripe-go/v78"
-	"github.com/stripe/stripe-go/v78/customer"
+	"github.com/stripe/stripe-go/v81"
+	"github.com/stripe/stripe-go/v81/customer"
 )
 
 // data.Client is not a struct property because function needs to receive a transactional one

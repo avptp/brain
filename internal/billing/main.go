@@ -7,7 +7,7 @@ import (
 
 	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/data"
-	"github.com/stripe/stripe-go/v78"
+	"github.com/stripe/stripe-go/v81"
 )
 
 type Biller interface {

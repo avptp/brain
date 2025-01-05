@@ -8,8 +8,8 @@ import (
 
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
-	"github.com/stripe/stripe-go/v78"
-	"github.com/stripe/stripe-go/v78/webhook"
+	"github.com/stripe/stripe-go/v81"
+	"github.com/stripe/stripe-go/v81/webhook"
 )
 
 func (b *StripeBiller) WebhookHandler() http.Handler {
