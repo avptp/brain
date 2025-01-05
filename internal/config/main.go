@@ -30,6 +30,7 @@ type Config struct {
 	AwsKeyId     string `env:"AWS_KEY_ID"`
 	AwsKeySecret string `env:"AWS_KEY_SECRET"`
 
+	AuthenticationMaxAge                     time.Duration `env:"AUTHENTICATION_MAX_AGE" envDefault:"336h"`          // 14 days
 	AuthenticationPasswordChallengeRateLimit int           `env:"AUTHENTICATION_PASSWORD_RATE_LIMIT" envDefault:"5"` // per (person ID/email) and hour
 	AuthenticationCaptchaChallengeRateLimit  int           `env:"AUTHENTICATION_CAPTCHA_RATE_LIMIT" envDefault:"5"`  // per person ID and hour
 	AuthorizationMaxAge                      time.Duration `env:"AUTHORIZATION_MAX_AGE" envDefault:"24h"`

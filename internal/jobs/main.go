@@ -10,5 +10,6 @@ import (
 type Job func(ctx context.Context, ctn *container.Container) *tasks.Task
 
 var All = []Job{
+	cleanExpiredAuthentications,
 	cleanExpiredAuthorizations,
 }
