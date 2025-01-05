@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/avptp/brain/internal/auth"
+	"github.com/avptp/brain/internal/api/auth"
 	"github.com/avptp/brain/internal/config"
 	"github.com/sarulabs/di/v2"
 	"github.com/sarulabs/dingo/v4"

@@ -5,7 +5,7 @@ import (
 )
 
 type Captcha interface {
-	Verify(token string) bool
+	Verify(string) bool
 }
 
 type CaptchaHandler struct {

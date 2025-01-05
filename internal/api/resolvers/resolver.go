@@ -1,7 +1,7 @@
 package resolvers
 
 import (
-	"github.com/avptp/brain/internal/auth"
+	"github.com/avptp/brain/internal/api/auth"
 	"github.com/avptp/brain/internal/billing"
 	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/data"
