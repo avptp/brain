@@ -34,7 +34,7 @@ func (Authorization) Fields() []ent.Field {
 			}).
 			Immutable().
 			Unique().
-			StructTag(`fakesize:"64"`),
+			StructTag(`faker:"slice_len=64"`),
 		field.Enum("kind").
 			SchemaType(map[string]string{
 				dialect.Postgres: "authorization_kind",
@@ -43,7 +43,7 @@ func (Authorization) Fields() []ent.Field {
 				"Email", "email",
 				"Password", "password",
 			).
-			StructTag(`fake:"{randomstring:[email,password]}"`),
+			StructTag(`faker:"oneof:email,password"`),
 		field.Time("created_at").
 			SchemaType(map[string]string{
 				dialect.Postgres: "timestamp",

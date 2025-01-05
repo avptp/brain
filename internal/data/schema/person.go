@@ -40,13 +40,14 @@ func (Person) Fields() []ent.Field {
 			MaxLen(254).
 			Match(validation.EmailRegexp).
 			Unique().
-			StructTag(`fake:"{email}"`),
+			StructTag(`faker:"email"`),
 		field.Time("email_verified_at").
 			SchemaType(map[string]string{
 				dialect.Postgres: "timestamp",
 			}).
 			Optional().
-			Nillable(),
+			Nillable().
+			StructTag(`faker:"-"`),
 		field.String("phone").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(16)",
@@ -56,7 +57,7 @@ func (Person) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Unique().
-			StructTag(`fake:"{phone_e164}"`),
+			StructTag(`faker:"phone"`),
 		field.String("password").
 			SchemaType(map[string]string{
 				dialect.Postgres: "char(97)",
@@ -69,14 +70,14 @@ func (Person) Fields() []ent.Field {
 			MaxLen(9).
 			Validate(validation.TaxID).
 			Unique().
-			StructTag(`fake:"{tax_id}"`),
+			StructTag(`faker:"tax_id"`),
 		field.String("first_name").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(50)",
 			}).
 			MaxLen(50).
 			NotEmpty().
-			StructTag(`fake:"{firstname}"`),
+			StructTag(`faker:"first_name"`),
 		field.String("last_name").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(50)",
@@ -85,19 +86,19 @@ func (Person) Fields() []ent.Field {
 			NotEmpty().
 			Optional().
 			Nillable().
-			StructTag(`fake:"{lastname}"`),
+			StructTag(`faker:"last_name"`),
 		field.String("language").
 			SchemaType(map[string]string{
 				dialect.Postgres: "char(2)",
 			}).
-			StructTag(`fake:"{randomstring:[ca,es,en]}"`),
+			StructTag(`faker:"oneof:ca,en,es"`),
 		field.Time("birthdate").
 			SchemaType(map[string]string{
 				dialect.Postgres: "date",
 			}).
 			Optional().
 			Nillable().
-			StructTag(`fake:"{date}"`),
+			StructTag(`faker:"birthdate"`),
 		// We don't care about people's gender, but we ask for this field
 		// voluntarily to make statistics on the underrepresentation of women.
 		field.Enum("gender").
@@ -111,7 +112,7 @@ func (Person) Fields() []ent.Field {
 			).
 			Optional().
 			Nillable().
-			StructTag(`fake:"{randomstring:[woman,man,nonbinary]}"`),
+			StructTag(`faker:"oneof:woman,man,nonbinary"`),
 		field.String("address").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(100)",
@@ -120,7 +121,7 @@ func (Person) Fields() []ent.Field {
 			NotEmpty().
 			Optional().
 			Nillable().
-			StructTag(`fake:"{street}"`),
+			StructTag(`faker:"address"`),
 		field.String("postal_code").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(10)",
@@ -129,7 +130,7 @@ func (Person) Fields() []ent.Field {
 			NotEmpty().
 			Optional().
 			Nillable().
-			StructTag(`fake:"{zip}"`),
+			StructTag(`faker:"postal_code"`),
 		field.String("city").
 			SchemaType(map[string]string{
 				dialect.Postgres: "string(58)",
@@ -138,7 +139,7 @@ func (Person) Fields() []ent.Field {
 			NotEmpty().
 			Optional().
 			Nillable().
-			StructTag(`fake:"{city}"`),
+			StructTag(`faker:"city"`),
 		field.String("country").
 			SchemaType(map[string]string{
 				dialect.Postgres: "char(2)",
@@ -146,9 +147,10 @@ func (Person) Fields() []ent.Field {
 			Validate(validation.Country).
 			Optional().
 			Nillable().
-			StructTag(`fake:"{countryabr}"`),
+			StructTag(`faker:"country"`),
 		field.Bool("subscribed").
-			Default(false),
+			Default(false).
+			StructTag(`faker:"-"`),
 		field.Time("created_at").
 			SchemaType(map[string]string{
 				dialect.Postgres: "timestamp",

@@ -10,9 +10,9 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/brianvoe/gofakeit/v7 v7.0.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/criptalia/spanish_dni_validator v0.0.0-20230502125532-3278e5ffc050
+	github.com/go-faker/faker/v4 v4.5.0
 	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1

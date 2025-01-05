@@ -33,17 +33,17 @@ func (Authentication) Fields() []ent.Field {
 			}).
 			Immutable().
 			Unique().
-			StructTag(`fakesize:"64"`),
+			StructTag(`faker:"slice_len=64"`),
 		field.String("created_ip").
 			SchemaType(map[string]string{
 				dialect.Postgres: "inet",
 			}).
-			StructTag(`fake:"{ipv6address}"`),
+			StructTag(`faker:"ipv6"`),
 		field.String("last_used_ip").
 			SchemaType(map[string]string{
 				dialect.Postgres: "inet",
 			}).
-			StructTag(`fake:"{ipv6address}"`),
+			StructTag(`faker:"ipv6"`),
 		field.Time("created_at").
 			SchemaType(map[string]string{
 				dialect.Postgres: "timestamp",
