@@ -30,7 +30,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, input api.C
 		strings.ToLower(input.Email),
 	)
 
-	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthenticationRateLimit))
+	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthenticationPasswordChallengeRateLimit))
 
 	if err != nil {
 		return nil, err
