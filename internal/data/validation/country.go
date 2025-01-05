@@ -6,8 +6,10 @@ import (
 	"github.com/pariz/gountries"
 )
 
+var Countries = gountries.New()
+
 func Country(v string) error {
-	_, err := gountries.New().FindCountryByAlpha(v)
+	_, err := Countries.FindCountryByAlpha(v)
 
 	if err != nil {
 		return errors.New("value is invalid")
