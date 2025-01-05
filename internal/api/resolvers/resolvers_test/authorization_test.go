@@ -2,6 +2,7 @@ package resolvers_test
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/99designs/gqlgen/client"
@@ -39,7 +40,7 @@ func (t *TestSuite) TestAuthorization() {
 	}
 
 	t.Run("email_create", func() {
-		authenticated, p, _, _, _ := t.authenticate()
+		authenticated, p, _, _ := t.authenticate()
 
 		t.messenger.On(
 			"Send",
@@ -52,12 +53,12 @@ func (t *TestSuite) TestAuthorization() {
 			emailCreateMutation,
 			&response,
 			authenticated,
-			client.Var("personId", t.toULID(p.ID)),
+			client.Var("personId", p.ID.String()),
 		)
 
-		t.messenger.AssertExpectations(t.T())
-
 		t.NoError(err)
+
+		t.messenger.AssertExpectations(t.T())
 
 		a, err := t.data.Authorization.
 			Query().
@@ -68,12 +69,14 @@ func (t *TestSuite) TestAuthorization() {
 			First(t.allowCtx)
 
 		t.NoError(err)
-		t.Equal(a.ID, t.toUUID(response.CreateEmailAuthorization.Authorization.ID))
+		t.Equal(a.ID, t.parseID(response.CreateEmailAuthorization.Authorization.ID))
 	})
 
 	t.Run("email_create_when_already_verified", func() {
-		authenticated, p, _, _, _ := t.authenticate()
+		authenticated, p, _, _ := t.authenticate()
 
+		// It is not done with "authenticateWith" because if the email is set,
+		// "email_verified_at" field is automatically set to nil.
 		err := p.
 			Update().
 			SetEmailVerifiedAt(time.Now()).
@@ -81,23 +84,17 @@ func (t *TestSuite) TestAuthorization() {
 
 		t.NoError(err)
 
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Verification{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
-
 		var response emailCreate
 		err = t.api.Post(
 			emailCreateMutation,
 			&response,
 			authenticated,
-			client.Var("personId", t.toULID(p.ID)),
+			client.Var("personId", p.ID.String()),
 		)
 
-		t.messenger.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrConstraint.Message)
+
+		t.messenger.AssertNotCalled(t.T(), "Send")
 
 		exist, err := t.data.Authorization.
 			Query().
@@ -112,9 +109,12 @@ func (t *TestSuite) TestAuthorization() {
 	})
 
 	t.Run("email_create_with_too_many_attempts", func() {
-		authenticated, p, _, _, _ := t.authenticate()
+		authenticated, p, _, _ := t.authenticate()
 
-		rlKey := fmt.Sprintf("createEmailAuthorization:%s", p.Email)
+		rlKey := fmt.Sprintf(
+			"createEmailAuthorization:%s",
+			strings.ToLower(p.Email),
+		)
 
 		res, err := t.limiter.AllowN(
 			t.allowCtx,
@@ -126,23 +126,17 @@ func (t *TestSuite) TestAuthorization() {
 		t.NoError(err)
 		t.LessOrEqual(res.Remaining, 0)
 
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Verification{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
-
 		var response emailCreate
 		err = t.api.Post(
 			emailCreateMutation,
 			&response,
 			authenticated,
-			client.Var("personId", t.toULID(p.ID)),
+			client.Var("personId", p.ID.String()),
 		)
 
-		t.messenger.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrRateLimit.Message)
+
+		t.messenger.AssertNotCalled(t.T(), "Send")
 
 		exist, err := t.data.Authorization.
 			Query().
@@ -157,13 +151,7 @@ func (t *TestSuite) TestAuthorization() {
 	})
 
 	t.Run("email_create_with_nonexistent_person", func() {
-		authenticated, _, _, _, _ := t.authenticate()
-
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Verification{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
+		authenticated, _, _, _ := t.authenticate()
 
 		var response emailCreate
 		err := t.api.Post(
@@ -173,41 +161,29 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("personId", zeroID),
 		)
 
-		t.messenger.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrNotFound.Message)
+
+		t.messenger.AssertNotCalled(t.T(), "Send")
 	})
 
 	t.Run("email_create_without_authorization", func() {
-		authenticated, _, _, _, _ := t.authenticate()
+		authenticated, _, _, _ := t.authenticate()
 		p := t.factory.Person().Create(t.allowCtx)
-
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Verification{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
 
 		var response emailCreate
 		err := t.api.Post(
 			emailCreateMutation,
 			&response,
 			authenticated,
-			client.Var("personId", t.toULID(p.ID)),
+			client.Var("personId", p.ID.String()),
 		)
 
-		t.messenger.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
+
+		t.messenger.AssertNotCalled(t.T(), "Send")
 	})
 
 	t.Run("email_create_without_authentication", func() {
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Verification{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
-
 		var response emailCreate
 		err := t.api.Post(
 			emailCreateMutation,
@@ -215,9 +191,9 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("personId", zeroID),
 		)
 
-		t.messenger.AssertExpectations(t.T())
+		t.ErrorContains(err, reporting.ErrUnauthenticated.Message)
 
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
+		t.messenger.AssertNotCalled(t.T(), "Send")
 	})
 
 	const emailApplyMutation = `
@@ -259,7 +235,7 @@ func (t *TestSuite) TestAuthorization() {
 		)
 
 		t.NoError(err)
-		t.Equal(a.ID, t.toUUID(response.ApplyEmailAuthorization.AuthorizationID))
+		t.Equal(a.ID, t.parseID(response.ApplyEmailAuthorization.AuthorizationID))
 
 		exist, err := t.data.Person.
 			Query().
@@ -350,7 +326,7 @@ func (t *TestSuite) TestAuthorization() {
 	}
 
 	t.Run("password_create", func() {
-		_, p, _, _, _ := t.authenticate()
+		_, p, _, _ := t.authenticate()
 
 		t.captcha.On("Verify", "").Return(true).Once()
 
@@ -368,11 +344,11 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-		t.messenger.AssertExpectations(t.T())
-
 		t.NoError(err)
 		t.True(response.CreatePasswordAuthorization.Success)
+
+		t.captcha.AssertExpectations(t.T())
+		t.messenger.AssertExpectations(t.T())
 
 		exist, err := t.data.Authorization.
 			Query().
@@ -387,15 +363,9 @@ func (t *TestSuite) TestAuthorization() {
 	})
 
 	t.Run("password_create_with_wrong_captcha", func() {
-		_, p, _, _, _ := t.authenticate()
+		_, p, _, _ := t.authenticate()
 
 		t.captcha.On("Verify", "").Return(false).Once()
-
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Recovery{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
 
 		var response passwordCreate
 		err := t.api.Post(
@@ -405,10 +375,10 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-		t.messenger.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrCaptcha.Message)
+
+		t.captcha.AssertExpectations(t.T())
+		t.messenger.AssertNotCalled(t.T(), "Send")
 
 		exist, err := t.data.Authorization.
 			Query().
@@ -423,9 +393,12 @@ func (t *TestSuite) TestAuthorization() {
 	})
 
 	t.Run("password_create_with_too_many_attempts", func() {
-		_, p, _, _, _ := t.authenticate()
+		_, p, _, _ := t.authenticate()
 
-		rlKey := fmt.Sprintf("createPasswordAuthorization:%s", p.Email)
+		rlKey := fmt.Sprintf(
+			"createPasswordAuthorization:%s",
+			strings.ToLower(p.Email),
+		)
 
 		res, err := t.limiter.AllowN(
 			t.allowCtx,
@@ -439,12 +412,6 @@ func (t *TestSuite) TestAuthorization() {
 
 		t.captcha.On("Verify", "").Return(true).Once()
 
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Recovery{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
-
 		var response passwordCreate
 		err = t.api.Post(
 			passwordCreateMutation,
@@ -453,10 +420,10 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-		t.messenger.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrRateLimit.Message)
+
+		t.captcha.AssertExpectations(t.T())
+		t.messenger.AssertNotCalled(t.T(), "Send")
 
 		exist, err := t.data.Authorization.
 			Query().
@@ -475,12 +442,6 @@ func (t *TestSuite) TestAuthorization() {
 
 		t.captcha.On("Verify", "").Return(true).Once()
 
-		t.messenger.On(
-			"Send",
-			mock.IsType(&templates.Recovery{}),
-			mock.IsType(&data.Person{}),
-		).Return(nil).Times(0)
-
 		var response passwordCreate
 		err := t.api.Post(
 			passwordCreateMutation,
@@ -489,11 +450,11 @@ func (t *TestSuite) TestAuthorization() {
 			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-		t.messenger.AssertExpectations(t.T())
-
 		t.NoError(err)
 		t.True(response.CreatePasswordAuthorization.Success)
+
+		t.captcha.AssertExpectations(t.T())
+		t.messenger.AssertNotCalled(t.T(), "Send")
 	})
 
 	const passwordApplyMutation = `
@@ -535,7 +496,7 @@ func (t *TestSuite) TestAuthorization() {
 		)
 
 		t.NoError(err)
-		t.Equal(a.ID, t.toUUID(response.ApplyPasswordAuthorization.AuthorizationID))
+		t.Equal(a.ID, t.parseID(response.ApplyPasswordAuthorization.AuthorizationID))
 
 		p, err := t.data.Person.
 			Query().

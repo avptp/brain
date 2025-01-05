@@ -73,12 +73,12 @@ func (t *TestSuite) TestPerson() {
 			client.Var("captcha", ""),
 		)
 
+		t.NoError(err)
+
 		t.captcha.AssertExpectations(t.T())
 		t.messenger.AssertExpectations(t.T())
 
-		t.NoError(err)
-
-		id := t.toUUID(response.CreatePerson.Person.ID)
+		id := t.parseID(response.CreatePerson.Person.ID)
 
 		p, err := t.data.Person.
 			Query().
@@ -124,9 +124,9 @@ func (t *TestSuite) TestPerson() {
 			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrCaptcha.Message)
+
+		t.captcha.AssertExpectations(t.T())
 
 		exist, err := t.data.Person.
 			Query().
@@ -159,10 +159,10 @@ func (t *TestSuite) TestPerson() {
 			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
 		t.ErrorContains(err, reporting.ErrConstraint.Message)
 		t.ErrorContains(err, `"field":"persons_email_key"`)
+
+		t.captcha.AssertExpectations(t.T())
 	})
 
 	const showQuery = `
@@ -180,14 +180,14 @@ func (t *TestSuite) TestPerson() {
 	}
 
 	t.Run("show", func() {
-		authenticated, p, _, _, _ := t.authenticate()
+		authenticated, p, _, _ := t.authenticate()
 
 		var response show
 		err := t.api.Post(showQuery, &response, authenticated)
 
 		t.NoError(err)
 
-		id := t.toUUID(response.Viewer.ID)
+		id := t.parseID(response.Viewer.ID)
 
 		t.Equal(p.ID, id)
 	})
@@ -203,7 +203,6 @@ func (t *TestSuite) TestPerson() {
 	const updateMutation = `
 		mutation(
 			$id: ID!,
-			$email: String,
 			$phone: String,
 			$taxId: String,
 			$firstName: String,
@@ -218,7 +217,6 @@ func (t *TestSuite) TestPerson() {
 		) {
 			updatePerson(input: {
 				id: $id
-				email: $email
 				phone: $phone
 				taxId: $taxId
 				firstName: $firstName
@@ -247,7 +245,7 @@ func (t *TestSuite) TestPerson() {
 	}
 
 	t.Run("update", func() {
-		authenticated, p, _, _, _ := t.authenticate()
+		authenticated, p, _, _ := t.authenticate()
 
 		input := t.factory.Person().Fields
 
@@ -261,8 +259,7 @@ func (t *TestSuite) TestPerson() {
 			updateMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("email", input.Email),
+			client.Var("id", p.ID.String()),
 			client.Var("phone", input.Phone),
 			client.Var("taxId", input.TaxID),
 			client.Var("firstName", input.FirstName),
@@ -276,10 +273,11 @@ func (t *TestSuite) TestPerson() {
 			client.Var("country", input.Country),
 		)
 
+		t.NoError(err)
+
 		t.biller.AssertExpectations(t.T())
 
-		t.NoError(err)
-		t.Equal(p.ID, t.toUUID(response.UpdatePerson.Person.ID))
+		t.Equal(p.ID, t.parseID(response.UpdatePerson.Person.ID))
 
 		p, err = t.data.Person.
 			Query().
@@ -287,8 +285,6 @@ func (t *TestSuite) TestPerson() {
 			First(t.allowCtx)
 
 		t.NoError(err)
-		t.Equal(input.Email, p.Email)
-		t.Nil(p.EmailVerifiedAt)
 		t.NotNil(p.Phone)
 		t.Equal(*input.Phone, *p.Phone)
 		t.Equal(input.TaxID, p.TaxID)
@@ -316,7 +312,6 @@ func (t *TestSuite) TestPerson() {
 		key   string
 		value string
 	}{
-		{"email", "wrong"},
 		{"phone", "+34123"},
 		{"taxId", "00000000A"},
 		{"firstName", "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffff"},
@@ -330,24 +325,26 @@ func (t *TestSuite) TestPerson() {
 
 	for _, c := range updateWrongCases {
 		t.Run(fmt.Sprintf("update_with_wrong_input_%s", c.key), func() {
-			authenticated, p, _, _, _ := t.authenticate()
+			authenticated, p, _, _ := t.authenticate()
 
 			var response update
 			err := t.api.Post(
 				updateMutation,
 				&response,
 				authenticated,
-				client.Var("id", t.toULID(p.ID)),
+				client.Var("id", p.ID.String()),
 				client.Var(c.key, c.value),
 			)
 
 			t.ErrorContains(err, reporting.ErrValidation.Message)
 			t.ErrorContains(err, fmt.Sprintf(`"field":"Person.%s"`, c.key))
+
+			t.biller.AssertNotCalled(t.T(), "SyncPerson")
 		})
 	}
 
 	t.Run("update_nonexistent", func() {
-		authenticated, _, _, _, _ := t.authenticate()
+		authenticated, _, _, _ := t.authenticate()
 
 		var response update
 		err := t.api.Post(
@@ -359,10 +356,12 @@ func (t *TestSuite) TestPerson() {
 		)
 
 		t.ErrorContains(err, reporting.ErrNotFound.Message)
+
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
 	})
 
 	t.Run("update_without_authorization", func() {
-		authenticated, _, _, _, _ := t.authenticate()
+		authenticated, _, _, _ := t.authenticate()
 		p := t.factory.Person().Create(t.allowCtx)
 
 		var response update
@@ -370,11 +369,13 @@ func (t *TestSuite) TestPerson() {
 			updateMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
+			client.Var("id", p.ID.String()),
 			client.Var("lastName", nil),
 		)
 
 		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
+
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
 	})
 
 	t.Run("update_without_authentication", func() {
@@ -387,21 +388,19 @@ func (t *TestSuite) TestPerson() {
 		)
 
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
+		t.ErrorContains(err, reporting.ErrUnauthenticated.Message)
+
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
 	})
 
-	const updatePasswordMutation = `
+	const updateEmailMutation = `
 		mutation(
 			$id: ID!,
-			$currentPassword: String!,
-			$newPassword: String!,
-			$captcha: String!,
+			$email: String,
 		) {
-			updatePersonPassword(input: {
+			updatePerson(input: {
 				id: $id
-				currentPassword: $currentPassword
-				newPassword: $newPassword
-				captcha: $captcha
+				email: $email
 			}) {
 				person {
 					id
@@ -410,69 +409,198 @@ func (t *TestSuite) TestPerson() {
 		}
 	`
 
-	type updatePassword struct {
-		UpdatePersonPassword struct {
-			Person struct {
-				ID string
-			}
-		}
-	}
-
-	t.Run("update_password", func() {
-		authenticated, p, pf, _, _ := t.authenticate()
+	t.Run("update_email", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
 
 		input := t.factory.Person().Fields
 
-		t.captcha.On("Verify", "").Return(true).Once()
+		t.biller.On(
+			"SyncPerson",
+			mock.IsType(&data.Person{}),
+		).Return(nil).Once()
 
-		var response updatePassword
+		var response update
+		err := t.api.Post(
+			updateEmailMutation,
+			&response,
+			authenticated,
+			client.Var("id", p.ID.String()),
+			client.Var("email", input.Email),
+		)
+
+		t.NoError(err)
+
+		t.biller.AssertExpectations(t.T())
+
+		t.Equal(p.ID, t.parseID(response.UpdatePerson.Person.ID))
+
+		up, err := t.data.Person.
+			Query().
+			Where(person.IDEQ(p.ID)).
+			First(t.allowCtx)
+
+		t.NoError(err)
+		t.Equal(input.Email, up.Email)
+		t.Nil(up.EmailVerifiedAt)
+	})
+
+	t.Run("update_email_with_wrong_input", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
+
+		var response update
+		err := t.api.Post(
+			updateEmailMutation,
+			&response,
+			authenticated,
+			client.Var("id", p.ID.String()),
+			client.Var("email", "wrong"),
+		)
+
+		t.ErrorContains(err, reporting.ErrValidation.Message)
+		t.ErrorContains(err, fmt.Sprintf(`"field":"Person.%s"`, "email"))
+
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
+	})
+
+	t.Run("update_email_without_captcha_challenge", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+		})
+
+		input := t.factory.Person().Fields
+
+		var response update
+		err := t.api.Post(
+			updateEmailMutation,
+			&response,
+			authenticated,
+			client.Var("id", p.ID.String()),
+			client.Var("email", input.Email),
+		)
+
+		t.ErrorContains(err, reporting.ErrChallenge.Message)
+
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
+
+		up, err := t.data.Person.
+			Query().
+			Where(person.IDEQ(p.ID)).
+			First(t.allowCtx)
+
+		t.NoError(err)
+		t.Equal(p.Email, up.Email)
+	})
+
+	t.Run("update_email_without_password_challenge", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
+
+		input := t.factory.Person().Fields
+
+		var response update
+		err := t.api.Post(
+			updateEmailMutation,
+			&response,
+			authenticated,
+			client.Var("id", p.ID.String()),
+			client.Var("email", input.Email),
+		)
+
+		t.ErrorContains(err, reporting.ErrChallenge.Message)
+
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
+
+		up, err := t.data.Person.
+			Query().
+			Where(person.IDEQ(p.ID)).
+			First(t.allowCtx)
+
+		t.NoError(err)
+		t.Equal(p.Email, up.Email)
+	})
+
+	const updatePasswordMutation = `
+		mutation(
+			$id: ID!,
+			$password: String,
+		) {
+			updatePerson(input: {
+				id: $id
+				password: $password
+			}) {
+				person {
+					id
+				}
+			}
+		}
+	`
+
+	t.Run("update_password", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
+
+		input := t.factory.Person().Fields
+
+		t.biller.On(
+			"SyncPerson",
+			mock.IsType(&data.Person{}),
+		).Return(nil).Once()
+
+		var response update
 		err := t.api.Post(
 			updatePasswordMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", pf.Password),
-			client.Var("newPassword", input.Password),
-			client.Var("captcha", ""),
+			client.Var("id", p.ID.String()),
+			client.Var("password", input.Password),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
 		t.NoError(err)
-		t.Equal(p.ID, t.toUUID(response.UpdatePersonPassword.Person.ID))
 
-		p, err = t.data.Person.
+		t.biller.AssertExpectations(t.T())
+
+		t.Equal(p.ID, t.parseID(response.UpdatePerson.Person.ID))
+
+		up, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
 			First(t.allowCtx)
 
 		t.NoError(err)
 
-		match, err := argon2id.ComparePasswordAndHash(input.Password, p.Password)
+		match, err := argon2id.ComparePasswordAndHash(input.Password, up.Password)
 		t.NoError(err)
 		t.True(match)
 	})
 
-	t.Run("update_password_with_wrong_captcha", func() {
-		authenticated, p, pf, _, _ := t.authenticate()
+	t.Run("update_password_without_captcha_challenge", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+		})
+
 		input := t.factory.Person().Fields
 
-		t.captcha.On("Verify", "").Return(false).Once()
-
-		var response updatePassword
+		var response update
 		err := t.api.Post(
 			updatePasswordMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", pf.Password),
-			client.Var("newPassword", input.Password),
-			client.Var("captcha", ""),
+			client.Var("id", p.ID.String()),
+			client.Var("password", input.Password),
 		)
 
-		t.captcha.AssertExpectations(t.T())
+		t.ErrorContains(err, reporting.ErrChallenge.Message)
 
-		t.ErrorContains(err, reporting.ErrCaptcha.Message)
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
 
 		up, err := t.data.Person.
 			Query().
@@ -483,113 +611,42 @@ func (t *TestSuite) TestPerson() {
 		t.Equal(p.Password, up.Password)
 	})
 
-	t.Run("update_password_with_wrong_password", func() {
-		authenticated, p, pf, _, _ := t.authenticate()
+	t.Run("update_password_without_password_challenge", func() {
+		authenticated, p, pf, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
+
 		input := t.factory.Person().Fields
 
-		t.captcha.On("Verify", "").Return(true).Once()
-
-		var response updatePassword
+		var response update
 		err := t.api.Post(
 			updatePasswordMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", pf.Password+"wrong"),
-			client.Var("newPassword", input.Password),
-			client.Var("captcha", ""),
+			client.Var("id", p.ID.String()),
+			client.Var("password", input.Password),
 		)
 
-		t.captcha.AssertExpectations(t.T())
+		t.ErrorContains(err, reporting.ErrChallenge.Message)
 
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.biller.AssertNotCalled(t.T(), "SyncPerson")
 
-		p, err = t.data.Person.
+		up, err := t.data.Person.
 			Query().
 			Where(person.IDEQ(p.ID)).
 			First(t.allowCtx)
 
 		t.NoError(err)
 
-		match, err := argon2id.ComparePasswordAndHash(pf.Password, p.Password)
+		match, err := argon2id.ComparePasswordAndHash(pf.Password, up.Password)
 		t.NoError(err)
 		t.True(match)
 	})
 
-	t.Run("update_password_when_nonexistent", func() {
-		authenticated, _, _, _, _ := t.authenticate()
-
-		t.captcha.On("Verify", "").Return(true).Once()
-
-		var response updatePassword
-		err := t.api.Post(
-			updatePasswordMutation,
-			&response,
-			authenticated,
-			client.Var("id", zeroID),
-			client.Var("currentPassword", "password"),
-			client.Var("newPassword", ""),
-			client.Var("captcha", ""),
-		)
-
-		t.captcha.AssertExpectations(t.T())
-
-		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrNotFound.Message)
-	})
-
-	t.Run("update_password_without_authorization", func() {
-		authenticated, _, _, _, _ := t.authenticate()
-		p := t.factory.Person().Create(t.allowCtx)
-
-		t.captcha.On("Verify", "").Return(true).Once()
-
-		var response updatePassword
-		err := t.api.Post(
-			updatePasswordMutation,
-			&response,
-			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", "password"),
-			client.Var("newPassword", ""),
-			client.Var("captcha", ""),
-		)
-
-		t.captcha.AssertExpectations(t.T())
-
-		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
-	})
-
-	t.Run("update_password_without_authentication", func() {
-		t.captcha.On("Verify", "").Return(true).Once()
-
-		var response updatePassword
-		err := t.api.Post(
-			updatePasswordMutation,
-			&response,
-			client.Var("id", zeroID),
-			client.Var("currentPassword", ""),
-			client.Var("newPassword", ""),
-			client.Var("captcha", ""),
-		)
-
-		t.captcha.AssertExpectations(t.T())
-
-		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
-	})
-
 	const deleteMutation = `
-		mutation(
-			$id: ID!,
-			$currentPassword: String!,
-			$captcha: String!,
-		) {
+		mutation($id: ID!) {
 			deletePerson(input: {
 				id: $id
-				currentPassword: $currentPassword
-				captcha: $captcha
 			}) {
 				personId
 			}
@@ -603,24 +660,21 @@ func (t *TestSuite) TestPerson() {
 	}
 
 	t.Run("delete", func() {
-		authenticated, p, pf, _, _ := t.authenticate()
-
-		t.captcha.On("Verify", "").Return(true).Once()
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
 
 		var response delete
 		err := t.api.Post(
 			deleteMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", pf.Password),
-			client.Var("captcha", ""),
+			client.Var("id", p.ID.String()),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
 		t.NoError(err)
-		t.Equal(p.ID, t.toUUID(response.DeletePerson.PersonID))
+		t.Equal(p.ID, t.parseID(response.DeletePerson.PersonID))
 
 		exists, err := t.data.Person.
 			Query().
@@ -631,24 +685,20 @@ func (t *TestSuite) TestPerson() {
 		t.False(exists)
 	})
 
-	t.Run("delete_with_wrong_captcha", func() {
-		authenticated, p, pf, _, _ := t.authenticate()
-
-		t.captcha.On("Verify", "").Return(false).Once()
+	t.Run("delete_with_without_captcha_challenge", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+		})
 
 		var response delete
 		err := t.api.Post(
 			deleteMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", pf.Password),
-			client.Var("captcha", ""),
+			client.Var("id", p.ID.String()),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
-		t.ErrorContains(err, reporting.ErrCaptcha.Message)
+		t.ErrorContains(err, reporting.ErrChallenge.Message)
 
 		exists, err := t.data.Person.
 			Query().
@@ -659,24 +709,20 @@ func (t *TestSuite) TestPerson() {
 		t.True(exists)
 	})
 
-	t.Run("delete_with_wrong_password", func() {
-		authenticated, p, pf, _, _ := t.authenticate()
-
-		t.captcha.On("Verify", "").Return(true).Once()
+	t.Run("delete_with_without_password_challenge", func() {
+		authenticated, p, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
 
 		var response delete
 		err := t.api.Post(
 			deleteMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", pf.Password+"wrong"),
-			client.Var("captcha", ""),
+			client.Var("id", p.ID.String()),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
-		t.ErrorContains(err, reporting.ErrWrongPassword.Message)
+		t.ErrorContains(err, reporting.ErrChallenge.Message)
 
 		exists, err := t.data.Person.
 			Query().
@@ -688,9 +734,10 @@ func (t *TestSuite) TestPerson() {
 	})
 
 	t.Run("delete_when_nonexistent", func() {
-		authenticated, _, _, _, _ := t.authenticate()
-
-		t.captcha.On("Verify", "").Return(true).Once()
+		authenticated, _, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
 
 		var response delete
 		err := t.api.Post(
@@ -698,53 +745,41 @@ func (t *TestSuite) TestPerson() {
 			&response,
 			authenticated,
 			client.Var("id", zeroID),
-			client.Var("currentPassword", "password"),
-			client.Var("captcha", ""),
 		)
-
-		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
 		t.ErrorContains(err, reporting.ErrNotFound.Message)
 	})
 
 	t.Run("delete_without_authorization", func() {
-		authenticated, _, _, _, _ := t.authenticate()
-		p := t.factory.Person().Create(t.allowCtx)
+		authenticated, _, _, _ := t.authenticateWith(nil, func(authn *data.AuthenticationCreate) {
+			authn.SetLastPasswordChallengeAt(time.Now())
+			authn.SetLastCaptchaChallengeAt(time.Now())
+		})
 
-		t.captcha.On("Verify", "").Return(true).Once()
+		u := t.factory.Person().Create(t.allowCtx)
 
 		var response delete
 		err := t.api.Post(
 			deleteMutation,
 			&response,
 			authenticated,
-			client.Var("id", t.toULID(p.ID)),
-			client.Var("currentPassword", "password"),
-			client.Var("captcha", ""),
+			client.Var("id", u.ID.String()),
 		)
-
-		t.captcha.AssertExpectations(t.T())
 
 		t.NotNil(err)
 		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
 	})
 
 	t.Run("delete_without_authentication", func() {
-		t.captcha.On("Verify", "").Return(true).Once()
-
 		var response delete
 		err := t.api.Post(
 			deleteMutation,
 			&response,
 			client.Var("id", zeroID),
-			client.Var("currentPassword", "password"),
-			client.Var("captcha", ""),
 		)
 
-		t.captcha.AssertExpectations(t.T())
-
 		t.NotNil(err)
-		t.ErrorContains(err, reporting.ErrUnauthorized.Message)
+		t.ErrorContains(err, reporting.ErrUnauthenticated.Message)
 	})
 }

@@ -3,14 +3,14 @@ package resolvers_test
 import (
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/generated/data"
-	"github.com/brianvoe/gofakeit/v7"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/mock"
 )
 
 func (t *TestSuite) TestBilling() {
 	const createCheckoutSessionMutation = `
-		mutation() {
-			createBillingCheckoutSession() {
+		mutation {
+			createBillingCheckoutSession {
 				checkoutSessionUrl
 			}
 		}
@@ -23,9 +23,9 @@ func (t *TestSuite) TestBilling() {
 	}
 
 	t.Run("create_checkout_session", func() {
-		authenticated, _, _, _, _ := t.authenticate()
+		authenticated, _, _, _ := t.authenticate()
 
-		url := gofakeit.URL()
+		url := faker.URL()
 
 		t.biller.On(
 			"PreparePerson",
@@ -69,8 +69,8 @@ func (t *TestSuite) TestBilling() {
 	})
 
 	const createPortalSessionMutation = `
-		mutation() {
-			createBillingPortalSession() {
+		mutation {
+			createBillingPortalSession {
 				portalSessionUrl
 			}
 		}
@@ -83,9 +83,9 @@ func (t *TestSuite) TestBilling() {
 	}
 
 	t.Run("create_portal_session", func() {
-		authenticated, _, _, _, _ := t.authenticate()
+		authenticated, _, _, _ := t.authenticate()
 
-		url := gofakeit.URL()
+		url := faker.URL()
 
 		t.biller.On(
 			"PreparePerson",
