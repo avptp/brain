@@ -24,7 +24,6 @@ func main() {
 		entc.FeatureNames(
 			gen.FeaturePrivacy.Name,
 			gen.FeatureEntQL.Name,
-			gen.FeatureExecQuery.Name,
 		),
 		entc.Extensions(ex),
 		entc.TemplateDir("../internal/data/templates"),
