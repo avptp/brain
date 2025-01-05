@@ -111,7 +111,7 @@ func (au *AuthenticationUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (au *AuthenticationUpdate) check() error {
-	if _, ok := au.mutation.PersonID(); au.mutation.PersonCleared() && !ok {
+	if au.mutation.PersonCleared() && len(au.mutation.PersonIDs()) > 0 {
 		return errors.New(`data: clearing a required unique edge "Authentication.person"`)
 	}
 	return nil
@@ -254,7 +254,7 @@ func (auo *AuthenticationUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (auo *AuthenticationUpdateOne) check() error {
-	if _, ok := auo.mutation.PersonID(); auo.mutation.PersonCleared() && !ok {
+	if auo.mutation.PersonCleared() && len(auo.mutation.PersonIDs()) > 0 {
 		return errors.New(`data: clearing a required unique edge "Authentication.person"`)
 	}
 	return nil

@@ -80,7 +80,7 @@ func (au *AuthorizationUpdate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`data: validator failed for field "Authorization.kind": %w`, err)}
 		}
 	}
-	if _, ok := au.mutation.PersonID(); au.mutation.PersonCleared() && !ok {
+	if au.mutation.PersonCleared() && len(au.mutation.PersonIDs()) > 0 {
 		return errors.New(`data: clearing a required unique edge "Authorization.person"`)
 	}
 	return nil
@@ -187,7 +187,7 @@ func (auo *AuthorizationUpdateOne) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`data: validator failed for field "Authorization.kind": %w`, err)}
 		}
 	}
-	if _, ok := auo.mutation.PersonID(); auo.mutation.PersonCleared() && !ok {
+	if auo.mutation.PersonCleared() && len(auo.mutation.PersonIDs()) > 0 {
 		return errors.New(`data: clearing a required unique edge "Authorization.person"`)
 	}
 	return nil

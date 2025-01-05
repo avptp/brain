@@ -159,7 +159,7 @@ func (ac *AuthenticationCreate) check() error {
 	if _, ok := ac.mutation.LastUsedAt(); !ok {
 		return &ValidationError{Name: "last_used_at", err: errors.New(`data: missing required field "Authentication.last_used_at"`)}
 	}
-	if _, ok := ac.mutation.PersonID(); !ok {
+	if len(ac.mutation.PersonIDs()) == 0 {
 		return &ValidationError{Name: "person", err: errors.New(`data: missing required edge "Authentication.person"`)}
 	}
 	return nil

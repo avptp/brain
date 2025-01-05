@@ -142,7 +142,7 @@ func (c *Container) SubScopes() []string {
 
 // Parent returns the parent Container.
 func (c *Container) Parent() *Container {
-	if p := c.ctn.Parent(); p != nil {
+	if p, err := c.ctn.ParentContainer(); err != nil {
 		return &Container{ctn: p}
 	}
 	return nil

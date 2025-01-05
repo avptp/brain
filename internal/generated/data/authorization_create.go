@@ -131,7 +131,7 @@ func (ac *AuthorizationCreate) check() error {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`data: missing required field "Authorization.created_at"`)}
 	}
-	if _, ok := ac.mutation.PersonID(); !ok {
+	if len(ac.mutation.PersonIDs()) == 0 {
 		return &ValidationError{Name: "person", err: errors.New(`data: missing required edge "Authorization.person"`)}
 	}
 	return nil
