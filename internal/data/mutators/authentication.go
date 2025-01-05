@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"entgo.io/ent"
-	"github.com/avptp/brain/internal/auth"
+	"github.com/avptp/brain/internal/crypto"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/hook"
 )
@@ -12,7 +12,7 @@ import (
 func AuthenticationToken(next ent.Mutator) ent.Mutator {
 	return hook.AuthenticationFunc(func(ctx context.Context, m *data.AuthenticationMutation) (ent.Value, error) {
 		if _, ok := m.Token(); !ok {
-			token, err := auth.RandomBytes(64)
+			token, err := crypto.RandomBytes(64)
 
 			if err != nil {
 				return nil, err
