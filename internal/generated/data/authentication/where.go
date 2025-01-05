@@ -7,57 +7,57 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uuid.UUID) predicate.Authentication {
+func ID(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uuid.UUID) predicate.Authentication {
+func IDEQ(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uuid.UUID) predicate.Authentication {
+func IDNEQ(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uuid.UUID) predicate.Authentication {
+func IDIn(ids ...types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uuid.UUID) predicate.Authentication {
+func IDNotIn(ids ...types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uuid.UUID) predicate.Authentication {
+func IDGT(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uuid.UUID) predicate.Authentication {
+func IDGTE(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uuid.UUID) predicate.Authentication {
+func IDLT(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uuid.UUID) predicate.Authentication {
+func IDLTE(id types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldLTE(FieldID, id))
 }
 
 // PersonID applies equality check predicate on the "person_id" field. It's identical to PersonIDEQ.
-func PersonID(v uuid.UUID) predicate.Authentication {
+func PersonID(v types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldEQ(FieldPersonID, v))
 }
 
@@ -86,23 +86,33 @@ func LastUsedAt(v time.Time) predicate.Authentication {
 	return predicate.Authentication(sql.FieldEQ(FieldLastUsedAt, v))
 }
 
+// LastPasswordChallengeAt applies equality check predicate on the "last_password_challenge_at" field. It's identical to LastPasswordChallengeAtEQ.
+func LastPasswordChallengeAt(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldEQ(FieldLastPasswordChallengeAt, v))
+}
+
+// LastCaptchaChallengeAt applies equality check predicate on the "last_captcha_challenge_at" field. It's identical to LastCaptchaChallengeAtEQ.
+func LastCaptchaChallengeAt(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldEQ(FieldLastCaptchaChallengeAt, v))
+}
+
 // PersonIDEQ applies the EQ predicate on the "person_id" field.
-func PersonIDEQ(v uuid.UUID) predicate.Authentication {
+func PersonIDEQ(v types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldEQ(FieldPersonID, v))
 }
 
 // PersonIDNEQ applies the NEQ predicate on the "person_id" field.
-func PersonIDNEQ(v uuid.UUID) predicate.Authentication {
+func PersonIDNEQ(v types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldNEQ(FieldPersonID, v))
 }
 
 // PersonIDIn applies the In predicate on the "person_id" field.
-func PersonIDIn(vs ...uuid.UUID) predicate.Authentication {
+func PersonIDIn(vs ...types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldIn(FieldPersonID, vs...))
 }
 
 // PersonIDNotIn applies the NotIn predicate on the "person_id" field.
-func PersonIDNotIn(vs ...uuid.UUID) predicate.Authentication {
+func PersonIDNotIn(vs ...types.ID) predicate.Authentication {
 	return predicate.Authentication(sql.FieldNotIn(FieldPersonID, vs...))
 }
 
@@ -354,6 +364,106 @@ func LastUsedAtLT(v time.Time) predicate.Authentication {
 // LastUsedAtLTE applies the LTE predicate on the "last_used_at" field.
 func LastUsedAtLTE(v time.Time) predicate.Authentication {
 	return predicate.Authentication(sql.FieldLTE(FieldLastUsedAt, v))
+}
+
+// LastPasswordChallengeAtEQ applies the EQ predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtEQ(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldEQ(FieldLastPasswordChallengeAt, v))
+}
+
+// LastPasswordChallengeAtNEQ applies the NEQ predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtNEQ(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldNEQ(FieldLastPasswordChallengeAt, v))
+}
+
+// LastPasswordChallengeAtIn applies the In predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtIn(vs ...time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldIn(FieldLastPasswordChallengeAt, vs...))
+}
+
+// LastPasswordChallengeAtNotIn applies the NotIn predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtNotIn(vs ...time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldNotIn(FieldLastPasswordChallengeAt, vs...))
+}
+
+// LastPasswordChallengeAtGT applies the GT predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtGT(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldGT(FieldLastPasswordChallengeAt, v))
+}
+
+// LastPasswordChallengeAtGTE applies the GTE predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtGTE(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldGTE(FieldLastPasswordChallengeAt, v))
+}
+
+// LastPasswordChallengeAtLT applies the LT predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtLT(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldLT(FieldLastPasswordChallengeAt, v))
+}
+
+// LastPasswordChallengeAtLTE applies the LTE predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtLTE(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldLTE(FieldLastPasswordChallengeAt, v))
+}
+
+// LastPasswordChallengeAtIsNil applies the IsNil predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtIsNil() predicate.Authentication {
+	return predicate.Authentication(sql.FieldIsNull(FieldLastPasswordChallengeAt))
+}
+
+// LastPasswordChallengeAtNotNil applies the NotNil predicate on the "last_password_challenge_at" field.
+func LastPasswordChallengeAtNotNil() predicate.Authentication {
+	return predicate.Authentication(sql.FieldNotNull(FieldLastPasswordChallengeAt))
+}
+
+// LastCaptchaChallengeAtEQ applies the EQ predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtEQ(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldEQ(FieldLastCaptchaChallengeAt, v))
+}
+
+// LastCaptchaChallengeAtNEQ applies the NEQ predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtNEQ(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldNEQ(FieldLastCaptchaChallengeAt, v))
+}
+
+// LastCaptchaChallengeAtIn applies the In predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtIn(vs ...time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldIn(FieldLastCaptchaChallengeAt, vs...))
+}
+
+// LastCaptchaChallengeAtNotIn applies the NotIn predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtNotIn(vs ...time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldNotIn(FieldLastCaptchaChallengeAt, vs...))
+}
+
+// LastCaptchaChallengeAtGT applies the GT predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtGT(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldGT(FieldLastCaptchaChallengeAt, v))
+}
+
+// LastCaptchaChallengeAtGTE applies the GTE predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtGTE(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldGTE(FieldLastCaptchaChallengeAt, v))
+}
+
+// LastCaptchaChallengeAtLT applies the LT predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtLT(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldLT(FieldLastCaptchaChallengeAt, v))
+}
+
+// LastCaptchaChallengeAtLTE applies the LTE predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtLTE(v time.Time) predicate.Authentication {
+	return predicate.Authentication(sql.FieldLTE(FieldLastCaptchaChallengeAt, v))
+}
+
+// LastCaptchaChallengeAtIsNil applies the IsNil predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtIsNil() predicate.Authentication {
+	return predicate.Authentication(sql.FieldIsNull(FieldLastCaptchaChallengeAt))
+}
+
+// LastCaptchaChallengeAtNotNil applies the NotNil predicate on the "last_captcha_challenge_at" field.
+func LastCaptchaChallengeAtNotNil() predicate.Authentication {
+	return predicate.Authentication(sql.FieldNotNull(FieldLastCaptchaChallengeAt))
 }
 
 // HasPerson applies the HasEdge predicate on the "person" edge.

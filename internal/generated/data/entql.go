@@ -28,12 +28,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Authentication",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			authentication.FieldPersonID:   {Type: field.TypeUUID, Column: authentication.FieldPersonID},
-			authentication.FieldToken:      {Type: field.TypeBytes, Column: authentication.FieldToken},
-			authentication.FieldCreatedIP:  {Type: field.TypeString, Column: authentication.FieldCreatedIP},
-			authentication.FieldLastUsedIP: {Type: field.TypeString, Column: authentication.FieldLastUsedIP},
-			authentication.FieldCreatedAt:  {Type: field.TypeTime, Column: authentication.FieldCreatedAt},
-			authentication.FieldLastUsedAt: {Type: field.TypeTime, Column: authentication.FieldLastUsedAt},
+			authentication.FieldPersonID:                {Type: field.TypeUUID, Column: authentication.FieldPersonID},
+			authentication.FieldToken:                   {Type: field.TypeBytes, Column: authentication.FieldToken},
+			authentication.FieldCreatedIP:               {Type: field.TypeString, Column: authentication.FieldCreatedIP},
+			authentication.FieldLastUsedIP:              {Type: field.TypeString, Column: authentication.FieldLastUsedIP},
+			authentication.FieldCreatedAt:               {Type: field.TypeTime, Column: authentication.FieldCreatedAt},
+			authentication.FieldLastUsedAt:              {Type: field.TypeTime, Column: authentication.FieldLastUsedAt},
+			authentication.FieldLastPasswordChallengeAt: {Type: field.TypeTime, Column: authentication.FieldLastPasswordChallengeAt},
+			authentication.FieldLastCaptchaChallengeAt:  {Type: field.TypeTime, Column: authentication.FieldLastCaptchaChallengeAt},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -209,6 +211,16 @@ func (f *AuthenticationFilter) WhereCreatedAt(p entql.TimeP) {
 // WhereLastUsedAt applies the entql time.Time predicate on the last_used_at field.
 func (f *AuthenticationFilter) WhereLastUsedAt(p entql.TimeP) {
 	f.Where(p.Field(authentication.FieldLastUsedAt))
+}
+
+// WhereLastPasswordChallengeAt applies the entql time.Time predicate on the last_password_challenge_at field.
+func (f *AuthenticationFilter) WhereLastPasswordChallengeAt(p entql.TimeP) {
+	f.Where(p.Field(authentication.FieldLastPasswordChallengeAt))
+}
+
+// WhereLastCaptchaChallengeAt applies the entql time.Time predicate on the last_captcha_challenge_at field.
+func (f *AuthenticationFilter) WhereLastCaptchaChallengeAt(p entql.TimeP) {
+	f.Where(p.Field(authentication.FieldLastCaptchaChallengeAt))
 }
 
 // WhereHasPerson applies a predicate to check if query has an edge person.

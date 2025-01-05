@@ -3,35 +3,39 @@
 package data
 
 import (
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/avptp/brain/internal/api/types"
+	"github.com/avptp/brain/internal/encoding"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 // Authentication is the model entity for the Authentication schema.
 type Authentication struct {
-	config `fake:"-" fakesize:"-" json:"-"`
+	config `faker:"-" json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID types.ID `json:"id,omitempty"`
 	// PersonID holds the value of the "person_id" field.
-	PersonID uuid.UUID `json:"person_id,omitempty"`
+	PersonID types.ID `json:"person_id,omitempty"`
 	// Token holds the value of the "token" field.
-	Token []byte `json:"token,omitempty" fakesize:"64"`
+	Token []byte `json:"token,omitempty" faker:"slice_len=64"`
 	// CreatedIP holds the value of the "created_ip" field.
-	CreatedIP string `json:"created_ip,omitempty" fake:"{ipv6address}"`
+	CreatedIP string `json:"created_ip,omitempty" faker:"ipv6"`
 	// LastUsedIP holds the value of the "last_used_ip" field.
-	LastUsedIP string `json:"last_used_ip,omitempty" fake:"{ipv6address}"`
+	LastUsedIP string `json:"last_used_ip,omitempty" faker:"ipv6"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// LastUsedAt holds the value of the "last_used_at" field.
 	LastUsedAt time.Time `json:"last_used_at,omitempty"`
+	// LastPasswordChallengeAt holds the value of the "last_password_challenge_at" field.
+	LastPasswordChallengeAt *time.Time `json:"last_password_challenge_at,omitempty" faker:"-"`
+	// LastCaptchaChallengeAt holds the value of the "last_captcha_challenge_at" field.
+	LastCaptchaChallengeAt *time.Time `json:"last_captcha_challenge_at,omitempty" faker:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AuthenticationQuery when eager-loading is set.
 	Edges        AuthenticationEdges `json:"edges"`
@@ -69,10 +73,10 @@ func (*Authentication) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case authentication.FieldCreatedIP, authentication.FieldLastUsedIP:
 			values[i] = new(sql.NullString)
-		case authentication.FieldCreatedAt, authentication.FieldLastUsedAt:
+		case authentication.FieldCreatedAt, authentication.FieldLastUsedAt, authentication.FieldLastPasswordChallengeAt, authentication.FieldLastCaptchaChallengeAt:
 			values[i] = new(sql.NullTime)
 		case authentication.FieldID, authentication.FieldPersonID:
-			values[i] = new(uuid.UUID)
+			values[i] = new(types.ID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -89,13 +93,13 @@ func (a *Authentication) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case authentication.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*types.ID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				a.ID = *value
 			}
 		case authentication.FieldPersonID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*types.ID); !ok {
 				return fmt.Errorf("unexpected type %T for field person_id", values[i])
 			} else if value != nil {
 				a.PersonID = *value
@@ -129,6 +133,20 @@ func (a *Authentication) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field last_used_at", values[i])
 			} else if value.Valid {
 				a.LastUsedAt = value.Time
+			}
+		case authentication.FieldLastPasswordChallengeAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_password_challenge_at", values[i])
+			} else if value.Valid {
+				a.LastPasswordChallengeAt = new(time.Time)
+				*a.LastPasswordChallengeAt = value.Time
+			}
+		case authentication.FieldLastCaptchaChallengeAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_captcha_challenge_at", values[i])
+			} else if value.Valid {
+				a.LastCaptchaChallengeAt = new(time.Time)
+				*a.LastCaptchaChallengeAt = value.Time
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -188,12 +206,22 @@ func (a *Authentication) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("last_used_at=")
 	builder.WriteString(a.LastUsedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := a.LastPasswordChallengeAt; v != nil {
+		builder.WriteString("last_password_challenge_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := a.LastCaptchaChallengeAt; v != nil {
+		builder.WriteString("last_captcha_challenge_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }
 
 func (a *Authentication) TokenEncoded() string {
-	return base64.URLEncoding.EncodeToString(a.Token)
+	return encoding.Base32.EncodeToString(a.Token)
 }
 
 // Authentications is a parsable slice of Authentication.

@@ -11,11 +11,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 // PersonUpdate is the builder for updating Person entities.
@@ -322,14 +322,14 @@ func (pu *PersonUpdate) SetUpdatedAt(t time.Time) *PersonUpdate {
 }
 
 // AddAuthenticationIDs adds the "authentications" edge to the Authentication entity by IDs.
-func (pu *PersonUpdate) AddAuthenticationIDs(ids ...uuid.UUID) *PersonUpdate {
+func (pu *PersonUpdate) AddAuthenticationIDs(ids ...types.ID) *PersonUpdate {
 	pu.mutation.AddAuthenticationIDs(ids...)
 	return pu
 }
 
 // AddAuthentications adds the "authentications" edges to the Authentication entity.
 func (pu *PersonUpdate) AddAuthentications(a ...*Authentication) *PersonUpdate {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -337,14 +337,14 @@ func (pu *PersonUpdate) AddAuthentications(a ...*Authentication) *PersonUpdate {
 }
 
 // AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by IDs.
-func (pu *PersonUpdate) AddAuthorizationIDs(ids ...uuid.UUID) *PersonUpdate {
+func (pu *PersonUpdate) AddAuthorizationIDs(ids ...types.ID) *PersonUpdate {
 	pu.mutation.AddAuthorizationIDs(ids...)
 	return pu
 }
 
 // AddAuthorizations adds the "authorizations" edges to the Authorization entity.
 func (pu *PersonUpdate) AddAuthorizations(a ...*Authorization) *PersonUpdate {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -363,14 +363,14 @@ func (pu *PersonUpdate) ClearAuthentications() *PersonUpdate {
 }
 
 // RemoveAuthenticationIDs removes the "authentications" edge to Authentication entities by IDs.
-func (pu *PersonUpdate) RemoveAuthenticationIDs(ids ...uuid.UUID) *PersonUpdate {
+func (pu *PersonUpdate) RemoveAuthenticationIDs(ids ...types.ID) *PersonUpdate {
 	pu.mutation.RemoveAuthenticationIDs(ids...)
 	return pu
 }
 
 // RemoveAuthentications removes "authentications" edges to Authentication entities.
 func (pu *PersonUpdate) RemoveAuthentications(a ...*Authentication) *PersonUpdate {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -384,14 +384,14 @@ func (pu *PersonUpdate) ClearAuthorizations() *PersonUpdate {
 }
 
 // RemoveAuthorizationIDs removes the "authorizations" edge to Authorization entities by IDs.
-func (pu *PersonUpdate) RemoveAuthorizationIDs(ids ...uuid.UUID) *PersonUpdate {
+func (pu *PersonUpdate) RemoveAuthorizationIDs(ids ...types.ID) *PersonUpdate {
 	pu.mutation.RemoveAuthorizationIDs(ids...)
 	return pu
 }
 
 // RemoveAuthorizations removes "authorizations" edges to Authorization entities.
 func (pu *PersonUpdate) RemoveAuthorizations(a ...*Authorization) *PersonUpdate {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -989,14 +989,14 @@ func (puo *PersonUpdateOne) SetUpdatedAt(t time.Time) *PersonUpdateOne {
 }
 
 // AddAuthenticationIDs adds the "authentications" edge to the Authentication entity by IDs.
-func (puo *PersonUpdateOne) AddAuthenticationIDs(ids ...uuid.UUID) *PersonUpdateOne {
+func (puo *PersonUpdateOne) AddAuthenticationIDs(ids ...types.ID) *PersonUpdateOne {
 	puo.mutation.AddAuthenticationIDs(ids...)
 	return puo
 }
 
 // AddAuthentications adds the "authentications" edges to the Authentication entity.
 func (puo *PersonUpdateOne) AddAuthentications(a ...*Authentication) *PersonUpdateOne {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -1004,14 +1004,14 @@ func (puo *PersonUpdateOne) AddAuthentications(a ...*Authentication) *PersonUpda
 }
 
 // AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by IDs.
-func (puo *PersonUpdateOne) AddAuthorizationIDs(ids ...uuid.UUID) *PersonUpdateOne {
+func (puo *PersonUpdateOne) AddAuthorizationIDs(ids ...types.ID) *PersonUpdateOne {
 	puo.mutation.AddAuthorizationIDs(ids...)
 	return puo
 }
 
 // AddAuthorizations adds the "authorizations" edges to the Authorization entity.
 func (puo *PersonUpdateOne) AddAuthorizations(a ...*Authorization) *PersonUpdateOne {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -1030,14 +1030,14 @@ func (puo *PersonUpdateOne) ClearAuthentications() *PersonUpdateOne {
 }
 
 // RemoveAuthenticationIDs removes the "authentications" edge to Authentication entities by IDs.
-func (puo *PersonUpdateOne) RemoveAuthenticationIDs(ids ...uuid.UUID) *PersonUpdateOne {
+func (puo *PersonUpdateOne) RemoveAuthenticationIDs(ids ...types.ID) *PersonUpdateOne {
 	puo.mutation.RemoveAuthenticationIDs(ids...)
 	return puo
 }
 
 // RemoveAuthentications removes "authentications" edges to Authentication entities.
 func (puo *PersonUpdateOne) RemoveAuthentications(a ...*Authentication) *PersonUpdateOne {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -1051,14 +1051,14 @@ func (puo *PersonUpdateOne) ClearAuthorizations() *PersonUpdateOne {
 }
 
 // RemoveAuthorizationIDs removes the "authorizations" edge to Authorization entities by IDs.
-func (puo *PersonUpdateOne) RemoveAuthorizationIDs(ids ...uuid.UUID) *PersonUpdateOne {
+func (puo *PersonUpdateOne) RemoveAuthorizationIDs(ids ...types.ID) *PersonUpdateOne {
 	puo.mutation.RemoveAuthorizationIDs(ids...)
 	return puo
 }
 
 // RemoveAuthorizations removes "authorizations" edges to Authorization entities.
 func (puo *PersonUpdateOne) RemoveAuthorizations(a ...*Authorization) *PersonUpdateOne {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}

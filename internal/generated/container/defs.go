@@ -8,8 +8,8 @@ import (
 
 	slog "log/slog"
 
+	auth "github.com/avptp/brain/internal/api/auth"
 	resolvers "github.com/avptp/brain/internal/api/resolvers"
-	auth "github.com/avptp/brain/internal/auth"
 	billing "github.com/avptp/brain/internal/billing"
 	config "github.com/avptp/brain/internal/config"
 	data "github.com/avptp/brain/internal/generated/data"

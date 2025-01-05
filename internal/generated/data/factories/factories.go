@@ -6,12 +6,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 
-	"github.com/brianvoe/gofakeit/v7"
+	"github.com/go-faker/faker/v4"
 )
 
 // Base factory
@@ -34,12 +34,14 @@ type AuthenticationFactory struct {
 }
 
 type AuthenticationFields struct {
-	PersonID   uuid.UUID `json:"person_id,omitempty"`
-	Token      []byte    `json:"token,omitempty" fakesize:"64"`
-	CreatedIP  string    `json:"created_ip,omitempty" fake:"{ipv6address}"`
-	LastUsedIP string    `json:"last_used_ip,omitempty" fake:"{ipv6address}"`
-	CreatedAt  time.Time `json:"created_at,omitempty"`
-	LastUsedAt time.Time `json:"last_used_at,omitempty"`
+	PersonID                types.ID   `json:"person_id,omitempty"`
+	Token                   []byte     `json:"token,omitempty" faker:"slice_len=64"`
+	CreatedIP               string     `json:"created_ip,omitempty" faker:"ipv6"`
+	LastUsedIP              string     `json:"last_used_ip,omitempty" faker:"ipv6"`
+	CreatedAt               time.Time  `json:"created_at,omitempty"`
+	LastUsedAt              time.Time  `json:"last_used_at,omitempty"`
+	LastPasswordChallengeAt *time.Time `json:"last_password_challenge_at,omitempty" faker:"-"`
+	LastCaptchaChallengeAt  *time.Time `json:"last_captcha_challenge_at,omitempty" faker:"-"`
 }
 
 func (bf *Factory) Authentication() *AuthenticationFactory {
@@ -47,13 +49,19 @@ func (bf *Factory) Authentication() *AuthenticationFactory {
 		Factory: bf,
 	}
 
-	gofakeit.Struct(&f.Fields)
+	err := faker.FakeData(&f.Fields)
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
 
 	f.builder = f.data.Authentication.
 		Create().
 		SetToken(f.Fields.Token).
 		SetCreatedIP(f.Fields.CreatedIP).
-		SetLastUsedIP(f.Fields.LastUsedIP)
+		SetLastUsedIP(f.Fields.LastUsedIP).
+		SetNillableLastPasswordChallengeAt(f.Fields.LastPasswordChallengeAt).
+		SetNillableLastCaptchaChallengeAt(f.Fields.LastCaptchaChallengeAt)
 
 	return f
 }
@@ -83,9 +91,9 @@ type AuthorizationFactory struct {
 }
 
 type AuthorizationFields struct {
-	PersonID  uuid.UUID          `json:"person_id,omitempty"`
-	Token     []byte             `json:"token,omitempty" fakesize:"64"`
-	Kind      authorization.Kind `json:"kind,omitempty" fake:"{randomstring:[email,password]}"`
+	PersonID  types.ID           `json:"person_id,omitempty"`
+	Token     []byte             `json:"token,omitempty" faker:"slice_len=64"`
+	Kind      authorization.Kind `json:"kind,omitempty" faker:"oneof:email,password"`
 	CreatedAt time.Time          `json:"created_at,omitempty"`
 }
 
@@ -94,7 +102,11 @@ func (bf *Factory) Authorization() *AuthorizationFactory {
 		Factory: bf,
 	}
 
-	gofakeit.Struct(&f.Fields)
+	err := faker.FakeData(&f.Fields)
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
 
 	f.builder = f.data.Authorization.
 		Create().
@@ -130,21 +142,21 @@ type PersonFactory struct {
 
 type PersonFields struct {
 	StripeID        *string        `json:"stripe_id,omitempty"`
-	Email           string         `json:"email,omitempty" fake:"{email}"`
-	EmailVerifiedAt *time.Time     `json:"email_verified_at,omitempty"`
-	Phone           *string        `json:"phone,omitempty" fake:"{phone_e164}"`
+	Email           string         `json:"email,omitempty" faker:"email"`
+	EmailVerifiedAt *time.Time     `json:"email_verified_at,omitempty" faker:"-"`
+	Phone           *string        `json:"phone,omitempty" faker:"phone"`
 	Password        string         `json:"password,omitempty"`
-	TaxID           string         `json:"tax_id,omitempty" fake:"{tax_id}"`
-	FirstName       string         `json:"first_name,omitempty" fake:"{firstname}"`
-	LastName        *string        `json:"last_name,omitempty" fake:"{lastname}"`
-	Language        string         `json:"language,omitempty" fake:"{randomstring:[ca,es,en]}"`
-	Birthdate       *time.Time     `json:"birthdate,omitempty" fake:"{date}"`
-	Gender          *person.Gender `json:"gender,omitempty" fake:"{randomstring:[woman,man,nonbinary]}"`
-	Address         *string        `json:"address,omitempty" fake:"{street}"`
-	PostalCode      *string        `json:"postal_code,omitempty" fake:"{zip}"`
-	City            *string        `json:"city,omitempty" fake:"{city}"`
-	Country         *string        `json:"country,omitempty" fake:"{countryabr}"`
-	Subscribed      bool           `json:"subscribed,omitempty"`
+	TaxID           string         `json:"tax_id,omitempty" faker:"tax_id"`
+	FirstName       string         `json:"first_name,omitempty" faker:"first_name"`
+	LastName        *string        `json:"last_name,omitempty" faker:"last_name"`
+	Language        string         `json:"language,omitempty" faker:"oneof:ca,en,es"`
+	Birthdate       *time.Time     `json:"birthdate,omitempty" faker:"birthdate"`
+	Gender          *person.Gender `json:"gender,omitempty" faker:"oneof:woman,man,nonbinary"`
+	Address         *string        `json:"address,omitempty" faker:"address"`
+	PostalCode      *string        `json:"postal_code,omitempty" faker:"postal_code"`
+	City            *string        `json:"city,omitempty" faker:"city"`
+	Country         *string        `json:"country,omitempty" faker:"country"`
+	Subscribed      bool           `json:"subscribed,omitempty" faker:"-"`
 	CreatedAt       time.Time      `json:"created_at,omitempty"`
 	UpdatedAt       time.Time      `json:"updated_at,omitempty"`
 }
@@ -154,7 +166,11 @@ func (bf *Factory) Person() *PersonFactory {
 		Factory: bf,
 	}
 
-	gofakeit.Struct(&f.Fields)
+	err := faker.FakeData(&f.Fields)
+
+	if err != nil {
+		panic(err) // unrecoverable situation
+	}
 
 	f.builder = f.data.Person.
 		Create().

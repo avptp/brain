@@ -11,11 +11,11 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 const (
@@ -35,20 +35,22 @@ const (
 // AuthenticationMutation represents an operation that mutates the Authentication nodes in the graph.
 type AuthenticationMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	token         *[]byte
-	created_ip    *string
-	last_used_ip  *string
-	created_at    *time.Time
-	last_used_at  *time.Time
-	clearedFields map[string]struct{}
-	person        *uuid.UUID
-	clearedperson bool
-	done          bool
-	oldValue      func(context.Context) (*Authentication, error)
-	predicates    []predicate.Authentication
+	op                         Op
+	typ                        string
+	id                         *types.ID
+	token                      *[]byte
+	created_ip                 *string
+	last_used_ip               *string
+	created_at                 *time.Time
+	last_used_at               *time.Time
+	last_password_challenge_at *time.Time
+	last_captcha_challenge_at  *time.Time
+	clearedFields              map[string]struct{}
+	person                     *types.ID
+	clearedperson              bool
+	done                       bool
+	oldValue                   func(context.Context) (*Authentication, error)
+	predicates                 []predicate.Authentication
 }
 
 var _ ent.Mutation = (*AuthenticationMutation)(nil)
@@ -71,7 +73,7 @@ func newAuthenticationMutation(c config, op Op, opts ...authenticationOption) *A
 }
 
 // withAuthenticationID sets the ID field of the mutation.
-func withAuthenticationID(id uuid.UUID) authenticationOption {
+func withAuthenticationID(id types.ID) authenticationOption {
 	return func(m *AuthenticationMutation) {
 		var (
 			err   error
@@ -123,13 +125,13 @@ func (m AuthenticationMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Authentication entities.
-func (m *AuthenticationMutation) SetID(id uuid.UUID) {
+func (m *AuthenticationMutation) SetID(id types.ID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *AuthenticationMutation) ID() (id uuid.UUID, exists bool) {
+func (m *AuthenticationMutation) ID() (id types.ID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -140,12 +142,12 @@ func (m *AuthenticationMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *AuthenticationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *AuthenticationMutation) IDs(ctx context.Context) ([]types.ID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uuid.UUID{id}, nil
+			return []types.ID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -156,12 +158,12 @@ func (m *AuthenticationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // SetPersonID sets the "person_id" field.
-func (m *AuthenticationMutation) SetPersonID(u uuid.UUID) {
-	m.person = &u
+func (m *AuthenticationMutation) SetPersonID(t types.ID) {
+	m.person = &t
 }
 
 // PersonID returns the value of the "person_id" field in the mutation.
-func (m *AuthenticationMutation) PersonID() (r uuid.UUID, exists bool) {
+func (m *AuthenticationMutation) PersonID() (r types.ID, exists bool) {
 	v := m.person
 	if v == nil {
 		return
@@ -172,7 +174,7 @@ func (m *AuthenticationMutation) PersonID() (r uuid.UUID, exists bool) {
 // OldPersonID returns the old "person_id" field's value of the Authentication entity.
 // If the Authentication object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuthenticationMutation) OldPersonID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AuthenticationMutation) OldPersonID(ctx context.Context) (v types.ID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPersonID is only allowed on UpdateOne operations")
 	}
@@ -371,6 +373,104 @@ func (m *AuthenticationMutation) ResetLastUsedAt() {
 	m.last_used_at = nil
 }
 
+// SetLastPasswordChallengeAt sets the "last_password_challenge_at" field.
+func (m *AuthenticationMutation) SetLastPasswordChallengeAt(t time.Time) {
+	m.last_password_challenge_at = &t
+}
+
+// LastPasswordChallengeAt returns the value of the "last_password_challenge_at" field in the mutation.
+func (m *AuthenticationMutation) LastPasswordChallengeAt() (r time.Time, exists bool) {
+	v := m.last_password_challenge_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastPasswordChallengeAt returns the old "last_password_challenge_at" field's value of the Authentication entity.
+// If the Authentication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthenticationMutation) OldLastPasswordChallengeAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastPasswordChallengeAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastPasswordChallengeAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastPasswordChallengeAt: %w", err)
+	}
+	return oldValue.LastPasswordChallengeAt, nil
+}
+
+// ClearLastPasswordChallengeAt clears the value of the "last_password_challenge_at" field.
+func (m *AuthenticationMutation) ClearLastPasswordChallengeAt() {
+	m.last_password_challenge_at = nil
+	m.clearedFields[authentication.FieldLastPasswordChallengeAt] = struct{}{}
+}
+
+// LastPasswordChallengeAtCleared returns if the "last_password_challenge_at" field was cleared in this mutation.
+func (m *AuthenticationMutation) LastPasswordChallengeAtCleared() bool {
+	_, ok := m.clearedFields[authentication.FieldLastPasswordChallengeAt]
+	return ok
+}
+
+// ResetLastPasswordChallengeAt resets all changes to the "last_password_challenge_at" field.
+func (m *AuthenticationMutation) ResetLastPasswordChallengeAt() {
+	m.last_password_challenge_at = nil
+	delete(m.clearedFields, authentication.FieldLastPasswordChallengeAt)
+}
+
+// SetLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field.
+func (m *AuthenticationMutation) SetLastCaptchaChallengeAt(t time.Time) {
+	m.last_captcha_challenge_at = &t
+}
+
+// LastCaptchaChallengeAt returns the value of the "last_captcha_challenge_at" field in the mutation.
+func (m *AuthenticationMutation) LastCaptchaChallengeAt() (r time.Time, exists bool) {
+	v := m.last_captcha_challenge_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastCaptchaChallengeAt returns the old "last_captcha_challenge_at" field's value of the Authentication entity.
+// If the Authentication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthenticationMutation) OldLastCaptchaChallengeAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastCaptchaChallengeAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastCaptchaChallengeAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastCaptchaChallengeAt: %w", err)
+	}
+	return oldValue.LastCaptchaChallengeAt, nil
+}
+
+// ClearLastCaptchaChallengeAt clears the value of the "last_captcha_challenge_at" field.
+func (m *AuthenticationMutation) ClearLastCaptchaChallengeAt() {
+	m.last_captcha_challenge_at = nil
+	m.clearedFields[authentication.FieldLastCaptchaChallengeAt] = struct{}{}
+}
+
+// LastCaptchaChallengeAtCleared returns if the "last_captcha_challenge_at" field was cleared in this mutation.
+func (m *AuthenticationMutation) LastCaptchaChallengeAtCleared() bool {
+	_, ok := m.clearedFields[authentication.FieldLastCaptchaChallengeAt]
+	return ok
+}
+
+// ResetLastCaptchaChallengeAt resets all changes to the "last_captcha_challenge_at" field.
+func (m *AuthenticationMutation) ResetLastCaptchaChallengeAt() {
+	m.last_captcha_challenge_at = nil
+	delete(m.clearedFields, authentication.FieldLastCaptchaChallengeAt)
+}
+
 // ClearPerson clears the "person" edge to the Person entity.
 func (m *AuthenticationMutation) ClearPerson() {
 	m.clearedperson = true
@@ -385,7 +485,7 @@ func (m *AuthenticationMutation) PersonCleared() bool {
 // PersonIDs returns the "person" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PersonID instead. It exists only for internal usage by the builders.
-func (m *AuthenticationMutation) PersonIDs() (ids []uuid.UUID) {
+func (m *AuthenticationMutation) PersonIDs() (ids []types.ID) {
 	if id := m.person; id != nil {
 		ids = append(ids, *id)
 	}
@@ -432,7 +532,7 @@ func (m *AuthenticationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuthenticationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.person != nil {
 		fields = append(fields, authentication.FieldPersonID)
 	}
@@ -450,6 +550,12 @@ func (m *AuthenticationMutation) Fields() []string {
 	}
 	if m.last_used_at != nil {
 		fields = append(fields, authentication.FieldLastUsedAt)
+	}
+	if m.last_password_challenge_at != nil {
+		fields = append(fields, authentication.FieldLastPasswordChallengeAt)
+	}
+	if m.last_captcha_challenge_at != nil {
+		fields = append(fields, authentication.FieldLastCaptchaChallengeAt)
 	}
 	return fields
 }
@@ -471,6 +577,10 @@ func (m *AuthenticationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case authentication.FieldLastUsedAt:
 		return m.LastUsedAt()
+	case authentication.FieldLastPasswordChallengeAt:
+		return m.LastPasswordChallengeAt()
+	case authentication.FieldLastCaptchaChallengeAt:
+		return m.LastCaptchaChallengeAt()
 	}
 	return nil, false
 }
@@ -492,6 +602,10 @@ func (m *AuthenticationMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldCreatedAt(ctx)
 	case authentication.FieldLastUsedAt:
 		return m.OldLastUsedAt(ctx)
+	case authentication.FieldLastPasswordChallengeAt:
+		return m.OldLastPasswordChallengeAt(ctx)
+	case authentication.FieldLastCaptchaChallengeAt:
+		return m.OldLastCaptchaChallengeAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Authentication field %s", name)
 }
@@ -502,7 +616,7 @@ func (m *AuthenticationMutation) OldField(ctx context.Context, name string) (ent
 func (m *AuthenticationMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case authentication.FieldPersonID:
-		v, ok := value.(uuid.UUID)
+		v, ok := value.(types.ID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -543,6 +657,20 @@ func (m *AuthenticationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLastUsedAt(v)
 		return nil
+	case authentication.FieldLastPasswordChallengeAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastPasswordChallengeAt(v)
+		return nil
+	case authentication.FieldLastCaptchaChallengeAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastCaptchaChallengeAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Authentication field %s", name)
 }
@@ -572,7 +700,14 @@ func (m *AuthenticationMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AuthenticationMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(authentication.FieldLastPasswordChallengeAt) {
+		fields = append(fields, authentication.FieldLastPasswordChallengeAt)
+	}
+	if m.FieldCleared(authentication.FieldLastCaptchaChallengeAt) {
+		fields = append(fields, authentication.FieldLastCaptchaChallengeAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -585,6 +720,14 @@ func (m *AuthenticationMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AuthenticationMutation) ClearField(name string) error {
+	switch name {
+	case authentication.FieldLastPasswordChallengeAt:
+		m.ClearLastPasswordChallengeAt()
+		return nil
+	case authentication.FieldLastCaptchaChallengeAt:
+		m.ClearLastCaptchaChallengeAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Authentication nullable field %s", name)
 }
 
@@ -609,6 +752,12 @@ func (m *AuthenticationMutation) ResetField(name string) error {
 		return nil
 	case authentication.FieldLastUsedAt:
 		m.ResetLastUsedAt()
+		return nil
+	case authentication.FieldLastPasswordChallengeAt:
+		m.ResetLastPasswordChallengeAt()
+		return nil
+	case authentication.FieldLastCaptchaChallengeAt:
+		m.ResetLastCaptchaChallengeAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Authentication field %s", name)
@@ -693,12 +842,12 @@ type AuthorizationMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *uuid.UUID
+	id            *types.ID
 	token         *[]byte
 	kind          *authorization.Kind
 	created_at    *time.Time
 	clearedFields map[string]struct{}
-	person        *uuid.UUID
+	person        *types.ID
 	clearedperson bool
 	done          bool
 	oldValue      func(context.Context) (*Authorization, error)
@@ -725,7 +874,7 @@ func newAuthorizationMutation(c config, op Op, opts ...authorizationOption) *Aut
 }
 
 // withAuthorizationID sets the ID field of the mutation.
-func withAuthorizationID(id uuid.UUID) authorizationOption {
+func withAuthorizationID(id types.ID) authorizationOption {
 	return func(m *AuthorizationMutation) {
 		var (
 			err   error
@@ -777,13 +926,13 @@ func (m AuthorizationMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Authorization entities.
-func (m *AuthorizationMutation) SetID(id uuid.UUID) {
+func (m *AuthorizationMutation) SetID(id types.ID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *AuthorizationMutation) ID() (id uuid.UUID, exists bool) {
+func (m *AuthorizationMutation) ID() (id types.ID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -794,12 +943,12 @@ func (m *AuthorizationMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *AuthorizationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *AuthorizationMutation) IDs(ctx context.Context) ([]types.ID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uuid.UUID{id}, nil
+			return []types.ID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -810,12 +959,12 @@ func (m *AuthorizationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // SetPersonID sets the "person_id" field.
-func (m *AuthorizationMutation) SetPersonID(u uuid.UUID) {
-	m.person = &u
+func (m *AuthorizationMutation) SetPersonID(t types.ID) {
+	m.person = &t
 }
 
 // PersonID returns the value of the "person_id" field in the mutation.
-func (m *AuthorizationMutation) PersonID() (r uuid.UUID, exists bool) {
+func (m *AuthorizationMutation) PersonID() (r types.ID, exists bool) {
 	v := m.person
 	if v == nil {
 		return
@@ -826,7 +975,7 @@ func (m *AuthorizationMutation) PersonID() (r uuid.UUID, exists bool) {
 // OldPersonID returns the old "person_id" field's value of the Authorization entity.
 // If the Authorization object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuthorizationMutation) OldPersonID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AuthorizationMutation) OldPersonID(ctx context.Context) (v types.ID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPersonID is only allowed on UpdateOne operations")
 	}
@@ -967,7 +1116,7 @@ func (m *AuthorizationMutation) PersonCleared() bool {
 // PersonIDs returns the "person" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PersonID instead. It exists only for internal usage by the builders.
-func (m *AuthorizationMutation) PersonIDs() (ids []uuid.UUID) {
+func (m *AuthorizationMutation) PersonIDs() (ids []types.ID) {
 	if id := m.person; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1070,7 +1219,7 @@ func (m *AuthorizationMutation) OldField(ctx context.Context, name string) (ent.
 func (m *AuthorizationMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case authorization.FieldPersonID:
-		v, ok := value.(uuid.UUID)
+		v, ok := value.(types.ID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1241,7 +1390,7 @@ type PersonMutation struct {
 	config
 	op                     Op
 	typ                    string
-	id                     *uuid.UUID
+	id                     *types.ID
 	stripe_id              *string
 	email                  *string
 	email_verified_at      *time.Time
@@ -1261,11 +1410,11 @@ type PersonMutation struct {
 	created_at             *time.Time
 	updated_at             *time.Time
 	clearedFields          map[string]struct{}
-	authentications        map[uuid.UUID]struct{}
-	removedauthentications map[uuid.UUID]struct{}
+	authentications        map[types.ID]struct{}
+	removedauthentications map[types.ID]struct{}
 	clearedauthentications bool
-	authorizations         map[uuid.UUID]struct{}
-	removedauthorizations  map[uuid.UUID]struct{}
+	authorizations         map[types.ID]struct{}
+	removedauthorizations  map[types.ID]struct{}
 	clearedauthorizations  bool
 	done                   bool
 	oldValue               func(context.Context) (*Person, error)
@@ -1292,7 +1441,7 @@ func newPersonMutation(c config, op Op, opts ...personOption) *PersonMutation {
 }
 
 // withPersonID sets the ID field of the mutation.
-func withPersonID(id uuid.UUID) personOption {
+func withPersonID(id types.ID) personOption {
 	return func(m *PersonMutation) {
 		var (
 			err   error
@@ -1344,13 +1493,13 @@ func (m PersonMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Person entities.
-func (m *PersonMutation) SetID(id uuid.UUID) {
+func (m *PersonMutation) SetID(id types.ID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *PersonMutation) ID() (id uuid.UUID, exists bool) {
+func (m *PersonMutation) ID() (id types.ID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1361,12 +1510,12 @@ func (m *PersonMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *PersonMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *PersonMutation) IDs(ctx context.Context) ([]types.ID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uuid.UUID{id}, nil
+			return []types.ID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -2155,9 +2304,9 @@ func (m *PersonMutation) ResetUpdatedAt() {
 }
 
 // AddAuthenticationIDs adds the "authentications" edge to the Authentication entity by ids.
-func (m *PersonMutation) AddAuthenticationIDs(ids ...uuid.UUID) {
+func (m *PersonMutation) AddAuthenticationIDs(ids ...types.ID) {
 	if m.authentications == nil {
-		m.authentications = make(map[uuid.UUID]struct{})
+		m.authentications = make(map[types.ID]struct{})
 	}
 	for i := range ids {
 		m.authentications[ids[i]] = struct{}{}
@@ -2175,9 +2324,9 @@ func (m *PersonMutation) AuthenticationsCleared() bool {
 }
 
 // RemoveAuthenticationIDs removes the "authentications" edge to the Authentication entity by IDs.
-func (m *PersonMutation) RemoveAuthenticationIDs(ids ...uuid.UUID) {
+func (m *PersonMutation) RemoveAuthenticationIDs(ids ...types.ID) {
 	if m.removedauthentications == nil {
-		m.removedauthentications = make(map[uuid.UUID]struct{})
+		m.removedauthentications = make(map[types.ID]struct{})
 	}
 	for i := range ids {
 		delete(m.authentications, ids[i])
@@ -2186,7 +2335,7 @@ func (m *PersonMutation) RemoveAuthenticationIDs(ids ...uuid.UUID) {
 }
 
 // RemovedAuthentications returns the removed IDs of the "authentications" edge to the Authentication entity.
-func (m *PersonMutation) RemovedAuthenticationsIDs() (ids []uuid.UUID) {
+func (m *PersonMutation) RemovedAuthenticationsIDs() (ids []types.ID) {
 	for id := range m.removedauthentications {
 		ids = append(ids, id)
 	}
@@ -2194,7 +2343,7 @@ func (m *PersonMutation) RemovedAuthenticationsIDs() (ids []uuid.UUID) {
 }
 
 // AuthenticationsIDs returns the "authentications" edge IDs in the mutation.
-func (m *PersonMutation) AuthenticationsIDs() (ids []uuid.UUID) {
+func (m *PersonMutation) AuthenticationsIDs() (ids []types.ID) {
 	for id := range m.authentications {
 		ids = append(ids, id)
 	}
@@ -2209,9 +2358,9 @@ func (m *PersonMutation) ResetAuthentications() {
 }
 
 // AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by ids.
-func (m *PersonMutation) AddAuthorizationIDs(ids ...uuid.UUID) {
+func (m *PersonMutation) AddAuthorizationIDs(ids ...types.ID) {
 	if m.authorizations == nil {
-		m.authorizations = make(map[uuid.UUID]struct{})
+		m.authorizations = make(map[types.ID]struct{})
 	}
 	for i := range ids {
 		m.authorizations[ids[i]] = struct{}{}
@@ -2229,9 +2378,9 @@ func (m *PersonMutation) AuthorizationsCleared() bool {
 }
 
 // RemoveAuthorizationIDs removes the "authorizations" edge to the Authorization entity by IDs.
-func (m *PersonMutation) RemoveAuthorizationIDs(ids ...uuid.UUID) {
+func (m *PersonMutation) RemoveAuthorizationIDs(ids ...types.ID) {
 	if m.removedauthorizations == nil {
-		m.removedauthorizations = make(map[uuid.UUID]struct{})
+		m.removedauthorizations = make(map[types.ID]struct{})
 	}
 	for i := range ids {
 		delete(m.authorizations, ids[i])
@@ -2240,7 +2389,7 @@ func (m *PersonMutation) RemoveAuthorizationIDs(ids ...uuid.UUID) {
 }
 
 // RemovedAuthorizations returns the removed IDs of the "authorizations" edge to the Authorization entity.
-func (m *PersonMutation) RemovedAuthorizationsIDs() (ids []uuid.UUID) {
+func (m *PersonMutation) RemovedAuthorizationsIDs() (ids []types.ID) {
 	for id := range m.removedauthorizations {
 		ids = append(ids, id)
 	}
@@ -2248,7 +2397,7 @@ func (m *PersonMutation) RemovedAuthorizationsIDs() (ids []uuid.UUID) {
 }
 
 // AuthorizationsIDs returns the "authorizations" edge IDs in the mutation.
-func (m *PersonMutation) AuthorizationsIDs() (ids []uuid.UUID) {
+func (m *PersonMutation) AuthorizationsIDs() (ids []types.ID) {
 	for id := range m.authorizations {
 		ids = append(ids, id)
 	}

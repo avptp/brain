@@ -62,6 +62,46 @@ func (au *AuthenticationUpdate) SetLastUsedAt(t time.Time) *AuthenticationUpdate
 	return au
 }
 
+// SetLastPasswordChallengeAt sets the "last_password_challenge_at" field.
+func (au *AuthenticationUpdate) SetLastPasswordChallengeAt(t time.Time) *AuthenticationUpdate {
+	au.mutation.SetLastPasswordChallengeAt(t)
+	return au
+}
+
+// SetNillableLastPasswordChallengeAt sets the "last_password_challenge_at" field if the given value is not nil.
+func (au *AuthenticationUpdate) SetNillableLastPasswordChallengeAt(t *time.Time) *AuthenticationUpdate {
+	if t != nil {
+		au.SetLastPasswordChallengeAt(*t)
+	}
+	return au
+}
+
+// ClearLastPasswordChallengeAt clears the value of the "last_password_challenge_at" field.
+func (au *AuthenticationUpdate) ClearLastPasswordChallengeAt() *AuthenticationUpdate {
+	au.mutation.ClearLastPasswordChallengeAt()
+	return au
+}
+
+// SetLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field.
+func (au *AuthenticationUpdate) SetLastCaptchaChallengeAt(t time.Time) *AuthenticationUpdate {
+	au.mutation.SetLastCaptchaChallengeAt(t)
+	return au
+}
+
+// SetNillableLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field if the given value is not nil.
+func (au *AuthenticationUpdate) SetNillableLastCaptchaChallengeAt(t *time.Time) *AuthenticationUpdate {
+	if t != nil {
+		au.SetLastCaptchaChallengeAt(*t)
+	}
+	return au
+}
+
+// ClearLastCaptchaChallengeAt clears the value of the "last_captcha_challenge_at" field.
+func (au *AuthenticationUpdate) ClearLastCaptchaChallengeAt() *AuthenticationUpdate {
+	au.mutation.ClearLastCaptchaChallengeAt()
+	return au
+}
+
 // Mutation returns the AuthenticationMutation object of the builder.
 func (au *AuthenticationUpdate) Mutation() *AuthenticationMutation {
 	return au.mutation
@@ -138,6 +178,18 @@ func (au *AuthenticationUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := au.mutation.LastUsedAt(); ok {
 		_spec.SetField(authentication.FieldLastUsedAt, field.TypeTime, value)
 	}
+	if value, ok := au.mutation.LastPasswordChallengeAt(); ok {
+		_spec.SetField(authentication.FieldLastPasswordChallengeAt, field.TypeTime, value)
+	}
+	if au.mutation.LastPasswordChallengeAtCleared() {
+		_spec.ClearField(authentication.FieldLastPasswordChallengeAt, field.TypeTime)
+	}
+	if value, ok := au.mutation.LastCaptchaChallengeAt(); ok {
+		_spec.SetField(authentication.FieldLastCaptchaChallengeAt, field.TypeTime, value)
+	}
+	if au.mutation.LastCaptchaChallengeAtCleared() {
+		_spec.ClearField(authentication.FieldLastCaptchaChallengeAt, field.TypeTime)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{authentication.Label}
@@ -189,6 +241,46 @@ func (auo *AuthenticationUpdateOne) SetNillableLastUsedIP(s *string) *Authentica
 // SetLastUsedAt sets the "last_used_at" field.
 func (auo *AuthenticationUpdateOne) SetLastUsedAt(t time.Time) *AuthenticationUpdateOne {
 	auo.mutation.SetLastUsedAt(t)
+	return auo
+}
+
+// SetLastPasswordChallengeAt sets the "last_password_challenge_at" field.
+func (auo *AuthenticationUpdateOne) SetLastPasswordChallengeAt(t time.Time) *AuthenticationUpdateOne {
+	auo.mutation.SetLastPasswordChallengeAt(t)
+	return auo
+}
+
+// SetNillableLastPasswordChallengeAt sets the "last_password_challenge_at" field if the given value is not nil.
+func (auo *AuthenticationUpdateOne) SetNillableLastPasswordChallengeAt(t *time.Time) *AuthenticationUpdateOne {
+	if t != nil {
+		auo.SetLastPasswordChallengeAt(*t)
+	}
+	return auo
+}
+
+// ClearLastPasswordChallengeAt clears the value of the "last_password_challenge_at" field.
+func (auo *AuthenticationUpdateOne) ClearLastPasswordChallengeAt() *AuthenticationUpdateOne {
+	auo.mutation.ClearLastPasswordChallengeAt()
+	return auo
+}
+
+// SetLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field.
+func (auo *AuthenticationUpdateOne) SetLastCaptchaChallengeAt(t time.Time) *AuthenticationUpdateOne {
+	auo.mutation.SetLastCaptchaChallengeAt(t)
+	return auo
+}
+
+// SetNillableLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field if the given value is not nil.
+func (auo *AuthenticationUpdateOne) SetNillableLastCaptchaChallengeAt(t *time.Time) *AuthenticationUpdateOne {
+	if t != nil {
+		auo.SetLastCaptchaChallengeAt(*t)
+	}
+	return auo
+}
+
+// ClearLastCaptchaChallengeAt clears the value of the "last_captcha_challenge_at" field.
+func (auo *AuthenticationUpdateOne) ClearLastCaptchaChallengeAt() *AuthenticationUpdateOne {
+	auo.mutation.ClearLastCaptchaChallengeAt()
 	return auo
 }
 
@@ -297,6 +389,18 @@ func (auo *AuthenticationUpdateOne) sqlSave(ctx context.Context) (_node *Authent
 	}
 	if value, ok := auo.mutation.LastUsedAt(); ok {
 		_spec.SetField(authentication.FieldLastUsedAt, field.TypeTime, value)
+	}
+	if value, ok := auo.mutation.LastPasswordChallengeAt(); ok {
+		_spec.SetField(authentication.FieldLastPasswordChallengeAt, field.TypeTime, value)
+	}
+	if auo.mutation.LastPasswordChallengeAtCleared() {
+		_spec.ClearField(authentication.FieldLastPasswordChallengeAt, field.TypeTime)
+	}
+	if value, ok := auo.mutation.LastCaptchaChallengeAt(); ok {
+		_spec.SetField(authentication.FieldLastCaptchaChallengeAt, field.TypeTime, value)
+	}
+	if auo.mutation.LastCaptchaChallengeAtCleared() {
+		_spec.ClearField(authentication.FieldLastCaptchaChallengeAt, field.TypeTime)
 	}
 	_node = &Authentication{config: auo.config}
 	_spec.Assign = _node.assignValues

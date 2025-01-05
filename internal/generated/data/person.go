@@ -9,47 +9,47 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 // Person is the model entity for the Person schema.
 type Person struct {
-	config `fake:"-" json:"-"`
+	config `faker:"-" json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID types.ID `json:"id,omitempty"`
 	// StripeID holds the value of the "stripe_id" field.
 	StripeID *string `json:"stripe_id,omitempty"`
 	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty" fake:"{email}"`
+	Email string `json:"email,omitempty" faker:"email"`
 	// EmailVerifiedAt holds the value of the "email_verified_at" field.
-	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
+	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty" faker:"-"`
 	// Phone holds the value of the "phone" field.
-	Phone *string `json:"phone,omitempty" fake:"{phone_e164}"`
+	Phone *string `json:"phone,omitempty" faker:"phone"`
 	// Password holds the value of the "password" field.
-	Password string `fake:"-" json:"-"`
+	Password string `faker:"-" json:"-"`
 	// TaxID holds the value of the "tax_id" field.
-	TaxID string `json:"tax_id,omitempty" fake:"{tax_id}"`
+	TaxID string `json:"tax_id,omitempty" faker:"tax_id"`
 	// FirstName holds the value of the "first_name" field.
-	FirstName string `json:"first_name,omitempty" fake:"{firstname}"`
+	FirstName string `json:"first_name,omitempty" faker:"first_name"`
 	// LastName holds the value of the "last_name" field.
-	LastName *string `json:"last_name,omitempty" fake:"{lastname}"`
+	LastName *string `json:"last_name,omitempty" faker:"last_name"`
 	// Language holds the value of the "language" field.
-	Language string `json:"language,omitempty" fake:"{randomstring:[ca,es,en]}"`
+	Language string `json:"language,omitempty" faker:"oneof:ca,en,es"`
 	// Birthdate holds the value of the "birthdate" field.
-	Birthdate *time.Time `json:"birthdate,omitempty" fake:"{date}"`
+	Birthdate *time.Time `json:"birthdate,omitempty" faker:"birthdate"`
 	// Gender holds the value of the "gender" field.
-	Gender *person.Gender `json:"gender,omitempty" fake:"{randomstring:[woman,man,nonbinary]}"`
+	Gender *person.Gender `json:"gender,omitempty" faker:"oneof:woman,man,nonbinary"`
 	// Address holds the value of the "address" field.
-	Address *string `json:"address,omitempty" fake:"{street}"`
+	Address *string `json:"address,omitempty" faker:"address"`
 	// PostalCode holds the value of the "postal_code" field.
-	PostalCode *string `json:"postal_code,omitempty" fake:"{zip}"`
+	PostalCode *string `json:"postal_code,omitempty" faker:"postal_code"`
 	// City holds the value of the "city" field.
-	City *string `json:"city,omitempty" fake:"{city}"`
+	City *string `json:"city,omitempty" faker:"city"`
 	// Country holds the value of the "country" field.
-	Country *string `json:"country,omitempty" fake:"{countryabr}"`
+	Country *string `json:"country,omitempty" faker:"country"`
 	// Subscribed holds the value of the "subscribed" field.
-	Subscribed bool `json:"subscribed,omitempty"`
+	Subscribed bool `json:"subscribed,omitempty" faker:"-"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -106,7 +106,7 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 		case person.FieldEmailVerifiedAt, person.FieldBirthdate, person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case person.FieldID:
-			values[i] = new(uuid.UUID)
+			values[i] = new(types.ID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -123,7 +123,7 @@ func (pe *Person) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case person.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*types.ID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				pe.ID = *value

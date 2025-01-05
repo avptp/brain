@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 type ApplyEmailAuthorizationInput struct {
@@ -16,7 +16,7 @@ type ApplyEmailAuthorizationInput struct {
 }
 
 type ApplyEmailAuthorizationPayload struct {
-	AuthorizationID uuid.UUID `json:"authorizationId"`
+	AuthorizationID types.ID `json:"authorizationId"`
 }
 
 type ApplyPasswordAuthorizationInput struct {
@@ -25,7 +25,7 @@ type ApplyPasswordAuthorizationInput struct {
 }
 
 type ApplyPasswordAuthorizationPayload struct {
-	AuthorizationID uuid.UUID `json:"authorizationId"`
+	AuthorizationID types.ID `json:"authorizationId"`
 }
 
 type CreateAuthenticationInput struct {
@@ -46,7 +46,7 @@ type CreateBillingPortalSessionPayload struct {
 }
 
 type CreateEmailAuthorizationInput struct {
-	PersonID uuid.UUID `json:"personId"`
+	PersonID types.ID `json:"personId"`
 }
 
 type CreateEmailAuthorizationPayload struct {
@@ -77,27 +77,44 @@ type CreatePersonPayload struct {
 }
 
 type DeleteAuthenticationInput struct {
-	ID uuid.UUID `json:"id"`
+	ID types.ID `json:"id"`
 }
 
 type DeleteAuthenticationPayload struct {
-	AuthenticationID uuid.UUID `json:"authenticationId"`
+	AuthenticationID types.ID `json:"authenticationId"`
 }
 
 type DeletePersonInput struct {
-	ID              uuid.UUID `json:"id"`
-	CurrentPassword string    `json:"currentPassword"`
-	Captcha         string    `json:"captcha"`
+	ID types.ID `json:"id"`
 }
 
 type DeletePersonPayload struct {
-	PersonID uuid.UUID `json:"personId"`
+	PersonID types.ID `json:"personId"`
+}
+
+type PassAuthenticationCaptchaChallengeInput struct {
+	ID      types.ID `json:"id"`
+	Captcha string   `json:"captcha"`
+}
+
+type PassAuthenticationCaptchaChallengePayload struct {
+	Success bool `json:"success"`
+}
+
+type PassAuthenticationPasswordChallengeInput struct {
+	ID       types.ID `json:"id"`
+	Password string   `json:"password"`
+}
+
+type PassAuthenticationPasswordChallengePayload struct {
+	Success bool `json:"success"`
 }
 
 type UpdatePersonInput struct {
-	ID         uuid.UUID                         `json:"id"`
+	ID         types.ID                          `json:"id"`
 	Email      graphql.Omittable[*string]        `json:"email,omitempty"`
 	Phone      graphql.Omittable[*string]        `json:"phone,omitempty"`
+	Password   graphql.Omittable[*string]        `json:"password,omitempty"`
 	TaxID      graphql.Omittable[*string]        `json:"taxId,omitempty"`
 	FirstName  graphql.Omittable[*string]        `json:"firstName,omitempty"`
 	LastName   graphql.Omittable[*string]        `json:"lastName,omitempty"`
@@ -108,17 +125,6 @@ type UpdatePersonInput struct {
 	PostalCode graphql.Omittable[*string]        `json:"postalCode,omitempty"`
 	City       graphql.Omittable[*string]        `json:"city,omitempty"`
 	Country    graphql.Omittable[*string]        `json:"country,omitempty"`
-}
-
-type UpdatePersonPasswordInput struct {
-	ID              uuid.UUID `json:"id"`
-	CurrentPassword string    `json:"currentPassword"`
-	NewPassword     string    `json:"newPassword"`
-	Captcha         string    `json:"captcha"`
-}
-
-type UpdatePersonPasswordPayload struct {
-	Person *data.Person `json:"person"`
 }
 
 type UpdatePersonPayload struct {

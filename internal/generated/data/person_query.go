@@ -13,11 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 // PersonQuery is the builder for querying Person entities.
@@ -137,8 +137,8 @@ func (pq *PersonQuery) FirstX(ctx context.Context) *Person {
 
 // FirstID returns the first Person ID from the query.
 // Returns a *NotFoundError when no Person ID was found.
-func (pq *PersonQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (pq *PersonQuery) FirstID(ctx context.Context) (id types.ID, err error) {
+	var ids []types.ID
 	if ids, err = pq.Limit(1).IDs(setContextOp(ctx, pq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -150,7 +150,7 @@ func (pq *PersonQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pq *PersonQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (pq *PersonQuery) FirstIDX(ctx context.Context) types.ID {
 	id, err := pq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -188,8 +188,8 @@ func (pq *PersonQuery) OnlyX(ctx context.Context) *Person {
 // OnlyID is like Only, but returns the only Person ID in the query.
 // Returns a *NotSingularError when more than one Person ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pq *PersonQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (pq *PersonQuery) OnlyID(ctx context.Context) (id types.ID, err error) {
+	var ids []types.ID
 	if ids, err = pq.Limit(2).IDs(setContextOp(ctx, pq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -205,7 +205,7 @@ func (pq *PersonQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pq *PersonQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (pq *PersonQuery) OnlyIDX(ctx context.Context) types.ID {
 	id, err := pq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -233,7 +233,7 @@ func (pq *PersonQuery) AllX(ctx context.Context) []*Person {
 }
 
 // IDs executes the query and returns a list of Person IDs.
-func (pq *PersonQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+func (pq *PersonQuery) IDs(ctx context.Context) (ids []types.ID, err error) {
 	if pq.ctx.Unique == nil && pq.path != nil {
 		pq.Unique(true)
 	}
@@ -245,7 +245,7 @@ func (pq *PersonQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pq *PersonQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (pq *PersonQuery) IDsX(ctx context.Context) []types.ID {
 	ids, err := pq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -483,7 +483,7 @@ func (pq *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 
 func (pq *PersonQuery) loadAuthentications(ctx context.Context, query *AuthenticationQuery, nodes []*Person, init func(*Person), assign func(*Person, *Authentication)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Person)
+	nodeids := make(map[types.ID]*Person)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -513,7 +513,7 @@ func (pq *PersonQuery) loadAuthentications(ctx context.Context, query *Authentic
 }
 func (pq *PersonQuery) loadAuthorizations(ctx context.Context, query *AuthorizationQuery, nodes []*Person, init func(*Person), assign func(*Person, *Authorization)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Person)
+	nodeids := make(map[types.ID]*Person)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]

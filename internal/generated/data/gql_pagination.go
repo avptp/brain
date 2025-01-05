@@ -11,17 +11,17 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Common entgql types.
 type (
-	Cursor         = entgql.Cursor[uuid.UUID]
-	PageInfo       = entgql.PageInfo[uuid.UUID]
+	Cursor         = entgql.Cursor[types.ID]
+	PageInfo       = entgql.PageInfo[types.ID]
 	OrderDirection = entgql.OrderDirection
 )
 

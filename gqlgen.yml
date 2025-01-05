@@ -22,12 +22,15 @@ autobind:
 
 models:
   ID:
-    model: github.com/avptp/brain/internal/api/types.ID
+    model:
+      - github.com/avptp/brain/internal/api/types.ID
   Person:
     fields:
       authentications:
         resolver: true
   Gender:
-    model: github.com/avptp/brain/internal/generated/data/person.Gender
+    model:
+      - github.com/avptp/brain/internal/generated/data/person.Gender
   AuthorizationKind:
-    model: github.com/avptp/brain/internal/generated/data/authorization.Kind
+    model:
+      - github.com/avptp/brain/internal/generated/data/authorization.Kind

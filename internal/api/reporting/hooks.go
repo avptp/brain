@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent/privacy"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/config"
 	"github.com/avptp/brain/internal/generated/data"
-	"github.com/oklog/ulid/v2"
 	"github.com/stoewer/go-strcase"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -42,13 +42,9 @@ func NewErrorPresenter(cfg *config.Config) graphql.ErrorPresenterFunc {
 				err.Extensions["field"] = fields[1]
 			}
 		case
-			errors.Is(err, ulid.ErrDataSize),
-			errors.Is(err, ulid.ErrInvalidCharacters),
-			errors.Is(err, ulid.ErrBufferSize),
-			errors.Is(err, ulid.ErrBigTime),
-			errors.Is(err, ulid.ErrOverflow),
-			errors.Is(err, ulid.ErrMonotonicOverflow),
-			errors.Is(err, ulid.ErrScanValue):
+			errors.Is(err, types.ErrIDSize),
+			errors.Is(err, types.ErrIDInvalidCharacters),
+			errors.Is(err, types.ErrIDScanType):
 			err = ErrInput
 		case data.IsNotFound(err):
 			err = ErrNotFound

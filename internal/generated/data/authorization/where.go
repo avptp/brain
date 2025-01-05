@@ -7,57 +7,57 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uuid.UUID) predicate.Authorization {
+func ID(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uuid.UUID) predicate.Authorization {
+func IDEQ(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uuid.UUID) predicate.Authorization {
+func IDNEQ(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uuid.UUID) predicate.Authorization {
+func IDIn(ids ...types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uuid.UUID) predicate.Authorization {
+func IDNotIn(ids ...types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uuid.UUID) predicate.Authorization {
+func IDGT(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uuid.UUID) predicate.Authorization {
+func IDGTE(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uuid.UUID) predicate.Authorization {
+func IDLT(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uuid.UUID) predicate.Authorization {
+func IDLTE(id types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldLTE(FieldID, id))
 }
 
 // PersonID applies equality check predicate on the "person_id" field. It's identical to PersonIDEQ.
-func PersonID(v uuid.UUID) predicate.Authorization {
+func PersonID(v types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldEQ(FieldPersonID, v))
 }
 
@@ -72,22 +72,22 @@ func CreatedAt(v time.Time) predicate.Authorization {
 }
 
 // PersonIDEQ applies the EQ predicate on the "person_id" field.
-func PersonIDEQ(v uuid.UUID) predicate.Authorization {
+func PersonIDEQ(v types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldEQ(FieldPersonID, v))
 }
 
 // PersonIDNEQ applies the NEQ predicate on the "person_id" field.
-func PersonIDNEQ(v uuid.UUID) predicate.Authorization {
+func PersonIDNEQ(v types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldNEQ(FieldPersonID, v))
 }
 
 // PersonIDIn applies the In predicate on the "person_id" field.
-func PersonIDIn(vs ...uuid.UUID) predicate.Authorization {
+func PersonIDIn(vs ...types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldIn(FieldPersonID, vs...))
 }
 
 // PersonIDNotIn applies the NotIn predicate on the "person_id" field.
-func PersonIDNotIn(vs ...uuid.UUID) predicate.Authorization {
+func PersonIDNotIn(vs ...types.ID) predicate.Authorization {
 	return predicate.Authorization(sql.FieldNotIn(FieldPersonID, vs...))
 }
 

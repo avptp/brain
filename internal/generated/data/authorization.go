@@ -3,29 +3,29 @@
 package data
 
 import (
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/avptp/brain/internal/api/types"
+	"github.com/avptp/brain/internal/encoding"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 // Authorization is the model entity for the Authorization schema.
 type Authorization struct {
-	config `fake:"-" fakesize:"-" json:"-"`
+	config `faker:"-" json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID types.ID `json:"id,omitempty"`
 	// PersonID holds the value of the "person_id" field.
-	PersonID uuid.UUID `json:"person_id,omitempty"`
+	PersonID types.ID `json:"person_id,omitempty"`
 	// Token holds the value of the "token" field.
-	Token []byte `json:"token,omitempty" fakesize:"64"`
+	Token []byte `json:"token,omitempty" faker:"slice_len=64"`
 	// Kind holds the value of the "kind" field.
-	Kind authorization.Kind `json:"kind,omitempty" fake:"{randomstring:[email,password]}"`
+	Kind authorization.Kind `json:"kind,omitempty" faker:"oneof:email,password"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -68,7 +68,7 @@ func (*Authorization) scanValues(columns []string) ([]any, error) {
 		case authorization.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case authorization.FieldID, authorization.FieldPersonID:
-			values[i] = new(uuid.UUID)
+			values[i] = new(types.ID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -85,13 +85,13 @@ func (a *Authorization) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case authorization.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*types.ID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				a.ID = *value
 			}
 		case authorization.FieldPersonID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*types.ID); !ok {
 				return fmt.Errorf("unexpected type %T for field person_id", values[i])
 			} else if value != nil {
 				a.PersonID = *value
@@ -171,7 +171,7 @@ func (a *Authorization) String() string {
 }
 
 func (a *Authorization) TokenEncoded() string {
-	return base64.URLEncoding.EncodeToString(a.Token)
+	return encoding.Base32.EncodeToString(a.Token)
 }
 
 // Authorizations is a parsable slice of Authorization.

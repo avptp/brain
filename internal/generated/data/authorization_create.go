@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 // AuthorizationCreate is the builder for creating a Authorization entity.
@@ -23,8 +23,8 @@ type AuthorizationCreate struct {
 }
 
 // SetPersonID sets the "person_id" field.
-func (ac *AuthorizationCreate) SetPersonID(u uuid.UUID) *AuthorizationCreate {
-	ac.mutation.SetPersonID(u)
+func (ac *AuthorizationCreate) SetPersonID(t types.ID) *AuthorizationCreate {
+	ac.mutation.SetPersonID(t)
 	return ac
 }
 
@@ -55,8 +55,8 @@ func (ac *AuthorizationCreate) SetNillableCreatedAt(t *time.Time) *Authorization
 }
 
 // SetID sets the "id" field.
-func (ac *AuthorizationCreate) SetID(u uuid.UUID) *AuthorizationCreate {
-	ac.mutation.SetID(u)
+func (ac *AuthorizationCreate) SetID(t types.ID) *AuthorizationCreate {
+	ac.mutation.SetID(t)
 	return ac
 }
 
@@ -149,7 +149,7 @@ func (ac *AuthorizationCreate) sqlSave(ctx context.Context) (*Authorization, err
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+		if id, ok := _spec.ID.Value.(*types.ID); ok {
 			_node.ID = *id
 		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
 			return nil, err

@@ -8,10 +8,10 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
 )
 
@@ -43,7 +43,7 @@ type NodeOption func(*nodeOptions)
 // WithNodeType sets the node Type resolver function (i.e. the table to query).
 // If was not provided, the table will be derived from the universal-id
 // configuration as described in: https://entgo.io/docs/migrate/#universal-ids.
-func WithNodeType(f func(context.Context, uuid.UUID) (string, error)) NodeOption {
+func WithNodeType(f func(context.Context, types.ID) (string, error)) NodeOption {
 	return func(o *nodeOptions) {
 		o.nodeType = f
 	}
@@ -51,13 +51,13 @@ func WithNodeType(f func(context.Context, uuid.UUID) (string, error)) NodeOption
 
 // WithFixedNodeType sets the Type of the node to a fixed value.
 func WithFixedNodeType(t string) NodeOption {
-	return WithNodeType(func(context.Context, uuid.UUID) (string, error) {
+	return WithNodeType(func(context.Context, types.ID) (string, error) {
 		return t, nil
 	})
 }
 
 type nodeOptions struct {
-	nodeType func(context.Context, uuid.UUID) (string, error)
+	nodeType func(context.Context, types.ID) (string, error)
 }
 
 func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
@@ -66,7 +66,7 @@ func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
 		opt(nopts)
 	}
 	if nopts.nodeType == nil {
-		nopts.nodeType = func(ctx context.Context, id uuid.UUID) (string, error) {
+		nopts.nodeType = func(ctx context.Context, id types.ID) (string, error) {
 			return "", fmt.Errorf("cannot resolve noder (%v) without its type", id)
 		}
 	}
@@ -78,7 +78,7 @@ func (c *Client) newNodeOpts(opts []NodeOption) *nodeOptions {
 //
 //	c.Noder(ctx, id)
 //	c.Noder(ctx, id, ent.WithNodeType(typeResolver))
-func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_ Noder, err error) {
+func (c *Client) Noder(ctx context.Context, id types.ID, opts ...NodeOption) (_ Noder, err error) {
 	defer func() {
 		if IsNotFound(err) {
 			err = multierror.Append(err, entgql.ErrNodeNotFound(id))
@@ -91,11 +91,15 @@ func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_
 	return c.noder(ctx, table, id)
 }
 
-func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, error) {
+func (c *Client) noder(ctx context.Context, table string, id types.ID) (Noder, error) {
 	switch table {
 	case authentication.Table:
+		var uid types.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
 		query := c.Authentication.Query().
-			Where(authentication.ID(id))
+			Where(authentication.ID(uid))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, authenticationImplementors...); err != nil {
 				return nil, err
@@ -103,8 +107,12 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		}
 		return query.Only(ctx)
 	case authorization.Table:
+		var uid types.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
 		query := c.Authorization.Query().
-			Where(authorization.ID(id))
+			Where(authorization.ID(uid))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, authorizationImplementors...); err != nil {
 				return nil, err
@@ -112,8 +120,12 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		}
 		return query.Only(ctx)
 	case person.Table:
+		var uid types.ID
+		if err := uid.UnmarshalGQL(id); err != nil {
+			return nil, err
+		}
 		query := c.Person.Query().
-			Where(person.ID(id))
+			Where(person.ID(uid))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, personImplementors...); err != nil {
 				return nil, err
@@ -125,7 +137,7 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 	}
 }
 
-func (c *Client) Noders(ctx context.Context, ids []uuid.UUID, opts ...NodeOption) ([]Noder, error) {
+func (c *Client) Noders(ctx context.Context, ids []types.ID, opts ...NodeOption) ([]Noder, error) {
 	switch len(ids) {
 	case 1:
 		noder, err := c.Noder(ctx, ids[0], opts...)
@@ -139,8 +151,8 @@ func (c *Client) Noders(ctx context.Context, ids []uuid.UUID, opts ...NodeOption
 
 	noders := make([]Noder, len(ids))
 	errors := make([]error, len(ids))
-	tables := make(map[string][]uuid.UUID)
-	id2idx := make(map[uuid.UUID][]int, len(ids))
+	tables := make(map[string][]types.ID)
+	id2idx := make(map[types.ID][]int, len(ids))
 	nopts := c.newNodeOpts(opts)
 	for i, id := range ids {
 		table, err := nopts.nodeType(ctx, id)
@@ -186,9 +198,9 @@ func (c *Client) Noders(ctx context.Context, ids []uuid.UUID, opts ...NodeOption
 	return noders, nil
 }
 
-func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]Noder, error) {
+func (c *Client) noders(ctx context.Context, table string, ids []types.ID) ([]Noder, error) {
 	noders := make([]Noder, len(ids))
-	idmap := make(map[uuid.UUID][]*Noder, len(ids))
+	idmap := make(map[types.ID][]*Noder, len(ids))
 	for i, id := range ids {
 		idmap[id] = append(idmap[id], &noders[i])
 	}

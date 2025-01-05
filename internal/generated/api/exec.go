@@ -19,7 +19,6 @@ import (
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -123,18 +122,19 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ApplyEmailAuthorization      func(childComplexity int, input ApplyEmailAuthorizationInput) int
-		ApplyPasswordAuthorization   func(childComplexity int, input ApplyPasswordAuthorizationInput) int
-		CreateAuthentication         func(childComplexity int, input CreateAuthenticationInput) int
-		CreateBillingCheckoutSession func(childComplexity int) int
-		CreateBillingPortalSession   func(childComplexity int) int
-		CreateEmailAuthorization     func(childComplexity int, input CreateEmailAuthorizationInput) int
-		CreatePasswordAuthorization  func(childComplexity int, input CreatePasswordAuthorizationInput) int
-		CreatePerson                 func(childComplexity int, input CreatePersonInput) int
-		DeleteAuthentication         func(childComplexity int, input DeleteAuthenticationInput) int
-		DeletePerson                 func(childComplexity int, input DeletePersonInput) int
-		UpdatePerson                 func(childComplexity int, input UpdatePersonInput) int
-		UpdatePersonPassword         func(childComplexity int, input UpdatePersonPasswordInput) int
+		ApplyEmailAuthorization             func(childComplexity int, input ApplyEmailAuthorizationInput) int
+		ApplyPasswordAuthorization          func(childComplexity int, input ApplyPasswordAuthorizationInput) int
+		CreateAuthentication                func(childComplexity int, input CreateAuthenticationInput) int
+		CreateBillingCheckoutSession        func(childComplexity int) int
+		CreateBillingPortalSession          func(childComplexity int) int
+		CreateEmailAuthorization            func(childComplexity int, input CreateEmailAuthorizationInput) int
+		CreatePasswordAuthorization         func(childComplexity int, input CreatePasswordAuthorizationInput) int
+		CreatePerson                        func(childComplexity int, input CreatePersonInput) int
+		DeleteAuthentication                func(childComplexity int, input DeleteAuthenticationInput) int
+		DeletePerson                        func(childComplexity int, input DeletePersonInput) int
+		PassAuthenticationCaptchaChallenge  func(childComplexity int, input PassAuthenticationCaptchaChallengeInput) int
+		PassAuthenticationPasswordChallenge func(childComplexity int, input PassAuthenticationPasswordChallengeInput) int
+		UpdatePerson                        func(childComplexity int, input UpdatePersonInput) int
 	}
 
 	PageInfo struct {
@@ -144,9 +144,17 @@ type ComplexityRoot struct {
 		StartCursor     func(childComplexity int) int
 	}
 
+	PassAuthenticationCaptchaChallengePayload struct {
+		Success func(childComplexity int) int
+	}
+
+	PassAuthenticationPasswordChallengePayload struct {
+		Success func(childComplexity int) int
+	}
+
 	Person struct {
 		Address         func(childComplexity int) int
-		Authentications func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int) int
+		Authentications func(childComplexity int, after *entgql.Cursor[types.ID], first *int, before *entgql.Cursor[types.ID], last *int) int
 		Birthdate       func(childComplexity int) int
 		City            func(childComplexity int) int
 		Country         func(childComplexity int) int
@@ -169,10 +177,6 @@ type ComplexityRoot struct {
 		Viewer func(childComplexity int) int
 	}
 
-	UpdatePersonPasswordPayload struct {
-		Person func(childComplexity int) int
-	}
-
 	UpdatePersonPayload struct {
 		Person func(childComplexity int) int
 	}
@@ -180,6 +184,8 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateAuthentication(ctx context.Context, input CreateAuthenticationInput) (*CreateAuthenticationPayload, error)
+	PassAuthenticationPasswordChallenge(ctx context.Context, input PassAuthenticationPasswordChallengeInput) (*PassAuthenticationPasswordChallengePayload, error)
+	PassAuthenticationCaptchaChallenge(ctx context.Context, input PassAuthenticationCaptchaChallengeInput) (*PassAuthenticationCaptchaChallengePayload, error)
 	DeleteAuthentication(ctx context.Context, input DeleteAuthenticationInput) (*DeleteAuthenticationPayload, error)
 	CreateEmailAuthorization(ctx context.Context, input CreateEmailAuthorizationInput) (*CreateEmailAuthorizationPayload, error)
 	ApplyEmailAuthorization(ctx context.Context, input ApplyEmailAuthorizationInput) (*ApplyEmailAuthorizationPayload, error)
@@ -189,11 +195,10 @@ type MutationResolver interface {
 	CreateBillingPortalSession(ctx context.Context) (*CreateBillingPortalSessionPayload, error)
 	CreatePerson(ctx context.Context, input CreatePersonInput) (*CreatePersonPayload, error)
 	UpdatePerson(ctx context.Context, input UpdatePersonInput) (*UpdatePersonPayload, error)
-	UpdatePersonPassword(ctx context.Context, input UpdatePersonPasswordInput) (*UpdatePersonPasswordPayload, error)
 	DeletePerson(ctx context.Context, input DeletePersonInput) (*DeletePersonPayload, error)
 }
 type PersonResolver interface {
-	Authentications(ctx context.Context, obj *data.Person, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int) (*data.AuthenticationConnection, error)
+	Authentications(ctx context.Context, obj *data.Person, after *entgql.Cursor[types.ID], first *int, before *entgql.Cursor[types.ID], last *int) (*data.AuthenticationConnection, error)
 }
 type QueryResolver interface {
 	Viewer(ctx context.Context) (*data.Person, error)
@@ -517,6 +522,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeletePerson(childComplexity, args["input"].(DeletePersonInput)), true
 
+	case "Mutation.passAuthenticationCaptchaChallenge":
+		if e.complexity.Mutation.PassAuthenticationCaptchaChallenge == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_passAuthenticationCaptchaChallenge_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PassAuthenticationCaptchaChallenge(childComplexity, args["input"].(PassAuthenticationCaptchaChallengeInput)), true
+
+	case "Mutation.passAuthenticationPasswordChallenge":
+		if e.complexity.Mutation.PassAuthenticationPasswordChallenge == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_passAuthenticationPasswordChallenge_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PassAuthenticationPasswordChallenge(childComplexity, args["input"].(PassAuthenticationPasswordChallengeInput)), true
+
 	case "Mutation.updatePerson":
 		if e.complexity.Mutation.UpdatePerson == nil {
 			break
@@ -528,18 +557,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdatePerson(childComplexity, args["input"].(UpdatePersonInput)), true
-
-	case "Mutation.updatePersonPassword":
-		if e.complexity.Mutation.UpdatePersonPassword == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updatePersonPassword_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdatePersonPassword(childComplexity, args["input"].(UpdatePersonPasswordInput)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -569,6 +586,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
 
+	case "PassAuthenticationCaptchaChallengePayload.success":
+		if e.complexity.PassAuthenticationCaptchaChallengePayload.Success == nil {
+			break
+		}
+
+		return e.complexity.PassAuthenticationCaptchaChallengePayload.Success(childComplexity), true
+
+	case "PassAuthenticationPasswordChallengePayload.success":
+		if e.complexity.PassAuthenticationPasswordChallengePayload.Success == nil {
+			break
+		}
+
+		return e.complexity.PassAuthenticationPasswordChallengePayload.Success(childComplexity), true
+
 	case "Person.address":
 		if e.complexity.Person.Address == nil {
 			break
@@ -586,7 +617,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Person.Authentications(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["before"].(*entgql.Cursor[uuid.UUID]), args["last"].(*int)), true
+		return e.complexity.Person.Authentications(childComplexity, args["after"].(*entgql.Cursor[types.ID]), args["first"].(*int), args["before"].(*entgql.Cursor[types.ID]), args["last"].(*int)), true
 
 	case "Person.birthdate":
 		if e.complexity.Person.Birthdate == nil {
@@ -707,13 +738,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Viewer(childComplexity), true
 
-	case "UpdatePersonPasswordPayload.person":
-		if e.complexity.UpdatePersonPasswordPayload.Person == nil {
-			break
-		}
-
-		return e.complexity.UpdatePersonPasswordPayload.Person(childComplexity), true
-
 	case "UpdatePersonPayload.person":
 		if e.complexity.UpdatePersonPayload.Person == nil {
 			break
@@ -737,8 +761,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreatePersonInput,
 		ec.unmarshalInputDeleteAuthenticationInput,
 		ec.unmarshalInputDeletePersonInput,
+		ec.unmarshalInputPassAuthenticationCaptchaChallengeInput,
+		ec.unmarshalInputPassAuthenticationPasswordChallengeInput,
 		ec.unmarshalInputUpdatePersonInput,
-		ec.unmarshalInputUpdatePersonPasswordInput,
 	)
 	first := true
 
@@ -869,6 +894,32 @@ input CreateAuthenticationInput {
 
 type CreateAuthenticationPayload {
     token: String!
+}
+
+extend type Mutation {
+    passAuthenticationPasswordChallenge(input: PassAuthenticationPasswordChallengeInput!): PassAuthenticationPasswordChallengePayload
+}
+
+input PassAuthenticationPasswordChallengeInput {
+    id: ID!
+    password: String!
+}
+
+type PassAuthenticationPasswordChallengePayload {
+    success: Boolean!
+}
+
+extend type Mutation {
+    passAuthenticationCaptchaChallenge(input: PassAuthenticationCaptchaChallengeInput!): PassAuthenticationCaptchaChallengePayload
+}
+
+input PassAuthenticationCaptchaChallengeInput {
+    id: ID!
+    captcha: String!
+}
+
+type PassAuthenticationCaptchaChallengePayload {
+    success: Boolean!
 }
 
 extend type Mutation {
@@ -1051,6 +1102,7 @@ input UpdatePersonInput {
     id: ID!
     email: String
     phone: String
+    password: String
     taxId: String
     firstName: String
     lastName: String
@@ -1068,28 +1120,11 @@ type UpdatePersonPayload {
 }
 
 extend type Mutation {
-    updatePersonPassword(input: UpdatePersonPasswordInput!): UpdatePersonPasswordPayload
-}
-
-input UpdatePersonPasswordInput {
-    id: ID!
-    currentPassword: String!
-    newPassword: String!
-    captcha: String!
-}
-
-type UpdatePersonPasswordPayload {
-    person: Person!
-}
-
-extend type Mutation {
     deletePerson(input: DeletePersonInput!): DeletePersonPayload
 }
 
 input DeletePersonInput {
     id: ID!
-    currentPassword: String!
-    captcha: String!
 }
 
 type DeletePersonPayload {
@@ -1327,31 +1362,59 @@ func (ec *executionContext) field_Mutation_deletePerson_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_updatePersonPassword_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_passAuthenticationCaptchaChallenge_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Mutation_updatePersonPassword_argsInput(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_passAuthenticationCaptchaChallenge_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
 	args["input"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_updatePersonPassword_argsInput(
+func (ec *executionContext) field_Mutation_passAuthenticationCaptchaChallenge_argsInput(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (UpdatePersonPasswordInput, error) {
+) (PassAuthenticationCaptchaChallengeInput, error) {
 	if _, ok := rawArgs["input"]; !ok {
-		var zeroVal UpdatePersonPasswordInput
+		var zeroVal PassAuthenticationCaptchaChallengeInput
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNUpdatePersonPasswordInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐUpdatePersonPasswordInput(ctx, tmp)
+		return ec.unmarshalNPassAuthenticationCaptchaChallengeInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationCaptchaChallengeInput(ctx, tmp)
 	}
 
-	var zeroVal UpdatePersonPasswordInput
+	var zeroVal PassAuthenticationCaptchaChallengeInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_passAuthenticationPasswordChallenge_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_passAuthenticationPasswordChallenge_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_passAuthenticationPasswordChallenge_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (PassAuthenticationPasswordChallengeInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal PassAuthenticationPasswordChallengeInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNPassAuthenticationPasswordChallengeInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationPasswordChallengeInput(ctx, tmp)
+	}
+
+	var zeroVal PassAuthenticationPasswordChallengeInput
 	return zeroVal, nil
 }
 
@@ -1411,9 +1474,9 @@ func (ec *executionContext) field_Person_authentications_args(ctx context.Contex
 func (ec *executionContext) field_Person_authentications_argsAfter(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*entgql.Cursor[uuid.UUID], error) {
+) (*entgql.Cursor[types.ID], error) {
 	if _, ok := rawArgs["after"]; !ok {
-		var zeroVal *entgql.Cursor[uuid.UUID]
+		var zeroVal *entgql.Cursor[types.ID]
 		return zeroVal, nil
 	}
 
@@ -1422,7 +1485,7 @@ func (ec *executionContext) field_Person_authentications_argsAfter(
 		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
 	}
 
-	var zeroVal *entgql.Cursor[uuid.UUID]
+	var zeroVal *entgql.Cursor[types.ID]
 	return zeroVal, nil
 }
 
@@ -1447,9 +1510,9 @@ func (ec *executionContext) field_Person_authentications_argsFirst(
 func (ec *executionContext) field_Person_authentications_argsBefore(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*entgql.Cursor[uuid.UUID], error) {
+) (*entgql.Cursor[types.ID], error) {
 	if _, ok := rawArgs["before"]; !ok {
-		var zeroVal *entgql.Cursor[uuid.UUID]
+		var zeroVal *entgql.Cursor[types.ID]
 		return zeroVal, nil
 	}
 
@@ -1458,7 +1521,7 @@ func (ec *executionContext) field_Person_authentications_argsBefore(
 		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
 	}
 
-	var zeroVal *entgql.Cursor[uuid.UUID]
+	var zeroVal *entgql.Cursor[types.ID]
 	return zeroVal, nil
 }
 
@@ -1598,9 +1661,9 @@ func (ec *executionContext) _ApplyEmailAuthorizationPayload_authorizationId(ctx 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ApplyEmailAuthorizationPayload_authorizationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1642,9 +1705,9 @@ func (ec *executionContext) _ApplyPasswordAuthorizationPayload_authorizationId(c
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ApplyPasswordAuthorizationPayload_authorizationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1686,9 +1749,9 @@ func (ec *executionContext) _Authentication_id(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Authentication_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1906,9 +1969,9 @@ func (ec *executionContext) _Authentication_personId(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Authentication_personId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2076,7 +2139,7 @@ func (ec *executionContext) _AuthenticationConnection_pageInfo(ctx context.Conte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(entgql.PageInfo[uuid.UUID])
+	res := resTmp.(entgql.PageInfo[types.ID])
 	fc.Result = res
 	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
 }
@@ -2234,7 +2297,7 @@ func (ec *executionContext) _AuthenticationEdge_cursor(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(entgql.Cursor[uuid.UUID])
+	res := resTmp.(entgql.Cursor[types.ID])
 	fc.Result = res
 	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
 }
@@ -2278,9 +2341,9 @@ func (ec *executionContext) _Authorization_id(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Authorization_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2410,9 +2473,9 @@ func (ec *executionContext) _Authorization_personId(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Authorization_personId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2850,9 +2913,9 @@ func (ec *executionContext) _DeleteAuthenticationPayload_authenticationId(ctx co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DeleteAuthenticationPayload_authenticationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2894,9 +2957,9 @@ func (ec *executionContext) _DeletePersonPayload_personId(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DeletePersonPayload_personId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2962,6 +3025,118 @@ func (ec *executionContext) fieldContext_Mutation_createAuthentication(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createAuthentication_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_passAuthenticationPasswordChallenge(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_passAuthenticationPasswordChallenge(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PassAuthenticationPasswordChallenge(rctx, fc.Args["input"].(PassAuthenticationPasswordChallengeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*PassAuthenticationPasswordChallengePayload)
+	fc.Result = res
+	return ec.marshalOPassAuthenticationPasswordChallengePayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationPasswordChallengePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_passAuthenticationPasswordChallenge(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_PassAuthenticationPasswordChallengePayload_success(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PassAuthenticationPasswordChallengePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_passAuthenticationPasswordChallenge_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_passAuthenticationCaptchaChallenge(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_passAuthenticationCaptchaChallenge(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PassAuthenticationCaptchaChallenge(rctx, fc.Args["input"].(PassAuthenticationCaptchaChallengeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*PassAuthenticationCaptchaChallengePayload)
+	fc.Result = res
+	return ec.marshalOPassAuthenticationCaptchaChallengePayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationCaptchaChallengePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_passAuthenticationCaptchaChallenge(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_PassAuthenticationCaptchaChallengePayload_success(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PassAuthenticationCaptchaChallengePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_passAuthenticationCaptchaChallenge_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3450,62 +3625,6 @@ func (ec *executionContext) fieldContext_Mutation_updatePerson(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updatePersonPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updatePersonPassword(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatePersonPassword(rctx, fc.Args["input"].(UpdatePersonPasswordInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*UpdatePersonPasswordPayload)
-	fc.Result = res
-	return ec.marshalOUpdatePersonPasswordPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐUpdatePersonPasswordPayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updatePersonPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "person":
-				return ec.fieldContext_UpdatePersonPasswordPayload_person(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type UpdatePersonPasswordPayload", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updatePersonPassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_deletePerson(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_deletePerson(ctx, field)
 	if err != nil {
@@ -3562,7 +3681,7 @@ func (ec *executionContext) fieldContext_Mutation_deletePerson(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[uuid.UUID]) (ret graphql.Marshaler) {
+func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[types.ID]) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_hasNextPage(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3606,7 +3725,7 @@ func (ec *executionContext) fieldContext_PageInfo_hasNextPage(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _PageInfo_hasPreviousPage(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[uuid.UUID]) (ret graphql.Marshaler) {
+func (ec *executionContext) _PageInfo_hasPreviousPage(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[types.ID]) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3650,7 +3769,7 @@ func (ec *executionContext) fieldContext_PageInfo_hasPreviousPage(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[uuid.UUID]) (ret graphql.Marshaler) {
+func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[types.ID]) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_startCursor(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3673,7 +3792,7 @@ func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*entgql.Cursor[uuid.UUID])
+	res := resTmp.(*entgql.Cursor[types.ID])
 	fc.Result = res
 	return ec.marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
 }
@@ -3691,7 +3810,7 @@ func (ec *executionContext) fieldContext_PageInfo_startCursor(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[uuid.UUID]) (ret graphql.Marshaler) {
+func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[types.ID]) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_endCursor(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3714,7 +3833,7 @@ func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*entgql.Cursor[uuid.UUID])
+	res := resTmp.(*entgql.Cursor[types.ID])
 	fc.Result = res
 	return ec.marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
 }
@@ -3727,6 +3846,94 @@ func (ec *executionContext) fieldContext_PageInfo_endCursor(_ context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PassAuthenticationCaptchaChallengePayload_success(ctx context.Context, field graphql.CollectedField, obj *PassAuthenticationCaptchaChallengePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PassAuthenticationCaptchaChallengePayload_success(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Success, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PassAuthenticationCaptchaChallengePayload_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PassAuthenticationCaptchaChallengePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PassAuthenticationPasswordChallengePayload_success(ctx context.Context, field graphql.CollectedField, obj *PassAuthenticationPasswordChallengePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PassAuthenticationPasswordChallengePayload_success(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Success, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PassAuthenticationPasswordChallengePayload_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PassAuthenticationPasswordChallengePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3758,9 +3965,9 @@ func (ec *executionContext) _Person_id(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(types.ID)
 	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Person_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4467,7 +4674,7 @@ func (ec *executionContext) _Person_authentications(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Person().Authentications(rctx, obj, fc.Args["after"].(*entgql.Cursor[uuid.UUID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[uuid.UUID]), fc.Args["last"].(*int))
+		return ec.resolvers.Person().Authentications(rctx, obj, fc.Args["after"].(*entgql.Cursor[types.ID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[types.ID]), fc.Args["last"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4719,88 +4926,6 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UpdatePersonPasswordPayload_person(ctx context.Context, field graphql.CollectedField, obj *UpdatePersonPasswordPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UpdatePersonPasswordPayload_person(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Person, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*data.Person)
-	fc.Result = res
-	return ec.marshalNPerson2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚐPerson(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UpdatePersonPasswordPayload_person(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UpdatePersonPasswordPayload",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Person_id(ctx, field)
-			case "email":
-				return ec.fieldContext_Person_email(ctx, field)
-			case "emailVerifiedAt":
-				return ec.fieldContext_Person_emailVerifiedAt(ctx, field)
-			case "phone":
-				return ec.fieldContext_Person_phone(ctx, field)
-			case "taxId":
-				return ec.fieldContext_Person_taxId(ctx, field)
-			case "firstName":
-				return ec.fieldContext_Person_firstName(ctx, field)
-			case "lastName":
-				return ec.fieldContext_Person_lastName(ctx, field)
-			case "language":
-				return ec.fieldContext_Person_language(ctx, field)
-			case "birthdate":
-				return ec.fieldContext_Person_birthdate(ctx, field)
-			case "gender":
-				return ec.fieldContext_Person_gender(ctx, field)
-			case "address":
-				return ec.fieldContext_Person_address(ctx, field)
-			case "postalCode":
-				return ec.fieldContext_Person_postalCode(ctx, field)
-			case "city":
-				return ec.fieldContext_Person_city(ctx, field)
-			case "country":
-				return ec.fieldContext_Person_country(ctx, field)
-			case "subscribed":
-				return ec.fieldContext_Person_subscribed(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Person_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Person_updatedAt(ctx, field)
-			case "authentications":
-				return ec.fieldContext_Person_authentications(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Person", field.Name)
 		},
 	}
 	return fc, nil
@@ -6772,7 +6897,7 @@ func (ec *executionContext) unmarshalInputCreateEmailAuthorizationInput(ctx cont
 		switch k {
 		case "personId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("personId"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6902,7 +7027,7 @@ func (ec *executionContext) unmarshalInputDeleteAuthenticationInput(ctx context.
 		switch k {
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6920,7 +7045,7 @@ func (ec *executionContext) unmarshalInputDeletePersonInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "currentPassword", "captcha"}
+	fieldsInOrder := [...]string{"id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6929,18 +7054,38 @@ func (ec *executionContext) unmarshalInputDeletePersonInput(ctx context.Context,
 		switch k {
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ID = data
-		case "currentPassword":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currentPassword"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPassAuthenticationCaptchaChallengeInput(ctx context.Context, obj any) (PassAuthenticationCaptchaChallengeInput, error) {
+	var it PassAuthenticationCaptchaChallengeInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "captcha"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CurrentPassword = data
+			it.ID = data
 		case "captcha":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("captcha"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -6954,14 +7099,14 @@ func (ec *executionContext) unmarshalInputDeletePersonInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context, obj any) (UpdatePersonInput, error) {
-	var it UpdatePersonInput
+func (ec *executionContext) unmarshalInputPassAuthenticationPasswordChallengeInput(ctx context.Context, obj any) (PassAuthenticationPasswordChallengeInput, error) {
+	var it PassAuthenticationPasswordChallengeInput
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "email", "phone", "taxId", "firstName", "lastName", "language", "birthdate", "gender", "address", "postalCode", "city", "country"}
+	fieldsInOrder := [...]string{"id", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6970,7 +7115,41 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 		switch k {
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context, obj any) (UpdatePersonInput, error) {
+	var it UpdatePersonInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "email", "phone", "password", "taxId", "firstName", "lastName", "language", "birthdate", "gender", "address", "postalCode", "city", "country"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6989,6 +7168,13 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 				return it, err
 			}
 			it.Phone = graphql.OmittableOf(data)
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = graphql.OmittableOf(data)
 		case "taxId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("taxId"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -7059,54 +7245,6 @@ func (ec *executionContext) unmarshalInputUpdatePersonInput(ctx context.Context,
 				return it, err
 			}
 			it.Country = graphql.OmittableOf(data)
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputUpdatePersonPasswordInput(ctx context.Context, obj any) (UpdatePersonPasswordInput, error) {
-	var it UpdatePersonPasswordInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"id", "currentPassword", "newPassword", "captcha"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ID = data
-		case "currentPassword":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currentPassword"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrentPassword = data
-		case "newPassword":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NewPassword = data
-		case "captcha":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("captcha"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Captcha = data
 		}
 	}
 
@@ -7811,6 +7949,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createAuthentication(ctx, field)
 			})
+		case "passAuthenticationPasswordChallenge":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_passAuthenticationPasswordChallenge(ctx, field)
+			})
+		case "passAuthenticationCaptchaChallenge":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_passAuthenticationCaptchaChallenge(ctx, field)
+			})
 		case "deleteAuthentication":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteAuthentication(ctx, field)
@@ -7847,10 +7993,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updatePerson(ctx, field)
 			})
-		case "updatePersonPassword":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updatePersonPassword(ctx, field)
-			})
 		case "deletePerson":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deletePerson(ctx, field)
@@ -7880,7 +8022,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 var pageInfoImplementors = []string{"PageInfo"}
 
-func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *entgql.PageInfo[uuid.UUID]) graphql.Marshaler {
+func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *entgql.PageInfo[types.ID]) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -7903,6 +8045,84 @@ func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._PageInfo_startCursor(ctx, field, obj)
 		case "endCursor":
 			out.Values[i] = ec._PageInfo_endCursor(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var passAuthenticationCaptchaChallengePayloadImplementors = []string{"PassAuthenticationCaptchaChallengePayload"}
+
+func (ec *executionContext) _PassAuthenticationCaptchaChallengePayload(ctx context.Context, sel ast.SelectionSet, obj *PassAuthenticationCaptchaChallengePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, passAuthenticationCaptchaChallengePayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PassAuthenticationCaptchaChallengePayload")
+		case "success":
+			out.Values[i] = ec._PassAuthenticationCaptchaChallengePayload_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var passAuthenticationPasswordChallengePayloadImplementors = []string{"PassAuthenticationPasswordChallengePayload"}
+
+func (ec *executionContext) _PassAuthenticationPasswordChallengePayload(ctx context.Context, sel ast.SelectionSet, obj *PassAuthenticationPasswordChallengePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, passAuthenticationPasswordChallengePayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PassAuthenticationPasswordChallengePayload")
+		case "success":
+			out.Values[i] = ec._PassAuthenticationPasswordChallengePayload_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8100,45 +8320,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var updatePersonPasswordPayloadImplementors = []string{"UpdatePersonPasswordPayload"}
-
-func (ec *executionContext) _UpdatePersonPasswordPayload(ctx context.Context, sel ast.SelectionSet, obj *UpdatePersonPasswordPayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, updatePersonPasswordPayloadImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("UpdatePersonPasswordPayload")
-		case "person":
-			out.Values[i] = ec._UpdatePersonPasswordPayload_person(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8592,13 +8773,13 @@ func (ec *executionContext) unmarshalNCreatePersonInput2githubᚗcomᚋavptpᚋb
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, v any) (entgql.Cursor[uuid.UUID], error) {
-	var res entgql.Cursor[uuid.UUID]
+func (ec *executionContext) unmarshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, v any) (entgql.Cursor[types.ID], error) {
+	var res entgql.Cursor[types.ID]
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, sel ast.SelectionSet, v entgql.Cursor[uuid.UUID]) graphql.Marshaler {
+func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, sel ast.SelectionSet, v entgql.Cursor[types.ID]) graphql.Marshaler {
 	return v
 }
 
@@ -8612,19 +8793,14 @@ func (ec *executionContext) unmarshalNDeletePersonInput2githubᚗcomᚋavptpᚋb
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v any) (uuid.UUID, error) {
-	res, err := types.UnmarshalID(v)
+func (ec *executionContext) unmarshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx context.Context, v any) (types.ID, error) {
+	var res types.ID
+	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-	res := types.MarshalID(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
+func (ec *executionContext) marshalNID2githubᚗcomᚋavptpᚋbrainᚋinternalᚋapiᚋtypesᚐID(ctx context.Context, sel ast.SelectionSet, v types.ID) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNIP2string(ctx context.Context, v any) (string, error) {
@@ -8657,8 +8833,18 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[uuid.UUID]) graphql.Marshaler {
+func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[types.ID]) graphql.Marshaler {
 	return ec._PageInfo(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNPassAuthenticationCaptchaChallengeInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationCaptchaChallengeInput(ctx context.Context, v any) (PassAuthenticationCaptchaChallengeInput, error) {
+	res, err := ec.unmarshalInputPassAuthenticationCaptchaChallengeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPassAuthenticationPasswordChallengeInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationPasswordChallengeInput(ctx context.Context, v any) (PassAuthenticationPasswordChallengeInput, error) {
+	res, err := ec.unmarshalInputPassAuthenticationPasswordChallengeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNPerson2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋdataᚐPerson(ctx context.Context, sel ast.SelectionSet, v data.Person) graphql.Marshaler {
@@ -8707,11 +8893,6 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNUpdatePersonInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐUpdatePersonInput(ctx context.Context, v any) (UpdatePersonInput, error) {
 	res, err := ec.unmarshalInputUpdatePersonInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNUpdatePersonPasswordInput2githubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐUpdatePersonPasswordInput(ctx context.Context, v any) (UpdatePersonPasswordInput, error) {
-	res, err := ec.unmarshalInputUpdatePersonPasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -9112,16 +9293,16 @@ func (ec *executionContext) marshalOCreatePersonPayload2ᚖgithubᚗcomᚋavptp�
 	return ec._CreatePersonPayload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, v any) (*entgql.Cursor[uuid.UUID], error) {
+func (ec *executionContext) unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, v any) (*entgql.Cursor[types.ID], error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(entgql.Cursor[uuid.UUID])
+	var res = new(entgql.Cursor[types.ID])
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, sel ast.SelectionSet, v *entgql.Cursor[uuid.UUID]) graphql.Marshaler {
+func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, sel ast.SelectionSet, v *entgql.Cursor[types.ID]) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -9174,6 +9355,20 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) marshalOPassAuthenticationCaptchaChallengePayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationCaptchaChallengePayload(ctx context.Context, sel ast.SelectionSet, v *PassAuthenticationCaptchaChallengePayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PassAuthenticationCaptchaChallengePayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPassAuthenticationPasswordChallengePayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐPassAuthenticationPasswordChallengePayload(ctx context.Context, sel ast.SelectionSet, v *PassAuthenticationPasswordChallengePayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PassAuthenticationPasswordChallengePayload(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -9204,13 +9399,6 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOUpdatePersonPasswordPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐUpdatePersonPasswordPayload(ctx context.Context, sel ast.SelectionSet, v *UpdatePersonPasswordPayload) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._UpdatePersonPasswordPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUpdatePersonPayload2ᚖgithubᚗcomᚋavptpᚋbrainᚋinternalᚋgeneratedᚋapiᚐUpdatePersonPayload(ctx context.Context, sel ast.SelectionSet, v *UpdatePersonPayload) graphql.Marshaler {

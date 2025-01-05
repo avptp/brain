@@ -10,9 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 // AuthenticationCreate is the builder for creating a Authentication entity.
@@ -23,8 +23,8 @@ type AuthenticationCreate struct {
 }
 
 // SetPersonID sets the "person_id" field.
-func (ac *AuthenticationCreate) SetPersonID(u uuid.UUID) *AuthenticationCreate {
-	ac.mutation.SetPersonID(u)
+func (ac *AuthenticationCreate) SetPersonID(t types.ID) *AuthenticationCreate {
+	ac.mutation.SetPersonID(t)
 	return ac
 }
 
@@ -74,9 +74,37 @@ func (ac *AuthenticationCreate) SetNillableLastUsedAt(t *time.Time) *Authenticat
 	return ac
 }
 
+// SetLastPasswordChallengeAt sets the "last_password_challenge_at" field.
+func (ac *AuthenticationCreate) SetLastPasswordChallengeAt(t time.Time) *AuthenticationCreate {
+	ac.mutation.SetLastPasswordChallengeAt(t)
+	return ac
+}
+
+// SetNillableLastPasswordChallengeAt sets the "last_password_challenge_at" field if the given value is not nil.
+func (ac *AuthenticationCreate) SetNillableLastPasswordChallengeAt(t *time.Time) *AuthenticationCreate {
+	if t != nil {
+		ac.SetLastPasswordChallengeAt(*t)
+	}
+	return ac
+}
+
+// SetLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field.
+func (ac *AuthenticationCreate) SetLastCaptchaChallengeAt(t time.Time) *AuthenticationCreate {
+	ac.mutation.SetLastCaptchaChallengeAt(t)
+	return ac
+}
+
+// SetNillableLastCaptchaChallengeAt sets the "last_captcha_challenge_at" field if the given value is not nil.
+func (ac *AuthenticationCreate) SetNillableLastCaptchaChallengeAt(t *time.Time) *AuthenticationCreate {
+	if t != nil {
+		ac.SetLastCaptchaChallengeAt(*t)
+	}
+	return ac
+}
+
 // SetID sets the "id" field.
-func (ac *AuthenticationCreate) SetID(u uuid.UUID) *AuthenticationCreate {
-	ac.mutation.SetID(u)
+func (ac *AuthenticationCreate) SetID(t types.ID) *AuthenticationCreate {
+	ac.mutation.SetID(t)
 	return ac
 }
 
@@ -177,7 +205,7 @@ func (ac *AuthenticationCreate) sqlSave(ctx context.Context) (*Authentication, e
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+		if id, ok := _spec.ID.Value.(*types.ID); ok {
 			_node.ID = *id
 		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
 			return nil, err
@@ -216,6 +244,14 @@ func (ac *AuthenticationCreate) createSpec() (*Authentication, *sqlgraph.CreateS
 	if value, ok := ac.mutation.LastUsedAt(); ok {
 		_spec.SetField(authentication.FieldLastUsedAt, field.TypeTime, value)
 		_node.LastUsedAt = value
+	}
+	if value, ok := ac.mutation.LastPasswordChallengeAt(); ok {
+		_spec.SetField(authentication.FieldLastPasswordChallengeAt, field.TypeTime, value)
+		_node.LastPasswordChallengeAt = &value
+	}
+	if value, ok := ac.mutation.LastCaptchaChallengeAt(); ok {
+		_spec.SetField(authentication.FieldLastCaptchaChallengeAt, field.TypeTime, value)
+		_node.LastCaptchaChallengeAt = &value
 	}
 	if nodes := ac.mutation.PersonIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

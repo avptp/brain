@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 // AuthorizationQuery is the builder for querying Authorization entities.
@@ -110,8 +110,8 @@ func (aq *AuthorizationQuery) FirstX(ctx context.Context) *Authorization {
 
 // FirstID returns the first Authorization ID from the query.
 // Returns a *NotFoundError when no Authorization ID was found.
-func (aq *AuthorizationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (aq *AuthorizationQuery) FirstID(ctx context.Context) (id types.ID, err error) {
+	var ids []types.ID
 	if ids, err = aq.Limit(1).IDs(setContextOp(ctx, aq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -123,7 +123,7 @@ func (aq *AuthorizationQuery) FirstID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (aq *AuthorizationQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (aq *AuthorizationQuery) FirstIDX(ctx context.Context) types.ID {
 	id, err := aq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,8 +161,8 @@ func (aq *AuthorizationQuery) OnlyX(ctx context.Context) *Authorization {
 // OnlyID is like Only, but returns the only Authorization ID in the query.
 // Returns a *NotSingularError when more than one Authorization ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (aq *AuthorizationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (aq *AuthorizationQuery) OnlyID(ctx context.Context) (id types.ID, err error) {
+	var ids []types.ID
 	if ids, err = aq.Limit(2).IDs(setContextOp(ctx, aq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -178,7 +178,7 @@ func (aq *AuthorizationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (aq *AuthorizationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (aq *AuthorizationQuery) OnlyIDX(ctx context.Context) types.ID {
 	id, err := aq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -206,7 +206,7 @@ func (aq *AuthorizationQuery) AllX(ctx context.Context) []*Authorization {
 }
 
 // IDs executes the query and returns a list of Authorization IDs.
-func (aq *AuthorizationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+func (aq *AuthorizationQuery) IDs(ctx context.Context) (ids []types.ID, err error) {
 	if aq.ctx.Unique == nil && aq.path != nil {
 		aq.Unique(true)
 	}
@@ -218,7 +218,7 @@ func (aq *AuthorizationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err err
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (aq *AuthorizationQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (aq *AuthorizationQuery) IDsX(ctx context.Context) []types.ID {
 	ids, err := aq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -302,7 +302,7 @@ func (aq *AuthorizationQuery) WithPerson(opts ...func(*PersonQuery)) *Authorizat
 // Example:
 //
 //	var v []struct {
-//		PersonID uuid.UUID `json:"person_id,omitempty"`
+//		PersonID types.ID `json:"person_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -325,7 +325,7 @@ func (aq *AuthorizationQuery) GroupBy(field string, fields ...string) *Authoriza
 // Example:
 //
 //	var v []struct {
-//		PersonID uuid.UUID `json:"person_id,omitempty"`
+//		PersonID types.ID `json:"person_id,omitempty"`
 //	}
 //
 //	client.Authorization.Query().
@@ -420,8 +420,8 @@ func (aq *AuthorizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 }
 
 func (aq *AuthorizationQuery) loadPerson(ctx context.Context, query *PersonQuery, nodes []*Authorization, init func(*Authorization), assign func(*Authorization, *Person)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Authorization)
+	ids := make([]types.ID, 0, len(nodes))
+	nodeids := make(map[types.ID][]*Authorization)
 	for i := range nodes {
 		fk := nodes[i].PersonID
 		if _, ok := nodeids[fk]; !ok {

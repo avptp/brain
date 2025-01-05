@@ -9,10 +9,10 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/data/mutators"
 	"github.com/avptp/brain/internal/data/rules"
 	"github.com/avptp/brain/internal/generated/data/hook"
-	"github.com/google/uuid"
 )
 
 type Authorization struct {
@@ -21,14 +21,12 @@ type Authorization struct {
 
 func (Authorization) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
+		field.UUID("id", types.ID{}).
 			Immutable().
 			Annotations(
-				entsql.Annotation{
-					Default: "gen_random_ulid()",
-				},
+				entsql.DefaultExpr("uuid_generate_v4()"),
 			),
-		field.UUID("person_id", uuid.UUID{}).
+		field.UUID("person_id", types.ID{}).
 			Immutable(),
 		field.Bytes("token").
 			SchemaType(map[string]string{

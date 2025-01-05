@@ -8,11 +8,11 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/data/mutators"
 	"github.com/avptp/brain/internal/data/rules"
 	"github.com/avptp/brain/internal/data/validation"
 	"github.com/avptp/brain/internal/generated/data/privacy"
-	"github.com/google/uuid"
 )
 
 type Person struct {
@@ -21,12 +21,10 @@ type Person struct {
 
 func (Person) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
+		field.UUID("id", types.ID{}).
 			Immutable().
 			Annotations(
-				entsql.Annotation{
-					Default: "gen_random_ulid()",
-				},
+				entsql.DefaultExpr("uuid_generate_v4()"),
 			),
 		field.String("stripe_id").
 			SchemaType(map[string]string{

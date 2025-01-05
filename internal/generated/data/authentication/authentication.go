@@ -27,6 +27,10 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldLastUsedAt holds the string denoting the last_used_at field in the database.
 	FieldLastUsedAt = "last_used_at"
+	// FieldLastPasswordChallengeAt holds the string denoting the last_password_challenge_at field in the database.
+	FieldLastPasswordChallengeAt = "last_password_challenge_at"
+	// FieldLastCaptchaChallengeAt holds the string denoting the last_captcha_challenge_at field in the database.
+	FieldLastCaptchaChallengeAt = "last_captcha_challenge_at"
 	// EdgePerson holds the string denoting the person edge name in mutations.
 	EdgePerson = "person"
 	// Table holds the table name of the authentication in the database.
@@ -49,6 +53,8 @@ var Columns = []string{
 	FieldLastUsedIP,
 	FieldCreatedAt,
 	FieldLastUsedAt,
+	FieldLastPasswordChallengeAt,
+	FieldLastCaptchaChallengeAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -108,6 +114,16 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByLastUsedAt orders the results by the last_used_at field.
 func ByLastUsedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastUsedAt, opts...).ToFunc()
+}
+
+// ByLastPasswordChallengeAt orders the results by the last_password_challenge_at field.
+func ByLastPasswordChallengeAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastPasswordChallengeAt, opts...).ToFunc()
+}
+
+// ByLastCaptchaChallengeAt orders the results by the last_captcha_challenge_at field.
+func ByLastCaptchaChallengeAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastCaptchaChallengeAt, opts...).ToFunc()
 }
 
 // ByPersonField orders the results by person field.

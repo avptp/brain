@@ -12,6 +12,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
@@ -19,7 +20,6 @@ import (
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/messaging/templates"
 	"github.com/avptp/brain/internal/transport/request"
-	"github.com/google/uuid"
 )
 
 // CreatePerson is the resolver for the createPerson field.
@@ -278,7 +278,7 @@ func (r *mutationResolver) DeletePerson(ctx context.Context, input api.DeletePer
 }
 
 // Authentications is the resolver for the authentications field.
-func (r *personResolver) Authentications(ctx context.Context, obj *data.Person, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int) (*data.AuthenticationConnection, error) {
+func (r *personResolver) Authentications(ctx context.Context, obj *data.Person, after *entgql.Cursor[types.ID], first *int, before *entgql.Cursor[types.ID], last *int) (*data.AuthenticationConnection, error) {
 	return obj.
 		QueryAuthentications().
 		Paginate(ctx, after, first, before, last)

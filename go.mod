@@ -22,7 +22,6 @@ require (
 	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/nyaruka/phonenumbers v1.4.4
-	github.com/oklog/ulid/v2 v2.1.0
 	github.com/pariz/gountries v0.1.6
 	github.com/realclientip/realclientip-go v1.0.0
 	github.com/redis/go-redis/v9 v9.7.0

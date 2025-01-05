@@ -77,6 +77,16 @@ func (a *AuthenticationQuery) collectField(ctx context.Context, oneNode bool, op
 				selectedFields = append(selectedFields, authentication.FieldLastUsedAt)
 				fieldSeen[authentication.FieldLastUsedAt] = struct{}{}
 			}
+		case "lastPasswordChallengeAt":
+			if _, ok := fieldSeen[authentication.FieldLastPasswordChallengeAt]; !ok {
+				selectedFields = append(selectedFields, authentication.FieldLastPasswordChallengeAt)
+				fieldSeen[authentication.FieldLastPasswordChallengeAt] = struct{}{}
+			}
+		case "lastCaptchaChallengeAt":
+			if _, ok := fieldSeen[authentication.FieldLastCaptchaChallengeAt]; !ok {
+				selectedFields = append(selectedFields, authentication.FieldLastCaptchaChallengeAt)
+				fieldSeen[authentication.FieldLastCaptchaChallengeAt] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

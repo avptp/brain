@@ -1,26 +1,85 @@
 package types
 
 import (
+	"database/sql/driver"
+	"errors"
 	"io"
 
-	"github.com/99designs/gqlgen/graphql"
+	"github.com/avptp/brain/internal/encoding"
 	"github.com/google/uuid"
-	"github.com/oklog/ulid/v2"
 )
 
-func MarshalID(id uuid.UUID) graphql.Marshaler {
-	return graphql.WriterFunc(func(w io.Writer) {
-		v, _ := ulid.ULID(id).MarshalText()
+var (
+	ErrIDSize              = errors.New("id: bad size when unmarshaling")
+	ErrIDInvalidCharacters = errors.New("id: bad characters when unmarshaling")
+	ErrIDScanType          = errors.New("id: source value must be a string")
+)
 
-		w.Write([]byte("\""))
-		w.Write(v)
-		w.Write([]byte("\""))
-	})
+type ID uuid.UUID
+
+var ZeroID ID
+
+func ParseID(s string) (ID, error) {
+	data, err := encoding.Base32.DecodeString(s)
+
+	if err != nil {
+		return ZeroID, ErrIDInvalidCharacters
+	}
+
+	if len(data) > 16 {
+		return ZeroID, ErrIDSize
+	}
+
+	return ID(data), nil
 }
 
-func UnmarshalID(src any) (uuid.UUID, error) {
-	id := ulid.ULID{}
-	err := id.Scan(src)
+func (id ID) String() string {
+	return encoding.Base32.EncodeToString(id[:])
+}
 
-	return uuid.UUID(id), err
+// Scan implements sql.Scanner
+func (id *ID) Scan(src any) error {
+	uuid := uuid.UUID{}
+	uuid.Scan(src)
+
+	*id = ID(uuid)
+
+	return nil
+}
+
+// Value implements sql.Valuer
+func (id ID) Value() (driver.Value, error) {
+	uuid := uuid.UUID(id)
+
+	return uuid.String(), nil
+}
+
+// UnmarshalGQL implements the graphql.Unmarshaler interface
+func (id *ID) UnmarshalGQL(src any) error {
+	switch src := src.(type) {
+	case string:
+		dst, err := ParseID(src)
+
+		if err != nil {
+			return err
+		}
+
+		*id = dst
+	default:
+		return ErrIDScanType
+	}
+
+	return nil
+}
+
+// MarshalGQL implements the graphql.Marshaler interface
+func (id ID) MarshalGQL(w io.Writer) {
+	src := id[:]
+	dst := make([]byte, encoding.Base32.EncodedLen(len(src)))
+
+	encoding.Base32.Encode(dst, src)
+
+	w.Write([]byte(`"`))
+	w.Write(dst)
+	w.Write([]byte(`"`))
 }

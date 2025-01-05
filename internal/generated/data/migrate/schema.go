@@ -10,12 +10,14 @@ import (
 var (
 	// AuthenticationsColumns holds the columns for the "authentications" table.
 	AuthenticationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Default: "gen_random_ulid()"},
+		{Name: "id", Type: field.TypeUUID, Default: schema.Expr("uuid_generate_v4()")},
 		{Name: "token", Type: field.TypeBytes, Unique: true, SchemaType: map[string]string{"postgres": "bytes"}},
 		{Name: "created_ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
 		{Name: "last_used_ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp"}},
 		{Name: "last_used_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp"}},
+		{Name: "last_password_challenge_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp"}},
+		{Name: "last_captcha_challenge_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp"}},
 		{Name: "person_id", Type: field.TypeUUID},
 	}
 	// AuthenticationsTable holds the schema information for the "authentications" table.
@@ -26,7 +28,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "authentications_persons_authentications",
-				Columns:    []*schema.Column{AuthenticationsColumns[6]},
+				Columns:    []*schema.Column{AuthenticationsColumns[8]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -34,7 +36,7 @@ var (
 	}
 	// AuthorizationsColumns holds the columns for the "authorizations" table.
 	AuthorizationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Default: "gen_random_ulid()"},
+		{Name: "id", Type: field.TypeUUID, Default: schema.Expr("uuid_generate_v4()")},
 		{Name: "token", Type: field.TypeBytes, Unique: true, SchemaType: map[string]string{"postgres": "bytes"}},
 		{Name: "kind", Type: field.TypeEnum, Enums: []string{"email", "password"}, SchemaType: map[string]string{"postgres": "authorization_kind"}},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp"}},
@@ -63,7 +65,7 @@ var (
 	}
 	// PersonsColumns holds the columns for the "persons" table.
 	PersonsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Default: "gen_random_ulid()"},
+		{Name: "id", Type: field.TypeUUID, Default: schema.Expr("uuid_generate_v4()")},
 		{Name: "stripe_id", Type: field.TypeString, Unique: true, Nullable: true, SchemaType: map[string]string{"postgres": "string(255)"}},
 		{Name: "email", Type: field.TypeString, Unique: true, Size: 254, SchemaType: map[string]string{"postgres": "string(254)"}},
 		{Name: "email_verified_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp"}},

@@ -10,10 +10,10 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
-	"github.com/google/uuid"
 )
 
 // PersonCreate is the builder for creating a Person entity.
@@ -236,20 +236,20 @@ func (pc *PersonCreate) SetNillableUpdatedAt(t *time.Time) *PersonCreate {
 }
 
 // SetID sets the "id" field.
-func (pc *PersonCreate) SetID(u uuid.UUID) *PersonCreate {
-	pc.mutation.SetID(u)
+func (pc *PersonCreate) SetID(t types.ID) *PersonCreate {
+	pc.mutation.SetID(t)
 	return pc
 }
 
 // AddAuthenticationIDs adds the "authentications" edge to the Authentication entity by IDs.
-func (pc *PersonCreate) AddAuthenticationIDs(ids ...uuid.UUID) *PersonCreate {
+func (pc *PersonCreate) AddAuthenticationIDs(ids ...types.ID) *PersonCreate {
 	pc.mutation.AddAuthenticationIDs(ids...)
 	return pc
 }
 
 // AddAuthentications adds the "authentications" edges to the Authentication entity.
 func (pc *PersonCreate) AddAuthentications(a ...*Authentication) *PersonCreate {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -257,14 +257,14 @@ func (pc *PersonCreate) AddAuthentications(a ...*Authentication) *PersonCreate {
 }
 
 // AddAuthorizationIDs adds the "authorizations" edge to the Authorization entity by IDs.
-func (pc *PersonCreate) AddAuthorizationIDs(ids ...uuid.UUID) *PersonCreate {
+func (pc *PersonCreate) AddAuthorizationIDs(ids ...types.ID) *PersonCreate {
 	pc.mutation.AddAuthorizationIDs(ids...)
 	return pc
 }
 
 // AddAuthorizations adds the "authorizations" edges to the Authorization entity.
 func (pc *PersonCreate) AddAuthorizations(a ...*Authorization) *PersonCreate {
-	ids := make([]uuid.UUID, len(a))
+	ids := make([]types.ID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -420,7 +420,7 @@ func (pc *PersonCreate) sqlSave(ctx context.Context) (*Person, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+		if id, ok := _spec.ID.Value.(*types.ID); ok {
 			_node.ID = *id
 		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
 			return nil, err

@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/authorization"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/predicate"
-	"github.com/google/uuid"
 )
 
 // AuthenticationWhereInput represents a where input for filtering Authentication queries.
@@ -22,20 +22,20 @@ type AuthenticationWhereInput struct {
 	And        []*AuthenticationWhereInput `json:"and,omitempty"`
 
 	// "id" field predicates.
-	ID      *uuid.UUID  `json:"id,omitempty"`
-	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
-	IDIn    []uuid.UUID `json:"idIn,omitempty"`
-	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
-	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
-	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
-	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
-	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+	ID      *types.ID  `json:"id,omitempty"`
+	IDNEQ   *types.ID  `json:"idNEQ,omitempty"`
+	IDIn    []types.ID `json:"idIn,omitempty"`
+	IDNotIn []types.ID `json:"idNotIn,omitempty"`
+	IDGT    *types.ID  `json:"idGT,omitempty"`
+	IDGTE   *types.ID  `json:"idGTE,omitempty"`
+	IDLT    *types.ID  `json:"idLT,omitempty"`
+	IDLTE   *types.ID  `json:"idLTE,omitempty"`
 
 	// "person_id" field predicates.
-	PersonID      *uuid.UUID  `json:"personID,omitempty"`
-	PersonIDNEQ   *uuid.UUID  `json:"personIDNEQ,omitempty"`
-	PersonIDIn    []uuid.UUID `json:"personIDIn,omitempty"`
-	PersonIDNotIn []uuid.UUID `json:"personIDNotIn,omitempty"`
+	PersonID      *types.ID  `json:"personID,omitempty"`
+	PersonIDNEQ   *types.ID  `json:"personIDNEQ,omitempty"`
+	PersonIDIn    []types.ID `json:"personIDIn,omitempty"`
+	PersonIDNotIn []types.ID `json:"personIDNotIn,omitempty"`
 
 	// "created_ip" field predicates.
 	CreatedIP             *string  `json:"createdIP,omitempty"`
@@ -86,6 +86,30 @@ type AuthenticationWhereInput struct {
 	LastUsedAtGTE   *time.Time  `json:"lastUsedAtGTE,omitempty"`
 	LastUsedAtLT    *time.Time  `json:"lastUsedAtLT,omitempty"`
 	LastUsedAtLTE   *time.Time  `json:"lastUsedAtLTE,omitempty"`
+
+	// "last_password_challenge_at" field predicates.
+	LastPasswordChallengeAt       *time.Time  `json:"lastPasswordChallengeAt,omitempty"`
+	LastPasswordChallengeAtNEQ    *time.Time  `json:"lastPasswordChallengeAtNEQ,omitempty"`
+	LastPasswordChallengeAtIn     []time.Time `json:"lastPasswordChallengeAtIn,omitempty"`
+	LastPasswordChallengeAtNotIn  []time.Time `json:"lastPasswordChallengeAtNotIn,omitempty"`
+	LastPasswordChallengeAtGT     *time.Time  `json:"lastPasswordChallengeAtGT,omitempty"`
+	LastPasswordChallengeAtGTE    *time.Time  `json:"lastPasswordChallengeAtGTE,omitempty"`
+	LastPasswordChallengeAtLT     *time.Time  `json:"lastPasswordChallengeAtLT,omitempty"`
+	LastPasswordChallengeAtLTE    *time.Time  `json:"lastPasswordChallengeAtLTE,omitempty"`
+	LastPasswordChallengeAtIsNil  bool        `json:"lastPasswordChallengeAtIsNil,omitempty"`
+	LastPasswordChallengeAtNotNil bool        `json:"lastPasswordChallengeAtNotNil,omitempty"`
+
+	// "last_captcha_challenge_at" field predicates.
+	LastCaptchaChallengeAt       *time.Time  `json:"lastCaptchaChallengeAt,omitempty"`
+	LastCaptchaChallengeAtNEQ    *time.Time  `json:"lastCaptchaChallengeAtNEQ,omitempty"`
+	LastCaptchaChallengeAtIn     []time.Time `json:"lastCaptchaChallengeAtIn,omitempty"`
+	LastCaptchaChallengeAtNotIn  []time.Time `json:"lastCaptchaChallengeAtNotIn,omitempty"`
+	LastCaptchaChallengeAtGT     *time.Time  `json:"lastCaptchaChallengeAtGT,omitempty"`
+	LastCaptchaChallengeAtGTE    *time.Time  `json:"lastCaptchaChallengeAtGTE,omitempty"`
+	LastCaptchaChallengeAtLT     *time.Time  `json:"lastCaptchaChallengeAtLT,omitempty"`
+	LastCaptchaChallengeAtLTE    *time.Time  `json:"lastCaptchaChallengeAtLTE,omitempty"`
+	LastCaptchaChallengeAtIsNil  bool        `json:"lastCaptchaChallengeAtIsNil,omitempty"`
+	LastCaptchaChallengeAtNotNil bool        `json:"lastCaptchaChallengeAtNotNil,omitempty"`
 
 	// "person" edge predicates.
 	HasPerson     *bool               `json:"hasPerson,omitempty"`
@@ -325,6 +349,66 @@ func (i *AuthenticationWhereInput) P() (predicate.Authentication, error) {
 	if i.LastUsedAtLTE != nil {
 		predicates = append(predicates, authentication.LastUsedAtLTE(*i.LastUsedAtLTE))
 	}
+	if i.LastPasswordChallengeAt != nil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtEQ(*i.LastPasswordChallengeAt))
+	}
+	if i.LastPasswordChallengeAtNEQ != nil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtNEQ(*i.LastPasswordChallengeAtNEQ))
+	}
+	if len(i.LastPasswordChallengeAtIn) > 0 {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtIn(i.LastPasswordChallengeAtIn...))
+	}
+	if len(i.LastPasswordChallengeAtNotIn) > 0 {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtNotIn(i.LastPasswordChallengeAtNotIn...))
+	}
+	if i.LastPasswordChallengeAtGT != nil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtGT(*i.LastPasswordChallengeAtGT))
+	}
+	if i.LastPasswordChallengeAtGTE != nil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtGTE(*i.LastPasswordChallengeAtGTE))
+	}
+	if i.LastPasswordChallengeAtLT != nil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtLT(*i.LastPasswordChallengeAtLT))
+	}
+	if i.LastPasswordChallengeAtLTE != nil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtLTE(*i.LastPasswordChallengeAtLTE))
+	}
+	if i.LastPasswordChallengeAtIsNil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtIsNil())
+	}
+	if i.LastPasswordChallengeAtNotNil {
+		predicates = append(predicates, authentication.LastPasswordChallengeAtNotNil())
+	}
+	if i.LastCaptchaChallengeAt != nil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtEQ(*i.LastCaptchaChallengeAt))
+	}
+	if i.LastCaptchaChallengeAtNEQ != nil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtNEQ(*i.LastCaptchaChallengeAtNEQ))
+	}
+	if len(i.LastCaptchaChallengeAtIn) > 0 {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtIn(i.LastCaptchaChallengeAtIn...))
+	}
+	if len(i.LastCaptchaChallengeAtNotIn) > 0 {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtNotIn(i.LastCaptchaChallengeAtNotIn...))
+	}
+	if i.LastCaptchaChallengeAtGT != nil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtGT(*i.LastCaptchaChallengeAtGT))
+	}
+	if i.LastCaptchaChallengeAtGTE != nil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtGTE(*i.LastCaptchaChallengeAtGTE))
+	}
+	if i.LastCaptchaChallengeAtLT != nil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtLT(*i.LastCaptchaChallengeAtLT))
+	}
+	if i.LastCaptchaChallengeAtLTE != nil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtLTE(*i.LastCaptchaChallengeAtLTE))
+	}
+	if i.LastCaptchaChallengeAtIsNil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtIsNil())
+	}
+	if i.LastCaptchaChallengeAtNotNil {
+		predicates = append(predicates, authentication.LastCaptchaChallengeAtNotNil())
+	}
 
 	if i.HasPerson != nil {
 		p := authentication.HasPerson()
@@ -362,20 +446,20 @@ type AuthorizationWhereInput struct {
 	And        []*AuthorizationWhereInput `json:"and,omitempty"`
 
 	// "id" field predicates.
-	ID      *uuid.UUID  `json:"id,omitempty"`
-	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
-	IDIn    []uuid.UUID `json:"idIn,omitempty"`
-	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
-	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
-	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
-	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
-	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+	ID      *types.ID  `json:"id,omitempty"`
+	IDNEQ   *types.ID  `json:"idNEQ,omitempty"`
+	IDIn    []types.ID `json:"idIn,omitempty"`
+	IDNotIn []types.ID `json:"idNotIn,omitempty"`
+	IDGT    *types.ID  `json:"idGT,omitempty"`
+	IDGTE   *types.ID  `json:"idGTE,omitempty"`
+	IDLT    *types.ID  `json:"idLT,omitempty"`
+	IDLTE   *types.ID  `json:"idLTE,omitempty"`
 
 	// "person_id" field predicates.
-	PersonID      *uuid.UUID  `json:"personID,omitempty"`
-	PersonIDNEQ   *uuid.UUID  `json:"personIDNEQ,omitempty"`
-	PersonIDIn    []uuid.UUID `json:"personIDIn,omitempty"`
-	PersonIDNotIn []uuid.UUID `json:"personIDNotIn,omitempty"`
+	PersonID      *types.ID  `json:"personID,omitempty"`
+	PersonIDNEQ   *types.ID  `json:"personIDNEQ,omitempty"`
+	PersonIDIn    []types.ID `json:"personIDIn,omitempty"`
+	PersonIDNotIn []types.ID `json:"personIDNotIn,omitempty"`
 
 	// "kind" field predicates.
 	Kind      *authorization.Kind  `json:"kind,omitempty"`
@@ -578,14 +662,14 @@ type PersonWhereInput struct {
 	And        []*PersonWhereInput `json:"and,omitempty"`
 
 	// "id" field predicates.
-	ID      *uuid.UUID  `json:"id,omitempty"`
-	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
-	IDIn    []uuid.UUID `json:"idIn,omitempty"`
-	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
-	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
-	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
-	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
-	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+	ID      *types.ID  `json:"id,omitempty"`
+	IDNEQ   *types.ID  `json:"idNEQ,omitempty"`
+	IDIn    []types.ID `json:"idIn,omitempty"`
+	IDNotIn []types.ID `json:"idNotIn,omitempty"`
+	IDGT    *types.ID  `json:"idGT,omitempty"`
+	IDGTE   *types.ID  `json:"idGTE,omitempty"`
+	IDLT    *types.ID  `json:"idLT,omitempty"`
+	IDLTE   *types.ID  `json:"idLTE,omitempty"`
 
 	// "stripe_id" field predicates.
 	StripeID             *string  `json:"stripeID,omitempty"`
