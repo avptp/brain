@@ -3,7 +3,6 @@ package mutators
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"time"
 
 	"entgo.io/ent"
@@ -24,13 +23,13 @@ func PersonEmail(next ent.Mutator) ent.Mutator {
 }
 
 func PersonPassword(next ent.Mutator) ent.Mutator {
-	// see: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
+	// see: https://datatracker.ietf.org/doc/html/rfc9106#name-parameter-choice
 	params := &argon2id.Params{
 		Memory:      64 * 1024, // MiB
-		Iterations:  1,
-		Parallelism: uint8(runtime.NumCPU()),
-		SaltLength:  16,
-		KeyLength:   32,
+		Iterations:  3,
+		Parallelism: 4,
+		SaltLength:  16, // 128 bits
+		KeyLength:   32, // 256 bits
 	}
 
 	return hook.PersonFunc(func(ctx context.Context, m *data.PersonMutation) (ent.Value, error) {
