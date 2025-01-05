@@ -1,6 +1,6 @@
 module github.com/avptp/brain
 
-go 1.22
+go 1.23.4
 
 require (
 	ariga.io/atlas v0.22.0

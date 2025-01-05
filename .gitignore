@@ -1,5 +1,9 @@
-# Operating system files
+#### Common
 .DS_Store
-
-# Project
 /.env
+/.idea
+Thumbs.db
+
+#### Project
+/debug*
+/__debug_*

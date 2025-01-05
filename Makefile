@@ -5,7 +5,8 @@ define set_env
 	sed $(if $(IS_DARWIN),-i "",-i) -e "s/^#*\($(1)=\).*/$(if $(2),,#)\1$(2)/" .env
 endef
 
-EXEC := docker compose exec main
+EXEC := docker compose exec -T go
+EXEC_TTY := docker compose exec go
 
 # Environment recipes
 .PHONY: default
@@ -27,7 +28,7 @@ down:
 
 .PHONY: shell
 shell:
-	$(EXEC) zsh
+	$(EXEC_TTY) zsh
 
 # Project recipes
 .PHONY: deps
@@ -37,11 +38,11 @@ deps:
 
 .PHONY: run
 run:
-	$(EXEC) go run cmd/main.go
+	$(EXEC_TTY) go run cmd/main.go
 
 .PHONY: debug
 debug:
-	$(EXEC) dlv debug --listen=:8001 --headless --api-version=2 cmd/main.go
+	$(EXEC_TTY) dlv debug --listen=:2345 --headless --api-version=2 cmd/main.go
 
 .PHONY: lint
 lint:

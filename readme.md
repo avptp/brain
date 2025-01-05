@@ -18,9 +18,9 @@ Brain is a [GraphQL](https://graphql.org) monolithic service made with [Go](http
 
 ### Directory structure
 
-The project follows the [_de facto_ standard Go project layout](https://github.com/golang-standards/project-layout) with the following additions:
+The project follows the [_de facto_ standard Go project layout](https://github.com/golang-standards/project-layout) with the additions below:
 
-- `helm`, `.dockerignore`, `.env.example`, `docker-compose.yml`, `Dockerfile` and `Makefile` contain the configuration and manifests that define the development and runtime environments with [Docker](https://www.docker.com) and [Docker Compose](https://docs.docker.com/compose).
+- `.dockerignore`, `.env.example`, `docker-compose.yml`, `Dockerfile` and `Makefile` contain the configuration and manifests that define the development and runtime environments with [Docker](https://www.docker.com) and [Docker Compose](https://docs.docker.com/compose).
 - `.github` holds the [GitHub Actions](https://github.com/features/actions) CI/CD pipelines.
 
 ### License
@@ -29,7 +29,7 @@ This software is distributed under the GNU General Public License v3.0. Please r
 
 ## Getting started
 
-This project comes with a containerized environment that has everything necessary to develop on any platform.
+This project comes with a containerized environment that has everything necessary to work on any platform without having to install dependencies on the developers' machines.
 
 **TL;TR**
 
@@ -39,7 +39,10 @@ make
 
 ### Requirements
 
-Before starting using the project, make sure that [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or, separately, [Docker](https://docs.docker.com/engine/install) and [Docker Compose](https://docs.docker.com/compose/install/)) are installed on the machine.
+Before starting using the project, make sure that the following dependencies are installed on the machine:
+- [Git](https://git-scm.com).
+- An [OCI runtime](https://opencontainers.org), like [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Podman Desktop](https://podman.io) or [OrbStack](https://orbstack.dev).
+- [Docker Compose](https://docs.docker.com/compose/install/).
 
 It is necessary to install the latest versions before continuing. You may follow the previous links to read the installation instructions.
 
@@ -65,17 +68,17 @@ make down
 
 ## Usage
 
-You can run commands inside the virtual environment by running a shell in the container (`make shell`).
+Commands must be run inside the containerized environment by starting a shell in the main container (`make shell`).
 
 ### Running the development server
 
-Run the following command to start the development server.
+Run the following command to start the development server:
 
 ```Shell
 make run
 ```
 
-> Note that Git is not available in the container, so you should use it from the host machine. It is strongly recommended to use a desktop client like [Fork](https://git-fork.com) or [GitKraken](https://www.gitkraken.com).
+> Note that Git is not available in the container, so you should use it from the host machine. It is strongly recommended to use a Git GUI (like [VS Code's](https://code.visualstudio.com/docs/editor/versioncontrol) or [Fork](https://git-fork.com)) instead of the command-line interface.
 
 ### Running tests
 
@@ -97,7 +100,7 @@ For more advanced scenarios, such as debugging tests, you may open a shell in th
 
 ```Shell
 make shell
-dlv test --listen=:8001 --headless --api-version=2 ./internal/api/resolvers/resolvers_test
+dlv test --listen=:2345 --headless --api-version=2 ./internal/api/graphql/resolvers/resolvers_test
 ```
 
 ## Deployment
@@ -110,11 +113,11 @@ There are several common problems that can be easily solved. Here are their caus
 
 ### Docker
 
-The Docker environment should work properly. Otherwise, it is possible to rebuild it by running the following commands.
+The Docker environment should work properly. Otherwise, it is possible to rebuild it by running the following command.
 
 ```Shell
 docker compose down
-docker compose build --no-cache main
+docker compose build --no-cache go
 ```
 
 To start from scratch, you can remove all containers, images and volumes of your computer by running the following commands.

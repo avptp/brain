@@ -1,9 +1,9 @@
-ARG GO_VERSION=1.22.3-alpine3.19
-ARG DELVE_VERSION=1.22.1
-ARG ALPINE_VERSION=3.19.1
+ARG GO_VERSION=1.23.4-alpine3.21
+ARG DELVE_VERSION=1.24.0
+ARG ALPINE_VERSION=3.21.0
 
 
-## Base image
+#### Base image ####
 FROM golang:${GO_VERSION} AS base
 
 WORKDIR /go/src/app
@@ -13,7 +13,7 @@ ENV PROMPT="%B%F{cyan}%n%f@%m:%F{yellow}%~%f %F{%(?.green.red[%?] )}>%f %b"
 
 ARG DELVE_VERSION
 
-RUN apk add \
+RUN apk add --no-cache \
         git \
         zsh \
  && go install github.com/go-delve/delve/cmd/dlv@v${DELVE_VERSION}
@@ -28,7 +28,7 @@ RUN chown -R ${USER_NAME}: /go
 USER ${USER_NAME}
 
 
-## Builder image
+#### Builder image ####
 FROM base AS builder
 
 COPY go.mod go.sum ./
@@ -39,15 +39,15 @@ COPY . .
 RUN go build -ldflags="-s -w" -o bin cmd/main.go
 
 
-## Runtime image
+#### Runtime image ####
 FROM alpine:${ALPINE_VERSION} AS runtime
 
 WORKDIR /usr/local/bin
 
 RUN adduser -D default
 
-USER default
-
 COPY --from=builder /go/src/app/bin .
+
+USER default
 
 CMD ["./bin", "start"]

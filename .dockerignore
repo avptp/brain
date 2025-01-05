@@ -1,11 +1,15 @@
-.github
-.dockerignore
+# Common
 .DS_Store
-.env
-.env.example
-.git
 .gitignore
-docker-compose.yml
-Dockerfile
-Makefile
-readme.md
+/.dockerignore
+/.env
+/.env.example
+/.git
+/Dockerfile
+/license.md
+/Makefile
+/docker-compose.yml
+/readme.md
+
+# Project
+/.github

@@ -1,6 +1,6 @@
 services:
 
-  main:
+  go:
     build:
       context: .
       target: base
@@ -12,20 +12,20 @@ services:
     env_file: .env
     ports:
       - ${HTTP_PORT:-8000}:${HTTP_PORT:-8000}
-      - ${DELVE_PORT:-8001}:${DELVE_PORT:-8001}
+      - ${DELVE_PORT:-2345}:${DELVE_PORT:-2345}
     depends_on:
       - cockroachdb
       - redis
     tty: true
 
   cockroachdb:
-    image: cockroachdb/cockroach:v23.1.20
+    image: cockroachdb/cockroach:v24.3.1
     command: start-single-node --insecure
     ports:
       - ${COCKROACHDB_PORT:-26257}:26257
       - ${COCKROACHDB_CONSOLE_PORT:-8080}:8080
     volumes:
-      - cockroachdb:/cockroach/cockroach-data
+      - cockroachdb_storage:/cockroach/cockroach-data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: 3s
@@ -33,17 +33,17 @@ services:
       retries: 3
 
   redis:
-    image: redis:7.2.4-alpine
+    image: redis:7.4.1-alpine
     command:
       - redis-server
       - --appendonly
       - 'yes'
     user: redis
     volumes:
-      - redis:/data
+      - redis_storage:/data
     ports:
       - ${REDIS_PORT:-6379}:6379
 
 volumes:
-  cockroachdb:
-  redis:
+  cockroachdb_storage:
+  redis_storage:
