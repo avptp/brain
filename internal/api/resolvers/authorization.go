@@ -6,12 +6,12 @@ package resolvers
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/avptp/brain/internal/api/reporting"
+	"github.com/avptp/brain/internal/encoding"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
@@ -112,7 +112,7 @@ func (r *mutationResolver) ApplyEmailAuthorization(ctx context.Context, input ap
 	d := data.FromContext(ctx) // transactional data client for mutations
 	allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
-	token, err := base64.URLEncoding.DecodeString(input.Token)
+	token, err := encoding.Base32.DecodeString(input.Token)
 
 	if err != nil {
 		return nil, err
@@ -244,7 +244,7 @@ func (r *mutationResolver) ApplyPasswordAuthorization(ctx context.Context, input
 	d := data.FromContext(ctx) // transactional data client for mutations
 	allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
-	token, err := base64.URLEncoding.DecodeString(input.Token)
+	token, err := encoding.Base32.DecodeString(input.Token)
 
 	if err != nil {
 		return nil, err

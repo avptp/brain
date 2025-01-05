@@ -32,7 +32,7 @@ func ({{ $receiver }} *{{ $.Name }}) CanSubscribe() bool {
 {{- if eq $f.Name "token" -}}
 {{- $receiver := $.Receiver -}}
 func ({{ $receiver }} *{{ $.Name }}) TokenEncoded() string {
-    return base64.URLEncoding.EncodeToString({{ $receiver }}.Token)
+    return encoding.Base32.EncodeToString({{ $receiver }}.Token)
 }
 {{- end -}}
 {{- end -}}

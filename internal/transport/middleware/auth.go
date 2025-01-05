@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"context"
-	"encoding/base64"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/avptp/brain/internal/encoding"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/privacy"
@@ -27,7 +27,7 @@ func NewSetAuth(data *data.Client) func(http.Handler) http.Handler {
 				return
 			}
 
-			token, err := base64.URLEncoding.DecodeString(
+			token, err := encoding.Base32.DecodeString(
 				strings.TrimSpace(header[1]),
 			)
 
