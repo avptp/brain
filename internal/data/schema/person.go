@@ -12,7 +12,6 @@ import (
 	"github.com/avptp/brain/internal/data/mutators"
 	"github.com/avptp/brain/internal/data/rules"
 	"github.com/avptp/brain/internal/data/validation"
-	"github.com/avptp/brain/internal/generated/data/privacy"
 )
 
 type Person struct {
@@ -189,12 +188,5 @@ func (Person) Hooks() []ent.Hook {
 }
 
 func (Person) Policy() ent.Policy {
-	return privacy.Policy{
-		Query: privacy.QueryPolicy{
-			rules.FilterPersonRule(),
-		},
-		Mutation: privacy.MutationPolicy{
-			rules.FilterPersonRule(),
-		},
-	}
+	return rules.FilterPersonRule()
 }
