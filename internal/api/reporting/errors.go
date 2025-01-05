@@ -7,6 +7,11 @@ var ErrCaptcha = &gqlerror.Error{
 	Extensions: map[string]any{"code": "CAPTCHA"},
 }
 
+var ErrChallenge = &gqlerror.Error{
+	Message:    "This action requires authentication challenges that have not been passed.",
+	Extensions: map[string]any{"code": "CHALLENGE"},
+}
+
 var ErrConstraint = &gqlerror.Error{
 	Message:    "Input violates data constraints.",
 	Extensions: map[string]any{"code": "CONSTRAINT"},

@@ -34,6 +34,32 @@ type CreateAuthenticationPayload {
 }
 
 extend type Mutation {
+    passAuthenticationPasswordChallenge(input: PassAuthenticationPasswordChallengeInput!): PassAuthenticationPasswordChallengePayload
+}
+
+input PassAuthenticationPasswordChallengeInput {
+    id: ID!
+    password: String!
+}
+
+type PassAuthenticationPasswordChallengePayload {
+    success: Boolean!
+}
+
+extend type Mutation {
+    passAuthenticationCaptchaChallenge(input: PassAuthenticationCaptchaChallengeInput!): PassAuthenticationCaptchaChallengePayload
+}
+
+input PassAuthenticationCaptchaChallengeInput {
+    id: ID!
+    captcha: String!
+}
+
+type PassAuthenticationCaptchaChallengePayload {
+    success: Boolean!
+}
+
+extend type Mutation {
     deleteAuthentication(input: DeleteAuthenticationInput!): DeleteAuthenticationPayload
 }
 

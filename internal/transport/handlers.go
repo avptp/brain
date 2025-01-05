@@ -43,7 +43,7 @@ func GraphHandler(ctn *container.Container) http.Handler {
 	// Chain middlewares
 	return middleware.Chain(handler,
 		middleware.NewSetIP(ctn.GetIpStrategy()),
-		middleware.NewSetViewer(data),
+		middleware.NewSetAuth(data),
 	)
 }
 

@@ -56,6 +56,20 @@ func (Authentication) Fields() []ent.Field {
 			}).
 			Default(time.Now).
 			UpdateDefault(time.Now),
+		field.Time("last_password_challenge_at").
+			SchemaType(map[string]string{
+				dialect.Postgres: "timestamp",
+			}).
+			Optional().
+			Nillable().
+			StructTag(`faker:"-"`),
+		field.Time("last_captcha_challenge_at").
+			SchemaType(map[string]string{
+				dialect.Postgres: "timestamp",
+			}).
+			Optional().
+			Nillable().
+			StructTag(`faker:"-"`),
 	}
 }
 

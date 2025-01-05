@@ -10,13 +10,12 @@ import (
 	"time"
 
 	"entgo.io/contrib/entgql"
-	"github.com/alexedwards/argon2id"
+	"github.com/avptp/brain/internal/api/auth"
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/api/types"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
 	"github.com/avptp/brain/internal/generated/data/authorization"
-	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/messaging/templates"
 	"github.com/avptp/brain/internal/transport/request"
@@ -84,6 +83,23 @@ func (r *mutationResolver) CreatePerson(ctx context.Context, input api.CreatePer
 
 // UpdatePerson is the resolver for the updatePerson field.
 func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePersonInput) (*api.UpdatePersonPayload, error) {
+	if input.Email.IsSet() || input.Password.IsSet() {
+		authn := request.AuthnFromCtx(ctx)
+
+		if authn == nil {
+			return nil, reporting.ErrUnauthenticated
+		}
+
+		err := auth.EnforceChallenges(authn, []auth.ChallengeSpec{
+			{Type: auth.CaptchaChallenge, MaxAge: 5 * time.Minute},
+			{Type: auth.PasswordChallenge, MaxAge: 5 * time.Minute},
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	d := data.FromContext(ctx) // transactional data client for mutations
 
 	// Update person
@@ -100,6 +116,12 @@ func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePer
 			update.SetPhone(*v)
 		} else {
 			update.ClearPhone()
+		}
+	}
+
+	if input.Password.IsSet() {
+		if v := input.Password.Value(); v != nil {
+			update.SetPassword(*v)
 		}
 	}
 
@@ -196,73 +218,24 @@ func (r *mutationResolver) UpdatePerson(ctx context.Context, input api.UpdatePer
 	}, nil
 }
 
-// UpdatePersonPassword is the resolver for the updatePersonPassword field.
-func (r *mutationResolver) UpdatePersonPassword(ctx context.Context, input api.UpdatePersonPasswordInput) (*api.UpdatePersonPasswordPayload, error) {
-	if !r.captcha.Verify(input.Captcha) {
-		return nil, reporting.ErrCaptcha
-	}
-
-	d := data.FromContext(ctx) // transactional data client for mutations
-
-	person, err := d.Person.
-		Query().
-		Where(person.IDEQ(input.ID)).
-		First(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	match, err := argon2id.ComparePasswordAndHash(input.CurrentPassword, person.Password)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !match {
-		return nil, reporting.ErrWrongPassword
-	}
-
-	person, err = person.
-		Update().
-		SetPassword(input.NewPassword).
-		Save(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &api.UpdatePersonPasswordPayload{
-		Person: person,
-	}, nil
-}
-
 // DeletePerson is the resolver for the deletePerson field.
 func (r *mutationResolver) DeletePerson(ctx context.Context, input api.DeletePersonInput) (*api.DeletePersonPayload, error) {
-	if !r.captcha.Verify(input.Captcha) {
-		return nil, reporting.ErrCaptcha
+	authn := request.AuthnFromCtx(ctx)
+
+	if authn == nil {
+		return nil, reporting.ErrUnauthenticated
+	}
+
+	err := auth.EnforceChallenges(authn, []auth.ChallengeSpec{
+		{Type: auth.CaptchaChallenge, MaxAge: 5 * time.Minute},
+		{Type: auth.PasswordChallenge, MaxAge: 5 * time.Minute},
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	d := data.FromContext(ctx) // transactional data client for mutations
-
-	person, err := d.Person.
-		Query().
-		Where(person.IDEQ(input.ID)).
-		First(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	match, err := argon2id.ComparePasswordAndHash(input.CurrentPassword, person.Password)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !match {
-		return nil, reporting.ErrWrongPassword
-	}
 
 	err = d.Person.
 		DeleteOneID(input.ID).

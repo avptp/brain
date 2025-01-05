@@ -67,6 +67,7 @@ input UpdatePersonInput {
     id: ID!
     email: String
     phone: String
+    password: String
     taxId: String
     firstName: String
     lastName: String
@@ -84,28 +85,11 @@ type UpdatePersonPayload {
 }
 
 extend type Mutation {
-    updatePersonPassword(input: UpdatePersonPasswordInput!): UpdatePersonPasswordPayload
-}
-
-input UpdatePersonPasswordInput {
-    id: ID!
-    currentPassword: String!
-    newPassword: String!
-    captcha: String!
-}
-
-type UpdatePersonPasswordPayload {
-    person: Person!
-}
-
-extend type Mutation {
     deletePerson(input: DeletePersonInput!): DeletePersonPayload
 }
 
 input DeletePersonInput {
     id: ID!
-    currentPassword: String!
-    captcha: String!
 }
 
 type DeletePersonPayload {

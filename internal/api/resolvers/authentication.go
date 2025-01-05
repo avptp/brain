@@ -8,11 +8,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/avptp/brain/internal/api/reporting"
 	"github.com/avptp/brain/internal/generated/api"
 	"github.com/avptp/brain/internal/generated/data"
+	"github.com/avptp/brain/internal/generated/data/authentication"
 	"github.com/avptp/brain/internal/generated/data/person"
 	"github.com/avptp/brain/internal/generated/data/privacy"
 	"github.com/avptp/brain/internal/transport/request"
@@ -75,6 +77,111 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, input api.C
 
 	return &api.CreateAuthenticationPayload{
 		Token: a.TokenEncoded(),
+	}, nil
+}
+
+// PassAuthenticationPasswordChallenge is the resolver for the passAuthenticationPasswordChallenge field.
+func (r *mutationResolver) PassAuthenticationPasswordChallenge(ctx context.Context, input api.PassAuthenticationPasswordChallengeInput) (*api.PassAuthenticationPasswordChallengePayload, error) {
+	d := data.FromContext(ctx) // transactional data client for mutations
+
+	// Retrieve authentication
+	auth, err := d.
+		Authentication.
+		Query().
+		Where(authentication.IDEQ(input.ID)).
+		WithPerson().
+		First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Rate limit by person ID
+	rlKey := fmt.Sprintf(
+		"passAuthenticationPasswordChallenge:%s",
+		auth.PersonID,
+	)
+
+	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthenticationPasswordChallengeRateLimit))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Allowed <= 0 {
+		return nil, reporting.ErrRateLimit
+	}
+
+	// Match the password
+	match, err := argon2id.ComparePasswordAndHash(input.Password, auth.Edges.Person.Password)
+
+	if err != nil || !match {
+		return nil, reporting.ErrWrongPassword
+	}
+
+	// Create authentication and return its token
+	_, err = auth.
+		Update().
+		SetLastPasswordChallengeAt(time.Now()).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.PassAuthenticationPasswordChallengePayload{
+		Success: true,
+	}, nil
+}
+
+// PassAuthenticationCaptchaChallenge is the resolver for the passAuthenticationCaptchaChallenge field.
+func (r *mutationResolver) PassAuthenticationCaptchaChallenge(ctx context.Context, input api.PassAuthenticationCaptchaChallengeInput) (*api.PassAuthenticationCaptchaChallengePayload, error) {
+	d := data.FromContext(ctx) // transactional data client for mutations
+
+	// Retrieve authentication
+	auth, err := d.
+		Authentication.
+		Query().
+		Where(authentication.IDEQ(input.ID)).
+		First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Rate limit by person ID
+	rlKey := fmt.Sprintf(
+		"passAuthenticationCaptchaChallenge:%s",
+		auth.PersonID,
+	)
+
+	res, err := r.limiter.Allow(ctx, rlKey, redis_rate.PerHour(r.cfg.AuthenticationCaptchaChallengeRateLimit))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Allowed <= 0 {
+		return nil, reporting.ErrRateLimit
+	}
+
+	// Verify captcha
+	if !r.captcha.Verify(input.Captcha) {
+		return nil, reporting.ErrCaptcha
+	}
+
+	// Create authentication and return its token
+	_, err = auth.
+		Update().
+		SetLastCaptchaChallengeAt(time.Now()).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.PassAuthenticationCaptchaChallengePayload{
+		Success: true,
 	}, nil
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/avptp/brain/internal/transport/request"
 )
 
-func NewSetViewer(data *data.Client) func(http.Handler) http.Handler {
+func NewSetAuth(data *data.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := strings.Split(
@@ -41,7 +41,7 @@ func NewSetViewer(data *data.Client) func(http.Handler) http.Handler {
 			ctx := r.Context()
 			allowCtx := privacy.DecisionContext(ctx, privacy.Allow)
 
-			auth, err := data.
+			authn, err := data.
 				Authentication.
 				Query().
 				Where(authentication.TokenEQ(token)).
@@ -60,13 +60,15 @@ func NewSetViewer(data *data.Client) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx = context.WithValue(ctx, request.ViewerCtxKey{}, auth.Edges.Person)
+			ctx = context.WithValue(ctx, request.ViewerCtxKey{}, authn.Edges.Person)
 
-			auth.
+			authn = authn.
 				Update().
 				SetLastUsedIP(ip).
 				SetLastUsedAt(time.Now()).
 				SaveX(allowCtx)
+
+			ctx = context.WithValue(ctx, request.AuthnCtxKey{}, authn)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
