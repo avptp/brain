@@ -1,15 +1,15 @@
-# Common
+#### Common
+/compose.yml
+/Containerfile
 .DS_Store
 .gitignore
 /.dockerignore
 /.env
 /.env.example
 /.git
-/Dockerfile
 /license.md
 /Makefile
-/docker-compose.yml
 /readme.md
 
-# Project
+#### Project
 /.github

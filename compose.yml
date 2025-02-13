@@ -3,6 +3,7 @@ services:
   go:
     build:
       context: .
+      dockerfile: Containerfile
       target: base
       args:
         USER_ID: ${USER_ID:-1000}
@@ -13,10 +14,10 @@ services:
     ports:
       - ${HTTP_PORT:-8000}:${HTTP_PORT:-8000}
       - ${DELVE_PORT:-2345}:${DELVE_PORT:-2345}
+    tty: true
     depends_on:
       - cockroachdb
       - redis
-    tty: true
 
   cockroachdb:
     image: cockroachdb/cockroach:v24.3.1

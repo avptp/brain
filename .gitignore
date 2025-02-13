@@ -2,6 +2,8 @@
 .DS_Store
 /.env
 /.idea
+/.vscode
+!/.vscode/launch.json
 Thumbs.db
 
 #### Project

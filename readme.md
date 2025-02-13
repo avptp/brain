@@ -20,7 +20,7 @@ Brain is a [GraphQL](https://graphql.org) monolithic service made with [Go](http
 
 The project follows the [_de facto_ standard Go project layout](https://github.com/golang-standards/project-layout) with the additions below:
 
-- `.dockerignore`, `.env.example`, `docker-compose.yml`, `Dockerfile` and `Makefile` contain the configuration and manifests that define the development and runtime environments with [Docker](https://www.docker.com) and [Docker Compose](https://docs.docker.com/compose).
+- `Containerfile`, `compose.yml`, `Makefile`, `.dockerignore` and `.env.example` contain the configuration and manifests that define the development and runtime environments with [OCI](https://opencontainers.org) containers and [Compose](https://docs.docker.com/compose).
 - `.github` holds the [GitHub Actions](https://github.com/features/actions) CI/CD pipelines.
 
 ### License
@@ -40,6 +40,7 @@ make
 ### Requirements
 
 Before starting using the project, make sure that the following dependencies are installed on the machine:
+
 - [Git](https://git-scm.com).
 - An [OCI runtime](https://opencontainers.org), like [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Podman Desktop](https://podman.io) or [OrbStack](https://orbstack.dev).
 - [Docker Compose](https://docs.docker.com/compose/install/).
@@ -105,7 +106,7 @@ dlv test --listen=:2345 --headless --api-version=2 ./internal/api/resolvers/reso
 
 ## Deployment
 
-The deployment process is automated with [GitHub Actions](https://github.com/features/actions). When changes are incorporated into production (`main` branch) or staging (`develop` branch), an automatic deployment is made to the corresponding environment.
+The deployment process is automated. When changes are incorporated into production (`main` branch) or staging (`develop` branch), an automatic deployment is made to the corresponding environment.
 
 ## Troubleshooting
 
