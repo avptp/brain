@@ -1,6 +1,6 @@
 module github.com/avptp/brain
 
-go 1.23.4
+go 1.24.0
 
 require (
 	ariga.io/atlas v0.29.1
@@ -34,6 +34,8 @@ require (
 	golang.org/x/net v0.33.0
 	golang.org/x/text v0.21.0
 )
+
+tool github.com/99designs/gqlgen
 
 require (
 	github.com/Masterminds/semver v1.4.2 // indirect
